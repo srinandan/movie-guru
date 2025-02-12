@@ -18,21 +18,7 @@ spec:
           image: "{{ .Values.REGION }}-docker.pkg.dev/{{ .Values.PROJECT_ID }}/movie-guru/frontend:{{ .Values.IMAGE.TAG }}"
           ports:
             - containerPort: 80
-          env:
-            - name: VITE_FIREBASE_API_KEY
-              value: {{ .Values.firebase.apikey}}
-            - name: VITE_GCP_PROJECT_ID
-              value: {{ .Values.firebase.project_id}}
-            - name: VITE_FIREBASE_AUTH_DOMAIN
-              value: {{ .Values.firebase.auth.domain}}
-            - name: VITE_FIREBASE_STORAGE_BUCKET
-              value: {{ .Values.firebase.storage.bucket}}
-            - name: VITE_FIREBASE_MESSAGING_SENDERID
-              value: {{ .Values.firebase.messaging.senderid}}
-            - name: VITE_FIREBASE_APPID
-              value: {{ .Values.firebase.appid}}
-            - name: VITE_CHAT_SERVER_URL
-              value: "{{ .Values.gatewayIP }}/server"
+
 
 ---
 apiVersion: v1
@@ -66,4 +52,4 @@ spec:
             value: "/"
       backendRefs:
         - name: frontend
-          port: 80
+          port: 8080
