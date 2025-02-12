@@ -16,35 +16,23 @@ timeout: 7200s # 2hr
 tags:
   - ci
 steps:
-# Step 1: Download firebase-config.json from GCS
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
   id: "download-config"
   entrypoint: "bash"
   args:
     - "-c"
     - |
-      gsutil cp gs://$PROJECT_ID-firebase-config/firebase-config.json /workspace/firebase-config.json
+      gsutil cp gs://fb-webapp-$PROJECT_ID/app-config.json /workspace/app-config.json
 
-# Step 2: Parse JSON and set environment variables
-- name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+- name: "ubuntu"
   id: "set-env-vars"
   entrypoint: "bash"
   args:
     - "-c"
     - |
-      export $(jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | .[]' /workspace/firebase-config.json)
-      env | grep -E "appId|apiKey|authDomain|databaseURL|storageBucket|messagingSenderId|measurementId"
-
-# Step 3: Use Environment Variables in Another Step
-- name: "ubuntu"
-  id: "run-command"
-  entrypoint: "bash"
-  args:
-    - "-c"
-    - |
-      echo "Using Firebase API Key: $apiKey"
-      echo "Deploying with App ID: $appId"
-      echo "Database URL: $databaseURL"
+      apt-get update && apt-get install -y jq
+      export $(jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | .[]' /workspace/app-config.json)
+      env | grep -E "gatewayIP|appId|apiKey|authDomain|databaseURL|storageBucket|messagingSenderId|measurementId"
 
 - name: 'gcr.io/cloud-builders/docker'
   id: "build-frontend-image"
@@ -58,6 +46,16 @@ steps:
          -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:${_SHORT_SHA}" \
          -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:latest" \
          --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:latest" \
+         .
+- name: 'gcr.io/cloud-builders/docker'
+  id: "push-frontend-image"
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:${_SHORT_SHA}' && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:latest'
 - name: 'gcr.io/cloud-builders/docker'
   id: "build-server-image"
   dir: './chat_server_go'
@@ -78,8 +76,8 @@ steps:
     - -xe 
     - -c
     - |
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/chatserver:${_SHORT_SHA}'  && \
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/chatserver:latest
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/chatserver:${_SHORT_SHA}' && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/chatserver:latest'
 
 - name: 'gcr.io/cloud-builders/docker'
   id: "build-flows-image"
@@ -95,6 +93,16 @@ steps:
          --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:latest" \
          .
 - name: 'gcr.io/cloud-builders/docker'
+  id: "push-flows-image"
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:${_SHORT_SHA}'  && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:latest'
+
+- name: 'gcr.io/cloud-builders/docker'
   id: "build-db-image"
   dir: './pgvector'
   entrypoint: "sh"
@@ -107,24 +115,6 @@ steps:
          -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:latest" \
          --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:latest" \
          .
-- name: 'gcr.io/cloud-builders/docker'
-  id: "push-frontend-image"
-  entrypoint: "sh"
-  args:
-    - -xe 
-    - -c
-    - |
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:${_SHORT_SHA}' && \
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:latest
-- name: 'gcr.io/cloud-builders/docker'
-  id: "push-flows-image"
-  entrypoint: "sh"
-  args:
-    - -xe 
-    - -c
-    - |
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:${_SHORT_SHA}'  && \
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:latest
 
 - name: 'gcr.io/cloud-builders/docker'
   id: "push-db-image"
@@ -134,32 +124,26 @@ steps:
     - -c
     - |
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:${_SHORT_SHA}' && \
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:latest
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:latest'
 
-- name: gcr.io/cloud-builders/gcloud
-  id: "deploy-to-app-cluster"
-  dir: "deploy/app"
-  entrypoint: bash
-  args:
-    - -c
-    - |
-      gcloud deploy releases create rel-${_SHORT_SHA} \
-      --delivery-pipeline movieguru-pipeline \
-      --region ${_REGION} \
-      --skaffold-file=./skaffold.yaml \
-      --parameters=PROJECT_ID=${_PROJECT_ID},_REGION=${_REGION},_SHORT_SHA=${_SHORT_SHA}
-
-- name: "gcr.io/${_PROJECT_ID}/helm"
-  id: "deploy-helm-chart"
-  entrypoint: bash
-  dir: deploy/app/helm 
-  args:
-    - "-c"
-    - |
-       helm upgrade --install movieguru \
-        ./deploy/app/helm/movieguru \
-       --namespace movieguru \
-       --create-namespace \
-        --set PROJECT_ID=${_PROJECT_ID} \
-        --set IMAGE.TAG=${_SHORT_SHA} \
-        --set REGION=${_REGION}
+# - name: "gcr.io/${_PROJECT_ID}/helm"
+#   id: "deploy-helm-chart"
+#   entrypoint: bash
+#   dir: deploy/app/helm 
+#   args:
+#     - "-c"
+#     - |
+#        helm upgrade --install movieguru \
+#         ./deploy/app/helm/movieguru \
+#        --namespace movieguru \
+#        --create-namespace \
+#         --set PROJECT_ID=${_PROJECT_ID} \
+#         --set IMAGE.TAG=${_SHORT_SHA} \
+#         --set REGION=${_REGION} \
+#         --set firebase.apikey=${apiKey} \
+#         --set firebase.project_id=${_PROJECT_ID} \
+#         --set firebase.auth.domain=${authDomain} \
+#         --set firebase.storage.bucket=${storageBucket} \
+#         --set firebase.messaging.senderid=${messagingSenderId} \
+#         --set firebase.appId=${appId} \
+#         --set gatewayIP=${gatewayIP} \

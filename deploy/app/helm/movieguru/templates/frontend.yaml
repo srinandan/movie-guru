@@ -20,17 +20,17 @@ spec:
             - containerPort: 80
           env:
             - name: VITE_FIREBASE_API_KEY
-              value: {{ .firebase.apikey}}
+              value: {{ .Values.firebase.apikey}}
             - name: VITE_GCP_PROJECT_ID
-              value: {{ .firebase.project_id}}
+              value: {{ .Values.firebase.project_id}}
             - name: VITE_FIREBASE_AUTH_DOMAIN
-              value: {{ .firebase.auth.domain}}
+              value: {{ .Values.firebase.auth.domain}}
             - name: VITE_FIREBASE_STORAGE_BUCKET
-              value: {{ .firebase.storage.bucket}}
+              value: {{ .Values.firebase.storage.bucket}}
             - name: VITE_FIREBASE_MESSAGING_SENDERID
-              value: {{ .firebase.messaging.senderid}}
+              value: {{ .Values.firebase.messaging.senderid}}
             - name: VITE_FIREBASE_APPID
-              value: {{ .firebase.appid}}
+              value: {{ .Values.firebase.appid}}
             - name: VITE_CHAT_SERVER_URL
               value: "{{ .Values.gatewayIP }}/server"
 

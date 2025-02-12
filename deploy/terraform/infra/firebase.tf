@@ -4,23 +4,26 @@ resource "google_firebase_project" "firebase_project" {
   depends_on = [google_project_service.enable_apis]
 }
 
-resource "google_identity_platform_config" "auth" {
-  project  = var.project_id
-  provider = google-beta
+# resource "google_identity_platform_config" "auth" {
+#   project  = var.project_id
+#   provider = google-beta
 
-  # Auto-deletes anonymous users
-  autodelete_anonymous_users = true
+#   # Auto-deletes anonymous users
+#   autodelete_anonymous_users = true
 
-  # Configures authorized domains.
-  authorized_domains = [
-    "localhost",
-    "${var.project_id}.firebaseapp.com",
-    "${var.project_id}.web.app",
-    google_compute_address.external_ip.address
-  ]
+#   # Configures authorized domains.
+#   authorized_domains = [
+#     "localhost",
+#     "${var.project_id}.firebaseapp.com",
+#     "${var.project_id}.web.app",
+#     google_compute_address.external_ip.address
+#   ]
 
-depends_on = [google_project_service.enable_apis]
-}
+# depends_on = [google_project_service.enable_apis]
+#   lifecycle {
+#     ignore_changes = [project]
+#   }
+# }
 
 # Disabling as IAP client is fragile with accepting emails 
 # see issue here: https://github.com/hashicorp/terraform-provider-google/issues/6104
@@ -67,22 +70,23 @@ resource "google_firebase_web_app" "movieguru-web" {
 }
 
 resource "google_storage_bucket" "default" {
-    provider = google-beta
+    project = var.project_id
     name     = "fb-webapp-${var.project_id}"
     location = "US"
+    uniform_bucket_level_access = true
 }
 
 data "google_firebase_web_app_config" "basic" {
   provider   = google-beta
-  web_app_id = google_firebase_web_app.basic.app_id
+  web_app_id = google_firebase_web_app.movieguru-web.app_id
+  project = var.project_id
 }
 
 resource "google_storage_bucket_object" "default" {
-    provider = google-beta
     bucket = google_storage_bucket.default.name
-    name = "firebase-config.json"
-
+    name = "app-config.json"
     content = jsonencode({
+        gatewayIP          = google_compute_address.external_ip.address
         appId              = google_firebase_web_app.movieguru-web.app_id
         apiKey             = data.google_firebase_web_app_config.basic.api_key
         authDomain         = data.google_firebase_web_app_config.basic.auth_domain
