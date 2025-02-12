@@ -16,6 +16,48 @@ timeout: 7200s # 2hr
 tags:
   - ci
 steps:
+# Step 1: Download firebase-config.json from GCS
+- name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+  id: "download-config"
+  entrypoint: "bash"
+  args:
+    - "-c"
+    - |
+      gsutil cp gs://$PROJECT_ID-firebase-config/firebase-config.json /workspace/firebase-config.json
+
+# Step 2: Parse JSON and set environment variables
+- name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+  id: "set-env-vars"
+  entrypoint: "bash"
+  args:
+    - "-c"
+    - |
+      export $(jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | .[]' /workspace/firebase-config.json)
+      env | grep -E "appId|apiKey|authDomain|databaseURL|storageBucket|messagingSenderId|measurementId"
+
+# Step 3: Use Environment Variables in Another Step
+- name: "ubuntu"
+  id: "run-command"
+  entrypoint: "bash"
+  args:
+    - "-c"
+    - |
+      echo "Using Firebase API Key: $apiKey"
+      echo "Deploying with App ID: $appId"
+      echo "Database URL: $databaseURL"
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: "build-frontend-image"
+  dir: './frontend'
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker build \
+         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:${_SHORT_SHA}" \
+         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:latest" \
+         --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:latest" \
 - name: 'gcr.io/cloud-builders/docker'
   id: "build-server-image"
   dir: './chat_server_go'
@@ -36,7 +78,8 @@ steps:
     - -xe 
     - -c
     - |
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/chatserver:${_SHORT_SHA}'
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/chatserver:${_SHORT_SHA}'  && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/chatserver:latest
 
 - name: 'gcr.io/cloud-builders/docker'
   id: "build-flows-image"
@@ -64,7 +107,15 @@ steps:
          -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:latest" \
          --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:latest" \
          .
-
+- name: 'gcr.io/cloud-builders/docker'
+  id: "push-frontend-image"
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:${_SHORT_SHA}' && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:latest
 - name: 'gcr.io/cloud-builders/docker'
   id: "push-flows-image"
   entrypoint: "sh"
@@ -72,7 +123,8 @@ steps:
     - -xe 
     - -c
     - |
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:${_SHORT_SHA}'
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:${_SHORT_SHA}'  && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:latest
 
 - name: 'gcr.io/cloud-builders/docker'
   id: "push-db-image"
@@ -81,7 +133,8 @@ steps:
     - -xe 
     - -c
     - |
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:${_SHORT_SHA}'
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:${_SHORT_SHA}' && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:latest
 
 - name: gcr.io/cloud-builders/gcloud
   id: "deploy-to-app-cluster"

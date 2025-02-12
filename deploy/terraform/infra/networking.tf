@@ -35,7 +35,6 @@ resource "google_compute_subnetwork" "proxy_subnet" {
     role = "ACTIVE"
 }
 
-
 resource "google_compute_address" "external_ip" {
   name         = "movie-guru-external-ip"
   address_type = "EXTERNAL"
@@ -46,26 +45,3 @@ resource "google_compute_address" "external_ip" {
 }
 
 
-resource "google_compute_global_address" "internal_ip_db" {
-  name          = "movie-guru-internal-ip-db"
-  purpose       = "VPC_PEERING"
-  address_type  = "INTERNAL"
-  prefix_length = 16
-  network       = google_compute_network.custom.name
-
-}
-
-resource "google_compute_global_address" "internal_ip_cache" {
-  name          = "movie-guru-internal-ip-cache"
-  purpose       = "VPC_PEERING"
-  address_type  = "INTERNAL"
-  prefix_length = 16
-  network       = google_compute_network.custom.name
-}
-
-resource "google_service_networking_connection" "private_vpc_connection" {
-  provider                = google
-  network                 = google_compute_network.custom.id
-  service                 = "servicenetworking.googleapis.com"
-  reserved_peering_ranges = [google_compute_global_address.internal_ip_db.name, google_compute_global_address.internal_ip_cache.name]
-}

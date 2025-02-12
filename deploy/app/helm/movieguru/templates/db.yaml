@@ -27,9 +27,6 @@ kind: Service
 metadata:
   name: db
   namespace: movieguru
-  annotations:
-    networking.gke.io/load-balancer-type: "INTERNAL"
-    cloud.google.com/load-balancer-ip: movie-guru-internal-ip-db
 spec:
   selector:
     app: db
@@ -37,7 +34,7 @@ spec:
     - protocol: TCP
       port: 5432
       targetPort: 5432
-  type: LoadBalancer
+  type: ClusterIP
 
 ---
 apiVersion: apps/v1

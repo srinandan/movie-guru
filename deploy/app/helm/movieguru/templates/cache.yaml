@@ -25,9 +25,6 @@ kind: Service
 metadata:
   name: cache
   namespace: movieguru
-  annotations:
-    networking.gke.io/load-balancer-type: "INTERNAL"
-    cloud.google.com/load-balancer-ip: movie-guru-internal-ip-cache
 spec:
   selector:
     app: cache
@@ -35,4 +32,4 @@ spec:
     - protocol: TCP
       port: 6379
       targetPort: 6379
-  type: LoadBalancer
+  type: ClusterIP

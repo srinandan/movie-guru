@@ -49,21 +49,3 @@ spec:
       port: 3400
       targetPort: 3400
   type: ClusterIP
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: flows-route
-  namespace: movieguru
-spec:
-  parentRefs:
-    - name: movieguru-gateway 
-      namespace: movieguru
-  rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: "/flows"
-      backendRefs:
-        - name: flows
-          port: 3400

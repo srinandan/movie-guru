@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: movieguru
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.REGION }}-docker.pkg.dev/{{ .Values.PROJECT_ID }}/movie-guru/frontend:{{ .Values.IMAGE.TAG }}"
+          ports:
+            - containerPort: 80
+          env:
+            - name: VITE_FIREBASE_API_KEY
+              value: {{ .firebase.apikey}}
+            - name: VITE_GCP_PROJECT_ID
+              value: {{ .firebase.project_id}}
+            - name: VITE_FIREBASE_AUTH_DOMAIN
+              value: {{ .firebase.auth.domain}}
+            - name: VITE_FIREBASE_STORAGE_BUCKET
+              value: {{ .firebase.storage.bucket}}
+            - name: VITE_FIREBASE_MESSAGING_SENDERID
+              value: {{ .firebase.messaging.senderid}}
+            - name: VITE_FIREBASE_APPID
+              value: {{ .firebase.appid}}
+            - name: VITE_CHAT_SERVER_URL
+              value: "{{ .Values.gatewayIP }}/server"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: movieguru
+spec:
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 80
+  type: ClusterIP
+---
+
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: frontend-route
+  namespace: movieguru
+spec:
+  parentRefs:
+    - name: movieguru-gateway
+      namespace: movieguru
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: "/"
+      backendRefs:
+        - name: frontend
+          port: 80
