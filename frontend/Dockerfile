@@ -40,7 +40,10 @@ WORKDIR /usr/share/nginx/html
 # Copy built assets
 COPY --from=builder /app/dist .
 
+# Copy custom nginx config
+COPY ./nginx/nginx.conf /etc/nginx/conf.d/default.conf
+
 # Expose port
-EXPOSE 80
+EXPOSE 4000
 
 CMD ["nginx", "-g", "daemon off;"]
