@@ -45,7 +45,6 @@ steps:
 #       echo "export _VITE_CHAT_SERVER_URL=http://${gatewayIP}/server:4000" >> /workspace/env-vars.txt 
 #       echo "workspace file: $(cat /workspace/env-vars.txt)"
 
-
 - name: "gcr.io/cloud-builders/docker"
   id: "build-frontend"
   dir: './frontend'

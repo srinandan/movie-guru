@@ -173,4 +173,4 @@ helm upgrade --install movieguru \
 ## Final Step: Verify Deployment
 
 Once the Helm deployment is complete, verify that the application is running correctly on your GKE cluster.
-You can go to http://$GATEWAY_IP to interact with the app.
+You can go to http://$GATEWAY_IP to interact with the app
