@@ -6,15 +6,21 @@
   - [Overall Architecture](#overall-architecture)
     - [Components](#components)
   - [Deployment](#deployment)
-    - [Docker Containers](#docker-containers)
+    - [Containers](#containers)
   - [Flows](#flows)
     - [Data](#data)
     - [Postgres](#postgres)
-  - [Environment setup](#environment-setup)
-    - [Prerequisites](#prerequisites)
-    - [Steps](#steps)
-  - [Database Setup](#database-setup)
-  - [Run the Application](#run-the-application)
+- [Movie Guru App Deployment Guide](#movie-guru-app-deployment-guide)
+  - [Prerequisites](#prerequisites)
+  - [Step 1: Set Environment Variables](#step-1-set-environment-variables)
+  - [Step 2: Deploy Infrastructure](#step-2-deploy-infrastructure)
+  - [Step 3: Configure Firebase](#step-3-configure-firebase)
+  - [Step 4: Retrieve External IP Address](#step-4-retrieve-external-ip-address)
+  - [Step 5: Update Environment Variables](#step-5-update-environment-variables)
+  - [Step 6: Build and Push Containers](#step-6-build-and-push-containers)
+  - [Step 7: Connect to GKE Cluster](#step-7-connect-to-gke-cluster)
+  - [Step 8: Deploy Application Using Helm](#step-8-deploy-application-using-helm)
+  - [Final Step: Verify Deployment](#final-step-verify-deployment)
 
 ## Movie Guru
 
@@ -41,12 +47,12 @@ Refer to the readme in the **main** branch for more information.
 - **Frontend (Vue.js):** User interface for interacting with the chatbot.
 - **Web Backend (Go):** Handles API requests and communicates with the Flows Backend.
 - **Flows Backend (Genkit for Node):** Orchestrates AI tasks, connects to GenAI models, and interacts with a vector database.
-- **Database:** Stores movie data, embeddings, and user profiles in a local Postgres databse with `pgvector`.
+- **Database:** Stores movie data, embeddings, and user profiles in a Postgres databse with `pgvector`.
 - **Cache (Redis):** Caches conversation history and session data.
 
 ## Deployment
 
-### Docker Containers
+### Containers
 
 - **Frontend:** Vue.js application.
 - **Web Backend:** Go-based API server.
@@ -70,143 +76,101 @@ Refer to the readme in the **main** branch for more information.
 
 ### Postgres
 
-There are 2 tables:
+There are multiple tables:
 
 - *movies*: This contains the information about the AI Generated movies and their embeddings. The data for the table is found in dataset/movies_with_posters.csv. If you choose to host your own posters, replace the links in this file.
 - *user_preferences*: This contains the user's long term preferences profile information.
 
-## Environment setup
+# Movie Guru App Deployment Guide
 
-### Prerequisites
+## Prerequisites
 
-- A Google Cloud project with owner permissions.
-- Tools:
-  - [Google Cloud CLI](https://cloud.google.com/sdk/docs/install)
-  - Docker and Docker Compose
-- Required APIs enabled (will be performed in `setup_local.sh`).
+Ensure you have the following installed and configured before proceeding:
 
-### Steps
+- **Google Cloud SDK**: https://cloud.google.com/sdk/docs/install
+- **Helm**: https://helm.sh/docs/intro/install/
+- **Firebase Account**: Access to Firebase Console https://console.firebase.google.com/
+- **GCP Account** with necessary permissions to create and manage GKE, Cloud Build, and IAM resources.
+- [Optional for debugging] **kubectl**: https://kubernetes.io/docs/tasks/tools/install-kubectl/
 
-1. **Clone the Repository**
+## Step 1: Set Environment Variables
 
-   ```sh
-   git clone https://github.com/MKand/movie-guru.git
-   cd movie-guru
-   git checkout <current-branch> # Replace with branch name
-   ```
+Before starting, set the following environment variables in your terminal:
 
-1. Authenticate with Google Cloud
+```bash
+export PROJECT_ID=<your-gcp-project-id>
+export REGION=<your-desired-gcp-region>
 
-    ```sh
-    gcloud auth login
-    gcloud config set project <YOUR_PROJECT_ID>
-    ```
+```
 
-1. Set the require environment variables
+## Step 2: Deploy Infrastructure
 
-    ```sh
-    export PROJECT_ID=<YOUR_PROJECT_ID>
-    export LOCATION=<YOUR_DESIRED_GCLOUD_REGION> # defaults to us-central1 if this is not set
-    ```
+Run the following script to deploy the infrastructure using Cloud Build:
 
-1. Run setup script.
+```bash
+./deploy/deploy.sh --region $REGION
+```
 
-    ```sh
-    chmod +x setup_local.sh
-    ./setup_local.sh
-    ```
+This will trigger a pipeline that creates the required infrastructure on GCP. The process will take approximately **10-15 minutes** to complete.
 
-This enables the required APIs and creates the necessary service account with roles.
+## Step 3: Configure Firebase
 
-## Database Setup
+Once the infrastructure setup is complete, go to the **Firebase Console**:
 
-1. Create a shared network for all the app containers we will use
+- A new project with the **Display Name: "Movie Guru App"** should be created.
+- Navigate to the **Authentication** section and **enable Google Auth** for the web app.
 
-    ```sh
-    docker network create db-shared-network
-    ```
+Next, **copy the Firebase configuration parameters** (e.g., API key, auth domain, etc.) from the Firebase web app settings. You will need these values in the next step.
 
-1. Setup local DB
-We'll setup a local *pgvecto*r db and an *Adminer* instance
+## Step 4: Retrieve External IP Address
 
-    ```sh
-    docker compose -f docker-compose-pgvector.yaml up -d
-    ```
+Go to the **GCP Console** and search for **"IP addresses"**:
 
-Navigate to *localhost:8082*, to access the db via *Adminer*. Use the main user credentials (user name: main, password: mainpassword).
+- Look for an IP address labeled **"movie-guru-external-ip"**.
+- Copy this IP address for use in the environment variables setup.
 
-At this stage, there will be 2 tables, with no data. We will populate the table in the next steps.
+## Step 5: Update Environment Variables
 
-1. Grant the necessary permissions to minimal-user.
+Open the file **`set_env_vars.sh`** and **replace the placeholder values** with the Firebase parameters and the external IP address obtained in the previous steps.
 
-    ```SQL
-    GRANT SELECT ON movies TO "minimal-user";
-    GRANT SELECT, INSERT, UPDATE, DELETE ON user_preferences TO "minimal-user";
-    ```
+After updating the file, run the script to apply the environment variables:
 
-1. Populate the movie table
+```bash
+./set_env_vars.sh
+```
 
-    ```sh
-    source set_env_vars.sh
-    export PROJECT_ID=<YOUR_PROJECT_ID>
-    export LOCATION=<YOUR_DESIRED_GCLOUD_REGION> # defaults to us-central1 if this is not set
-    ```
+## Step 6: Build and Push Containers
 
-1. Download the JSON key for the service account
+Run the following script to build and push the application containers using Cloud Build:
 
-    This is required for you to be able to grant your docker containers access to the Vertex APIs
+```bash
+./deploy/ci.sh
+```
 
-    **Note:** This step requires you to have the ability to create JSON keys for a service account. It may be disabled by some organizations.
+This should take around 10 minutes
 
-    - Go to the project in the GCP console. Go to **IAM > Service Accounts**.
-    - Select the movie guru service account (movie-guru-local-sa@<project id>.iam.gserviceaccount.com).
-    - Create a new JSON key.
-    - Download the key and store it as **.key.json** in the root of this repo (make sure you use the filename exactly).
+## Step 7: Connect to GKE Cluster
 
-1. Run the javascript indexer so it can add movies data into the database. The execution of this intentionally slowed down to stay below the rate-limits.
+Go to the **GKE page** in the **GCP Console** and find the connection string for your cluster.
 
-    ```sh
-    docker compose -f docker-compose-indexer.yaml up --build -d 
-    ```
+- Copy the connection string.
+- Run the command in your terminal to connect to the cluster.
 
-    This takes about 10-15 minutes to run, so be patient. The embedding creation process is slowed down intentionally to ensure we stay under the rate limit.
+## Step 8: Deploy Application Using Helm
 
-1. Verify the number of entries in the DB.
-There should be **652** entries in the movies table.
+Deploy the application to GKE using Helm:
 
-    ```sql
-    SELECT COUNT(*)
-    FROM "movies";
-    ```
+```bash
+helm upgrade --install movieguru \
+./deploy/app/helm/movieguru \
+--namespace movieguru \
+--create-namespace \
+--set PROJECT_ID=${PROJECT_ID} \
+--set IMAGE.TAG=latest \
+--set REGION=${REGION}
+```
 
-1. Shut down the indexer container.
+## Final Step: Verify Deployment
 
-    ```sh
-    docker compose -f docker-compose-indexer.yaml down
-    ```
-
-Once all the required data is added, it is time to run the application that consists of the **frontend**, the **webserver**, the **genkit flows** server and the **redis cache**. These will be running locally in containers. The servers communicate with the **postgres DB** also running locally in a container.
-
-## Run the Application
-
-1. Make sure the env variables are in the execution context of docker compose.
-
-    ```sh
-    source set_env_vars.sh
-    export PROJECT_ID=<YOUR_PROJECT_ID>
-    export LOCATION=<YOUR_DESIRED_GCLOUD_REGION> # defaults to us-central1 if this is not set
-    ```
-
-1. Start the application.
-
-    ```sh
-    docker compose up --build
-    ```
-
-1. Access the Application Open http://localhost:5173 in your browser.
-
-1. Once finished, stop the application.
-
-    ```sh
-    docker compose down
-    ```
+Once the Helm deployment is complete, verify that the application is running correctly on your GKE cluster.
+You can go to http://$GATEWAY_IP to interact with the app.

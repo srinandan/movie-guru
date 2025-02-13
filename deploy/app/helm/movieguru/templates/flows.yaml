@@ -13,6 +13,7 @@ spec:
       labels:
         app: flows
     spec:
+      serviceAccountName: movieguru-sa
       containers:
         - name: flows
           image: "{{ .Values.REGION }}-docker.pkg.dev/{{ .Values.PROJECT_ID }}/movie-guru/flows:{{ .Values.IMAGE.TAG }}"

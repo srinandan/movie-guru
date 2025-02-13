@@ -38,6 +38,10 @@ echo -e "\e[95mGenerated SHORT_SHA: $SHORT_SHA\e[0m"
 # Start Cloud Build
 echo -e "\e[95mStarting Cloud Build...\e[0m"
 gcloud builds submit --config=deploy/ci.yaml --async --ignore-file=.gcloudignore \
-  --substitutions=_PROJECT_ID="${PROJECT_ID}",_SHORT_SHA="${SHORT_SHA}",_REGION="${REGION}"
+  --substitutions=_PROJECT_ID=$PROJECT_ID,_SHORT_SHA=$SHORT_SHA,_REGION=$REGION, \
+  _VITE_FIREBASE_API_KEY=$VITE_FIREBASE_API_KEY,_VITE_FIREBASE_AUTH_DOMAIN=$VITE_FIREBASE_AUTH_DOMAIN, \
+  _VITE_GCP_PROJECT_ID=$VITE_GCP_PROJECT_ID,_VITE_FIREBASE_STORAGE_BUCKET=$VITE_FIREBASE_STORAGE_BUCKET, \
+  _VITE_FIREBASE_MESSAGING_SENDERID=$VITE_FIREBASE_MESSAGING_SENDERID,_VITE_FIREBASE_APPID=$VITE_FIREBASE_APPID, \
+  _VITE_CHAT_SERVER_URL="http://${GATEWAY_IP}/server"
 
 echo -e "\e[92mCloud Build submitted successfully!\e[0m"

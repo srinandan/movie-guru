@@ -13,6 +13,7 @@ spec:
       labels:
         app: server
     spec:
+      serviceAccountName: movieguru-sa
       containers:
         - name: server
           image: "{{ .Values.REGION }}-docker.pkg.dev/{{ .Values.PROJECT_ID }}/movie-guru/chatserver:{{ .Values.IMAGE.TAG }}"

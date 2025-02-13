@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -14,7 +15,6 @@ import (
 	"github.com/movie-guru/pkg/db"
 	m "github.com/movie-guru/pkg/metrics"
 	utils "github.com/movie-guru/pkg/utils"
-	"golang.org/x/exp/slog"
 )
 
 type AuthorizationError struct {
@@ -76,6 +76,9 @@ func (ulh *UserLoginHandler) verifyGoogleToken(tokenString string) (string, erro
 	}
 
 	aud, ok := claims["aud"].(string)
+
+	fmt.Printf("Audience comparison: got %s, want %s\n", aud, ulh.tokenAudience)
+
 	if !ok || aud != ulh.tokenAudience {
 		return "", &AuthorizationError{"Invalid token audience"}
 	}
