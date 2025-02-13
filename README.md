@@ -144,7 +144,7 @@ After updating the file, run the script to apply the environment variables:
 Run the following script to build and push the application containers using Cloud Build:
 
 ```bash
-./deploy/ci.sh
+./deploy/ci.sh --region $REGION
 ```
 
 This should take around 10 minutes
