@@ -19,3 +19,6 @@ dist
 pgdata
 *.tfstate
 *.tfstate.*
+
+# substituted db init.sql file
+init_substituted.sql

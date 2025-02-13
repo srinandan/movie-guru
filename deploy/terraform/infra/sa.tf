@@ -36,7 +36,7 @@ resource "google_project_iam_member" "ar-reader" {
 
 
 resource "google_service_account_iam_binding" "workload_identity_binding" {
-  service_account_id = google_service_account.sa.email
+  service_account_id = google_service_account.sa.id
   role               = "roles/iam.workloadIdentityUser"
   members = [
     "serviceAccount:${var.project_id}.svc.id.goog[movieguru/movieguru-sa]" 

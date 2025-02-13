@@ -17,13 +17,13 @@ tags:
   - ci
 
 steps:
-- name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-  id: "download-config"
-  entrypoint: "bash"
-  args:
-    - "-c"
-    - |
-      gsutil cp gs://fb-webapp-$PROJECT_ID/app-config.json /workspace/app-config.json
+# - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+#   id: "download-config"
+#   entrypoint: "bash"
+#   args:
+#     - "-c"
+#     - |
+#       gsutil cp gs://fb-webapp-$PROJECT_ID/app-config.json /workspace/app-config.json
 
 # Not needed
 # - name: "ubuntu"

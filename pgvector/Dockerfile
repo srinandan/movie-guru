@@ -5,7 +5,7 @@ FROM pgvector/pgvector:pg17
 WORKDIR /docker-entrypoint-initdb.d/
 
 # Copy the init.sql script to the container
-COPY init.sql /docker-entrypoint-initdb.d/
+COPY init_substituted.sql /docker-entrypoint-initdb.d/
 
 # Ensure proper file permissions
 RUN chmod 644 /docker-entrypoint-initdb.d/init.sql
