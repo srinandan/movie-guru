@@ -15,8 +15,9 @@ resource "google_project_service" "enable_apis" {
     "iam.googleapis.com",
     "cloudidentity.googleapis.com",
     "cloudbilling.googleapis.com",
-    "iap.googleapis.com"
-
+    "iap.googleapis.com",
+    "compute.googleapis.com",
+    "container.googleapis.com"
   ])
 
   service = each.key

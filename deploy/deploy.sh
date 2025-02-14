@@ -89,9 +89,13 @@ export PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format 'value(p
 
 gcloud projects add-iam-policy-binding ${PROJECT_ID} --member serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com --role roles/owner
 
+export SUPPORT_EMAIL=$(gcloud auth list --filter=status:ACTIVE --format="value(account)")
+
+echo -e "\e[95mUsing support email ${SUPPORT_EMAIL}\e[0m"
+
 
 # Start Cloud Build
 echo -e "\e[95mStarting Cloud Build to CREATE infrastructure using Terraform...\e[0m"
 
 gcloud builds submit --config=deploy/setup-infra.yaml --async --ignore-file=.gcloudignore --substitutions=_PROJECT_ID="${PROJECT_ID}",\
-_REGION="${REGION}"
+_REGION="${REGION}",_SUPPORT_EMAIL="${SUPPORT_EMAIL}"
