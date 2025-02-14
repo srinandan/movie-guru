@@ -39,9 +39,23 @@ echo -e "\e[95mSubstituting env variables in init.sql\e[0m"
 envsubst < pgvector/init.sql > pgvector/init_substituted.sql
 
 
+
 # Start Cloud Build
 echo -e "\e[95mStarting Cloud Build...\e[0m"
 gcloud builds submit --config=deploy/ci.yaml --async --ignore-file=.gcloudignore \
   --substitutions=_PROJECT_ID=$PROJECT_ID,_SHORT_SHA=$SHORT_SHA,_REGION=$REGION,_VITE_FIREBASE_API_KEY=$FIREBASE_API_KEY,_VITE_FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN,_VITE_GCP_PROJECT_ID=$PROJECT_ID,_VITE_FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET,_VITE_FIREBASE_MESSAGING_SENDERID=$FIREBASE_MESSAGING_SENDERID,_VITE_FIREBASE_APPID=$FIREBASE_APPID,_VITE_CHAT_SERVER_URL="${SERVER_URL}/server"
 
 echo -e "\e[92mCloud Build submitted successfully!\e[0m"
+
+# Upload posters to bucket
+echo -e "\e[92mUploading posters to bucket\e[0m"
+
+gcloud storage cp ./dataset/posters/* "gs://${PROJECT_ID}_posters/"
+
+echo -e "\e[Making posters publicly readable\e[0m"
+
+gcloud storage buckets add-iam-policy-binding "gs://${PROJECT_ID}_posters/" \
+  --member="allUsers" \
+  --role="roles/storage.objectViewer"
+
+

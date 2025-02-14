@@ -17,6 +17,12 @@ func main() {
 	ctx := context.Background()
 
 	// Load environment variables
+	projectID := os.Getenv("PROJECT_ID")
+	if projectID == "" {
+		slog.ErrorContext(ctx, "Error getting PROJECT_ID")
+		return
+	}
+
 	URL := os.Getenv("FLOWS_URL")
 	metricsEnabled, err := strconv.ParseBool(os.Getenv("ENABLE_METRICS"))
 
@@ -34,7 +40,8 @@ func main() {
 	defer movieAgentDB.DB.Close()
 
 	// Fetch metadata
-	metadata, err := movieAgentDB.GetMetadata(ctx, os.Getenv("APP_VERSION"))
+	app_version := os.Getenv("APP_VERSION")
+	metadata, err := movieAgentDB.GetMetadata(ctx, app_version)
 	if err != nil {
 		slog.ErrorContext(ctx, "Error getting metadata", slog.Any("error", err))
 		os.Exit(1)

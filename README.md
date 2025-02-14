@@ -174,4 +174,4 @@ helm upgrade --install movieguru \
 
 Once the Helm deployment is complete, verify that the application is running correctly on your GKE cluster.
 You can go to http://$GATEWAY_IP to interact with the app
-Make sure you use the invite code **0000** the first time you log into the app with your Google credentials. If you plan to leave the app running on the cloud for longer, make sure you change this value in the **invite_codes** table in the database. You can port forward adminer to localhost and use the credentials **username: main, password: main** to login the database through adminer.
+Make sure you use the invite code **0000** the first time you log into the app with your Google credentials. If you plan to leave the app running on the cloud for longer, make sure you change this value in the **invite_codes** table in the database. You can port forward Adminer to localhost and use the credentials **username: main, password: main** to login the database through Adminer.

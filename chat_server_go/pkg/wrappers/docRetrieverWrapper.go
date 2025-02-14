@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	_ "github.com/lib/pq"
 	types "github.com/movie-guru/pkg/types"
@@ -25,10 +26,18 @@ func CreateMovieRetrieverFlowClient(retrieverLength int, url string) *MovieRetri
 }
 
 func (flowClient *MovieRetrieverFlowClient) RetriveDocuments(ctx context.Context, query string) ([]*types.MovieContext, error) {
+	// make this defensive
+	projectId := os.Getenv("PROJECT_ID")
 	rResp, err := flowClient.runFlow(query)
+
 	if err != nil {
 		return nil, err
 	}
+
+	for _, c := range rResp {
+		c.Poster = fmt.Sprintf("https://storage.googleapis.com/%s_posters/%s", projectId, c.Poster)
+	}
+
 	return rResp, nil
 }
 

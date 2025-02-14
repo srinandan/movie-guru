@@ -77,8 +77,6 @@ func (ulh *UserLoginHandler) verifyGoogleToken(tokenString string) (string, erro
 
 	aud, ok := claims["aud"].(string)
 
-	fmt.Printf("Audience comparison: got %s, want %s\n", aud, ulh.tokenAudience)
-
 	if !ok || aud != ulh.tokenAudience {
 		return "", &AuthorizationError{"Invalid token audience"}
 	}
