@@ -13,5 +13,5 @@ variable "kubernetes_version" {
 }
 
 variable "support_email" {
-  
+  description = "Email for IaP branding"
 }

@@ -39,7 +39,7 @@ resource "google_service_account_iam_binding" "workload_identity_binding" {
   service_account_id = google_service_account.sa.id
   role               = "roles/iam.workloadIdentityUser"
   members = [
-    "serviceAccount:${var.project_id}.svc.id.goog[movieguru/movieguru-sa]" 
+    "serviceAccount:${var.project_id}.svc.id.goog[movieguru/movieguru-sa]"
   ]
-  depends_on = [  google_container_cluster.primary]
+  depends_on = [google_container_cluster.primary]
 }

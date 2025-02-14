@@ -16,40 +16,36 @@ resource "google_identity_platform_config" "auth" {
     google_compute_address.external_ip.address
   ]
 
-depends_on = [google_project_service.enable_apis]
+  depends_on = [google_project_service.enable_apis]
   lifecycle {
     ignore_changes = [project]
   }
 }
 
+resource "google_iap_brand" "default" {
+  project           = var.project_id
+  support_email     = var.support_email // Has to be the identity of the thing that is running the tf
+  application_title = "movieguru"
+  depends_on        = [google_project_service.enable_apis]
+}
+
 resource "google_iap_client" "google_oauth" {
   display_name = "Google Sign-In OAuth"
   brand        = google_iap_brand.default.name
-    depends_on = [google_project_service.enable_apis]
+  depends_on   = [google_project_service.enable_apis]
 }
 
 data "google_iap_client" "google_oauth" {
-  client_id = google_iap_client.google_oauth.client_id
-    brand        = google_iap_brand.default.name
-      depends_on = [google_project_service.enable_apis]
+  client_id  = google_iap_client.google_oauth.client_id
+  brand      = google_iap_brand.default.name
+  depends_on = [google_project_service.enable_apis]
 }
 
 resource "google_identity_platform_default_supported_idp_config" "google_signin" {
-  project  = var.project_id
-  idp_id   = "google.com"
+  project       = var.project_id
+  idp_id        = "google.com"
   enabled       = true
-    provider = google-beta
-    client_id = google_iap_client.google_oauth.client_id
-    client_secret = google_iap_client.google_oauth.secret
-      depends_on = [google_project_service.enable_apis]
-}
-
-# Disabling as IAP client is fragile with accepting emails 
-# see issue here: https://github.com/hashicorp/terraform-provider-google/issues/6104
-
-resource "google_iap_brand" "default" {
-  project = var.project_id
-  support_email = var.support_email
-  application_title = "movieguru"
-  depends_on = [google_project_service.enable_apis]
+  client_id     = google_iap_client.google_oauth.client_id
+  client_secret = google_iap_client.google_oauth.secret
+  depends_on    = [google_project_service.enable_apis]
 }

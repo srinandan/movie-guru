@@ -2,7 +2,7 @@ resource "google_compute_network" "custom" {
   name                    = "movie-guru-network"
   auto_create_subnetworks = false
   project                 = var.project_id
-  depends_on = [ google_project_service.enable_apis ]
+  depends_on              = [google_project_service.enable_apis]
 
 }
 
@@ -22,7 +22,7 @@ resource "google_compute_subnetwork" "custom" {
     range_name    = "pod-ranges"
     ip_cidr_range = "192.168.64.0/22"
   }
-    depends_on = [ google_project_service.enable_apis ]
+  depends_on = [google_project_service.enable_apis]
 
 }
 
@@ -31,17 +31,17 @@ resource "google_compute_subnetwork" "proxy_subnet" {
   region        = var.region
   network       = google_compute_network.custom.name
   purpose       = "REGIONAL_MANAGED_PROXY"
-  ip_cidr_range = "10.129.0.0/23"  # Must be /23 or smaller
-    role = "ACTIVE"
+  ip_cidr_range = "10.129.0.0/23" # Must be /23 or smaller
+  role          = "ACTIVE"
 }
 
 resource "google_compute_address" "external_ip" {
   name         = "movie-guru-external-ip"
   address_type = "EXTERNAL"
   region       = var.region
-  project = var.project_id
-  network_tier = "STANDARD"  
- depends_on = [ google_project_service.enable_apis ]
+  project      = var.project_id
+  network_tier = "STANDARD"
+  depends_on   = [google_project_service.enable_apis]
 }
 
 

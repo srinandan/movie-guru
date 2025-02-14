@@ -12,9 +12,9 @@ resource "google_container_cluster" "primary" {
   }
 
   gateway_api_config {
-   channel = "CHANNEL_STANDARD"
+    channel = "CHANNEL_STANDARD"
   }
-  
+
   binary_authorization {
     evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
   }
@@ -54,6 +54,6 @@ resource "google_container_cluster" "primary" {
 
   node_pool_defaults {
   }
-  depends_on = [ google_project_service.enable_apis ]
+  depends_on = [google_project_service.enable_apis]
 
 }
