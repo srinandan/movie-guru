@@ -119,7 +119,6 @@ This will trigger a pipeline that creates the required infrastructure on GCP. Th
 Once the infrastructure setup is complete, go to the **Firebase Console**:
 
 - A new project with the **Display Name: "Movie Guru App"** should be created.
-- Navigate to the **Authentication** section and **enable Google Auth** for the web app.
 
 Next, **copy the Firebase configuration parameters** (e.g., API key, auth domain, etc.) from the Firebase web app settings. You will need these values in the next step.
 
