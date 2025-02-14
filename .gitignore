@@ -4,7 +4,6 @@
 /var
 key.json
 
-posters/
 tfplan
 __pycache__
 
@@ -22,3 +21,5 @@ pgdata
 
 # # substituted db init.sql file
 # init_substituted.sql
+
+posters_small/

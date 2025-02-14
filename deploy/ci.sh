@@ -47,10 +47,23 @@ gcloud builds submit --config=deploy/ci.yaml --async --ignore-file=.gcloudignore
 
 echo -e "\e[92mCloud Build submitted successfully!\e[0m"
 
-# Upload posters to bucket
-echo -e "\e[92mUploading posters to bucket\e[0m"
+echo -e "\e[92mDownloading and unzipping posters from the external archive..\e[0m"
 
-gcloud storage cp ./dataset/posters/* "gs://${PROJECT_ID}_posters/"
+# Download the zip file with posters
+curl -o dataset/posters_small.zip https://storage.googleapis.com/movie-guru-posters/posters_small.zip
+
+# Unzip into dataset/posters
+unzip dataset/posters_small.zip -d .
+
+# Upload posters to bucket
+echo -e "\e[92mUploading posters to bucket and deleting local posters\e[0m"
+
+# Delete zip file
+rm dataset/posters_small.zip
+
+gcloud storage cp ./dataset/posters_small/* "gs://${PROJECT_ID}_posters/"
+
+rm -rf dataset/posters_small
 
 echo -e "\e[Making posters publicly readable\e[0m"
 
@@ -58,4 +71,6 @@ gcloud storage buckets add-iam-policy-binding "gs://${PROJECT_ID}_posters/" \
   --member="allUsers" \
   --role="roles/storage.objectViewer"
 
+echo -e "\e[Deleting temp files\e[0m"
 
+rm pgvector/init_substituted.sql 
