@@ -37,6 +37,32 @@ func NewUserLoginHandler(tokenAudience string, db *db.MovieDB) *UserLoginHandler
 	}
 }
 
+func (ulh *UserLoginHandler) HandleAPILogin(ctx context.Context, authHeader, inviteCode string) (string, error) {
+	token := ulh.getToken(authHeader)
+	user, err := ulh.verifyGoogleToken(token)
+	if err != nil {
+		return "", err
+	}
+
+	if ulh.db.CheckUser(ctx, user) {
+		return user, nil
+	}
+
+	inviteCodes, err := ulh.db.GetInviteCodes()
+	if err != nil {
+		return "", err
+	}
+
+	if utils.Contains(inviteCodes, inviteCode) {
+		if err := ulh.db.CreateUser(user); err != nil {
+			return "", err
+		}
+		return user, nil
+	}
+
+	return "", &AuthorizationError{"Invalid invite code"}
+}
+
 func (ulh *UserLoginHandler) HandleLogin(ctx context.Context, authHeader, inviteCode string) (string, error) {
 	token := ulh.getToken(authHeader)
 	user, err := ulh.verifyGoogleToken(token)
@@ -61,6 +87,14 @@ func (ulh *UserLoginHandler) HandleLogin(ctx context.Context, authHeader, invite
 	}
 
 	return "", &AuthorizationError{"Invalid invite code"}
+}
+
+func (ulh *UserLoginHandler) HandleApiKeyLogin(ctx context.Context, apiKey, user string) (string, error) {
+	// simple implementation for now
+	if user == "" {
+		return "", &AuthorizationError{"Invalid invite code"}
+	}
+	return user, nil
 }
 
 // verify_google_token verifies the Google token and extracts the user email
@@ -106,7 +140,10 @@ func createLoginHandler(ulh *UserLoginHandler, meters *m.LoginMeters, metadata *
 			meters.LoginCounter.Add(ctx, 1)
 
 			authHeader := r.Header.Get("Authorization")
-			if authHeader == "" {
+			apiKey := r.Header.Get("ApiKey")
+			user := r.Header.Get("User")
+
+			if authHeader == "" && apiKey == "" {
 				slog.InfoContext(ctx, "No auth header")
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
@@ -119,8 +156,13 @@ func createLoginHandler(ulh *UserLoginHandler, meters *m.LoginMeters, metadata *
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
+			if authHeader != "" {
+				user, err = ulh.HandleLogin(ctx, authHeader, loginBody.InviteCode)
+			}
+			if apiKey != "" {
+				user, err = ulh.HandleApiKeyLogin(ctx, apiKey, user)
+			}
 
-			user, err := ulh.HandleLogin(ctx, authHeader, loginBody.InviteCode)
 			if err != nil {
 				if _, ok := err.(*AuthorizationError); ok {
 					slog.InfoContext(ctx, "Unauthorized")
