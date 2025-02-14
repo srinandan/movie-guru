@@ -15,7 +15,6 @@ func FilterRelevantContext(relevantMovies []string, fullContext []*types.MovieCo
 		for _, r := range relevantMovies {
 			if r == m.Title {
 				if m.Poster != "" {
-					// Unwrapping poster name with URL
 					relevantContext = append(relevantContext, m)
 				}
 			}

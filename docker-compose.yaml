@@ -1,4 +1,4 @@
-# To only be used to test locally. Make sure you have the nessary service account key for your services.
+
 services:
   frontend:
     build:

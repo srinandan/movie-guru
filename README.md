@@ -21,6 +21,7 @@
   - [Step 7: Connect to GKE Cluster](#step-7-connect-to-gke-cluster)
   - [Step 8: Deploy Application Using Helm](#step-8-deploy-application-using-helm)
   - [Final Step: Verify Deployment](#final-step-verify-deployment)
+  - [\[OPTIONAL\] Steps to run app locally for testing](#optional-steps-to-run-app-locally-for-testing)
 
 ## Movie Guru
 
@@ -175,3 +176,33 @@ helm upgrade --install movieguru \
 Once the Helm deployment is complete, verify that the application is running correctly on your GKE cluster.
 You can go to http://$GATEWAY_IP to interact with the app
 Make sure you use the invite code **0000** the first time you log into the app with your Google credentials. If you plan to leave the app running on the cloud for longer, make sure you change this value in the **invite_codes** table in the database. You can port forward Adminer to localhost and use the credentials **username: main, password: main** to login the database through Adminer.
+
+## [OPTIONAL] Steps to run app locally for testing
+
+- Make sure you've run **/deploy/deploy.sh** (to enable apis and create service accounts) and **/deploy/ci.sh** (to upload posters).
+- Make sure you have substituted the environment variables in **set_env_vars.sh**
+
+- Create the **pgvector/init_substituted.sql** file.
+
+  ```bash
+  ./set_env_vars.sh
+  envsubst < pgvector/init.sql > pgvector/init_substituted.sql
+  ```
+
+- Download the service account key for movie-guru-chat-server-sa and store it as **.key.json** at the project root.
+
+- Run the docker compose file
+
+  ```bash
+  docker compose up --build 
+  ```
+
+**Note**: If the server exits prematurely, it is because it is waiting for the db table to be populated with the necessary data. There is a race condition. Kill the container and re-run **docker compose up**
+
+- The frontend is running at http://localhost:4001
+
+- After teardown, run this to delete the temporary sql file
+
+  ```bash
+  rm pgvector/init_substituted.sql
+  ```
