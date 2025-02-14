@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'genkit';
 
 export const MockUserFlowInputSchema = z.object({
   expert_answer: z.string(),
@@ -9,3 +9,6 @@ export const MockUserFlowInputSchema = z.object({
 export const MockUserFlowOutputSchema = z.object({
   answer: z.string(),
 });
+
+export type MockUserFlowInput = z.infer<typeof MockUserFlowInputSchema>
+export type MockUserFlowOutput = z.infer<typeof MockUserFlowOutputSchema>

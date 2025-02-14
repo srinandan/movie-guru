@@ -4,7 +4,7 @@ metadata:
   name: flows
   namespace: movieguru
 spec:
-  replicas: 5
+  replicas: 1
   selector:
     matchLabels:
       app: flows
@@ -35,7 +35,7 @@ spec:
             - name: APP_VERSION
               value: "v1"
             - name: LOCATION
-              value: {{ .Values.REGION }}
+              value: us-west1
 
 ---
 apiVersion: v1

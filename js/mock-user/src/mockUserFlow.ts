@@ -1,10 +1,9 @@
-import { defineFlow } from '@genkit-ai/flow';
+import { ai } from './genkitConfig'
 import { gemini15Flash } from '@genkit-ai/vertexai';
-import { defineDotprompt } from '@genkit-ai/dotprompt'
-import {MockUserFlowInputSchema, MockUserFlowOutputSchema} from './mockUserFlowTypes'
+import {MockUserFlowInputSchema, MockUserFlowOutputSchema, MockUserFlowOutput} from './mockUserFlowTypes'
 import { MockUserFlowPrompt } from './prompts';
 
-export const MockUserPrompt = defineDotprompt(
+export const MockUserPrompt = ai.definePrompt(
     {
       name: 'mockUserFlow',
       model: gemini15Flash,
@@ -18,7 +17,7 @@ export const MockUserPrompt = defineDotprompt(
     }, 
     MockUserFlowPrompt
 )
-  export const MockUserFlow = defineFlow(
+  export const MockUserFlow = ai.defineFlow(
     {
       name: 'mockUserFlow',
       inputSchema: MockUserFlowInputSchema,
@@ -27,15 +26,16 @@ export const MockUserPrompt = defineDotprompt(
     async (input) => {
       try {
         console.log("Generating response...", input);
-        const response = await MockUserPrompt.generate({ input: input });
-        console.log(response.output(0))
-        return response.output(0);
+        const response = await MockUserPrompt({ input: input });
+        const jsonResponse =  JSON.parse(response.text);
+        const output: MockUserFlowOutput = {
+          "answer":  jsonResponse.answer,
+        }
+        return output
       } catch (error) {
         console.error("Error generating response:", error, input);
         return { 
-          relevantMovies: [],
           answer: "",
-          justification: ""
          }; 
       }
     }
