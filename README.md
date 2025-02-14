@@ -14,7 +14,7 @@
   - [Prerequisites](#prerequisites)
   - [Step 1: Set Environment Variables](#step-1-set-environment-variables)
   - [Step 2: Deploy Infrastructure](#step-2-deploy-infrastructure)
-  - [Step 3: Configure Firebase](#step-3-configure-firebase)
+  - [Step 3: Get Firebase Web app Configuration](#step-3-get-firebase-web-app-configuration)
   - [Step 4: Retrieve External IP Address](#step-4-retrieve-external-ip-address)
   - [Step 5: Update Environment Variables](#step-5-update-environment-variables)
   - [Step 6: Build and Push Containers](#step-6-build-and-push-containers)
@@ -114,7 +114,7 @@ Run the following script to deploy the infrastructure using Cloud Build:
 
 This will trigger a pipeline that creates the required infrastructure on GCP. The process will take approximately **10-15 minutes** to complete.
 
-## Step 3: Configure Firebase
+## Step 3: Get Firebase Web app Configuration
 
 Once the infrastructure setup is complete, go to the **Firebase Console**:
 
