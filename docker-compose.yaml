@@ -1,0 +1,95 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Can only be used to test firebase config on frontend. The backend isn't deployed here.
+services:
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_FIREBASE_API_KEY: ${FIREBASE_API_KEY}
+        VITE_FIREBASE_AUTH_DOMAIN: ${FIREBASE_AUTH_DOMAIN}
+        VITE_GCP_PROJECT_ID: ${PROJECT_ID}
+        VITE_FIREBASE_STORAGE_BUCKET: ${FIREBASE_STORAGE_BUCKET}
+        VITE_FIREBASE_MESSAGING_SENDERID: ${FIREBASE_MESSAGING_SENDERID}
+        VITE_FIREBASE_APPID: ${FIREBASE_APPID}
+        VITE_CHAT_SERVER_URL: http://server
+    ports:
+      - "4001:4000"
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - 6379:6379
+    command: redis-server --save 20 1 --loglevel warning --requirepass my_redis_pwd
+  flows:
+    build: ./js/flows
+    ports:
+      - "3400:3400"
+      - "4000:4000"
+    environment:
+      - POSTGRES_HOST=db
+      - PROJECT_ID=$PROJECT_ID
+      - POSTGRES_DB_USER_PASSWORD=minimalpassword
+      - POSTGRES_DB_USER=minimal-user
+      - TABLE_NAME=movies
+      - POSTGRES_DB_NAME=fake-movies-db
+      - APP_VERSION=v1
+      - GOOGLE_APPLICATION_CREDENTIALS=/key.json
+      - LOCATION=europe-west4
+      - LOCAL=true
+    volumes:
+      - ./.key.json:/key.json  
+  server:
+    build: ./chat_server_go
+    command: /app/webserver
+    ports:
+      - 8081:8080
+    environment:
+      - POSTGRES_HOST=db
+      - PROJECT_ID=$PROJECT_ID
+      - POSTGRES_DB_USER_PASSWORD=minimalpassword
+      - POSTGRES_DB_USER=minimal-user
+      - POSTGRES_DB_NAME=fake-movies-db
+      - TABLE_NAME=movies
+      - APP_VERSION=v1
+      - LOCATION=europe-west4
+      - LOCAL=true
+      - FLOWS_URL=http://flows:3400
+      - REDIS_HOST=cache
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=my_redis_pwd
+      - OTEL_EXPORTER_OTLP_INSECURE=true
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otelcol:4318
+      - OTEL_SERVICE_NAME=movieguru-backend-go
+      - OTEL_GO_X_EXEMPLAR=true
+    depends_on:
+      - cache 
+      - db
+  db:
+    build: ./pgvector
+    ports: 
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: main
+      restart: always
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8082:8080
+
+
+
+  

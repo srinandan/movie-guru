@@ -1,0 +1,29 @@
+.* 
+!.gitignore
+!.dockerignore
+/var
+key.json
+
+posters/
+tfplan
+__pycache__
+
+__debug*
+
+node_modules
+lib
+dist
+.vscode
+.DS_Store
+
+pgdata
+*.tfstate
+*.tfstate.*
+
+pgvector/py_init_substituted.sql
+pgvector/init_substituted.sql
+
+set_env_vars.sh
+
+# # substituted db init.sql file
+# init_substituted.sql
