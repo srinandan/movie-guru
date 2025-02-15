@@ -16,52 +16,52 @@
 
 export const store = {
   namespaced: true,
-    state: {
-        chatMessageHistory:[],
-        movies: [],
-        placeHolderMovies: [],
+  state: {
+    chatMessageHistory: [],
+    movies: [],
+    placeHolderMovies: [],
+  },
+  getters: {
+    messages(state) {
+      return state.chatMessageHistory
     },
-    getters: {
-      messages (state) {
-        return state.chatMessageHistory
-      },
-      movies (state) {
-        return state.movies
-      },
-      placeHolderMovies (state) {
-        return state.placeHolderMovies
-      },
+    movies(state) {
+      return state.movies
     },
-    mutations: {
-        add(state, message) {
-          // mutate state
-          state.chatMessageHistory.push(message)
-        },
-        clear(state) {
-          // mutate state
-          state.chatMessageHistory = []
-        },
-        addMovies(state, movies) {
-          if (movies.length > 0) {
-          state.movies = []
-          movies.forEach(element => {
-            if (element.poster=="") {
-              element.poster="https://storage.googleapis.com/generated_posters/notfound.png"
-            }
-            state.movies.push(element)
-          });
+    placeHolderMovies(state) {
+      return state.placeHolderMovies
+    },
+  },
+  mutations: {
+    add(state, message) {
+      // mutate state
+      state.chatMessageHistory.push(message)
+    },
+    clear(state) {
+      // mutate state
+      state.chatMessageHistory = []
+    },
+    addMovies(state, movies) {
+      if (movies.length > 0) {
+        state.movies = []
+        movies.forEach(element => {
+          if (element.poster == "") {
+            element.poster = "https://storage.googleapis.com/apphub-srinandans-test-posters/notfound.png"
+          }
+          state.movies.push(element)
+        });
+      }
+    },
+    addPlaceHolderMovies(state, movies) {
+      state.placeHolderMovies = []
+      movies.forEach(element => {
+        if (element.poster == "") {
+          element.poster = "https://storage.googleapis.com/apphub-srinandans-test-posters/notfound.png"
         }
-        },
-        addPlaceHolderMovies(state, movies) {
-          state.placeHolderMovies = []
-          movies.forEach(element => {
-            if (element.poster=="") {
-              element.poster="https://storage.googleapis.com/generated_posters/notfound.png"
-            }
-            state.placeHolderMovies.push(element)
-          });
-        },
-        }
-    }
-  
-    export default store;
+        state.placeHolderMovies.push(element)
+      });
+    },
+  }
+}
+
+export default store;

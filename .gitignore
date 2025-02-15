@@ -20,9 +20,6 @@ pgdata
 *.tfstate
 *.tfstate.*
 
-pgvector/py_init_substituted.sql
-pgvector/init_substituted.sql
-
 set_env_vars.sh
 
 # # substituted db init.sql file
