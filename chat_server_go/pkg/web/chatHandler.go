@@ -17,6 +17,7 @@ package web
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -27,7 +28,12 @@ import (
 	"github.com/movie-guru/pkg/types"
 	"go.opentelemetry.io/otel/attribute"
 	metric "go.opentelemetry.io/otel/metric"
-	"golang.org/x/exp/slog"
+)
+
+const (
+	OPTIONS = "OPTIONS"
+	POST    = "POST"
+	GET     = "GET"
 )
 
 func createChatHandler(deps *Dependencies, meters *m.ChatMeters, metadata *db.Metadata) http.HandlerFunc {
@@ -35,18 +41,18 @@ func createChatHandler(deps *Dependencies, meters *m.ChatMeters, metadata *db.Me
 		var err error
 		ctx := r.Context()
 		sessionInfo := &SessionInfo{}
-		if r.Method != "OPTIONS" {
+		if r.Method != OPTIONS {
 			var shouldReturn bool
 			sessionInfo, shouldReturn = authenticateAndGetSessionInfo(ctx, sessionInfo, err, r, w)
 			if shouldReturn {
 				return
 			}
 		}
-		if r.Method == "POST" {
+		if r.Method == POST {
 			meters.CCounter.Add(ctx, 1)
 			startTime := time.Now()
 			defer func() {
-				meters.CLatencyHistogram.Record(ctx, int64(time.Since(startTime).Milliseconds()))
+				meters.CLatencyHistogram.Record(ctx, time.Since(startTime).Milliseconds())
 			}()
 			user := sessionInfo.User
 			chatRequest := &ChatRequest{
@@ -59,29 +65,40 @@ func createChatHandler(deps *Dependencies, meters *m.ChatMeters, metadata *db.Me
 				return
 			}
 			if len(chatRequest.Content) > metadata.MaxUserMessageLen {
-				slog.InfoContext(ctx, "Input message too long", slog.String("user", user), slog.Any("error", err.Error()))
+				slog.InfoContext(ctx, "Input message too long", slog.String("user", user),
+					slog.Any("error", err.Error()))
 				http.Error(w, "Message too long", http.StatusBadRequest)
 				return
 			}
 			ch, err := getHistory(ctx, user)
 			if err != nil {
-				slog.ErrorContext(ctx, "Error while fetching history", slog.String("user", user), slog.Any("error", err.Error()))
+				slog.ErrorContext(ctx, "Error while fetching history", slog.String("user", user),
+					slog.Any("error", err.Error()))
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			agentResp, respQuality := chat(ctx, deps, metadata, ch, user, chatRequest.Content)
 			updateChatMeters(ctx, agentResp, meters, respQuality)
 
-			saveHistory(ctx, ch, user, metadata)
+			err = saveHistory(ctx, ch, user, metadata)
+			if err != nil {
+				slog.Log(ctx, slog.LevelError, "Error while saving history", slog.String("user", user),
+					slog.Any("error", err.Error()))
+			}
 			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(agentResp)
+			if err = json.NewEncoder(w).Encode(agentResp); err != nil {
+				slog.Log(ctx, slog.LevelError, "Error while encoding response", slog.String("user", user),
+					slog.Any("error", err.Error()))
+			}
 			return
 
 		}
 	}
 }
 
-func updateChatMeters(ctx context.Context, agentResp *types.AgentResponse, meters *m.ChatMeters, respQuality *types.ResponseQualityOutput) {
+func updateChatMeters(ctx context.Context, agentResp *types.AgentResponse,
+	meters *m.ChatMeters, respQuality *types.ResponseQualityOutput,
+) {
 	if agentResp.Result == types.UNSAFE {
 		meters.CSafetyIssueCounter.Add(ctx, 1)
 	}

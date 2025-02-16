@@ -14,20 +14,20 @@
 
 package types
 
-type USERINTENT string
+type UserIntent string
 
 const (
-	UNCLEAR          USERINTENT = "UNCLEAR"
-	GREET            USERINTENT = "GREET"
-	END_CONVERSATION USERINTENT = "END_CONVERSATION"
-	REQUEST          USERINTENT = "REQUEST"
-	RESPONSE         USERINTENT = "RESPONSE"
-	ACKNOWLEDGE      USERINTENT = "ACKNOWLEDGE"
+	UNCLEAR          UserIntent = "UNCLEAR"
+	GREET            UserIntent = "GREET"
+	END_CONVERSATION UserIntent = "END_CONVERSATION"
+	REQUEST          UserIntent = "REQUEST"
+	RESPONSE         UserIntent = "RESPONSE"
+	ACKNOWLEDGE      UserIntent = "ACKNOWLEDGE"
 )
 
 type QueryTransformFlowOutput struct {
-	TransformedQuery     string     `json:"transformedQuery, omitempty"`
-	Intent               USERINTENT `json:"userIntent, omitempty"`
+	TransformedQuery     string     `json:"transformedQuery,omitempty"`
+	Intent               UserIntent `json:"userIntent,omitempty"`
 	*ModelOutputMetadata `json:"modelOutputMetadata"`
 }
 

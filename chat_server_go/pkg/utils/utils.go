@@ -26,7 +26,7 @@ func Contains(slice []string, item string) bool {
 
 // Helper function to remove an item from a slice
 func RemoveItem(slice []string, item string) []string {
-	var newSlice []string = make([]string, 0, len(slice))
+	newSlice := make([]string, 0, len(slice))
 	for _, s := range slice {
 		if s != item {
 			newSlice = append(newSlice, s)

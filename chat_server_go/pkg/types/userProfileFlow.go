@@ -46,9 +46,11 @@ func NewUserProfileFlowOuput() *UserProfileFlowOutput {
 	}
 }
 
-type MovieFeatureCategory string
-type ProfileAction string
-type Sentiment string
+type (
+	MovieFeatureCategory string
+	ProfileAction        string
+	Sentiment            string
+)
 
 const (
 	OTHER    MovieFeatureCategory = "OTHER"
@@ -69,14 +71,14 @@ const (
 )
 
 type UserProfile struct {
-	Likes    ProfileCategories `json:"likes, omitempty"`
-	Dislikes ProfileCategories `json:"dislikes, omitempty"`
+	Likes    ProfileCategories `json:"likes,omitempty"`
+	Dislikes ProfileCategories `json:"dislikes,omitempty"`
 }
 type ProfileCategories struct {
-	Actors    []string `json:"actors, omitempty"`
-	Directors []string `json:"directors, omitempty"`
-	Genres    []string `json:"genres, omitempty"`
-	Others    []string `json:"others, omitempty"`
+	Actors    []string `json:"actors,omitempty"`
+	Directors []string `json:"directors,omitempty"`
+	Genres    []string `json:"genres,omitempty"`
+	Others    []string `json:"others,omitempty"`
 }
 
 func NewUserProfile() *UserProfile {

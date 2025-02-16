@@ -27,19 +27,17 @@ import (
 	redis "github.com/redis/go-redis/v9"
 )
 
-var (
-	redisStore *redis.ClusterClient
-)
+var redisStore *redis.ClusterClient
 
 func TestRedis() {
 	ctx := context.Background()
-	REDIS_HOST := os.Getenv("REDIS_HOST")
-	REDIS_PASSWORD := os.Getenv("REDIS_PASSWORD")
-	REDIS_PORT := os.Getenv("REDIS_PORT")
+	redisHost := os.Getenv("REDIS_HOST")
+	redisPassword := os.Getenv("REDIS_PASSWORD")
+	redisPort := os.Getenv("REDIS_PORT")
 
 	client := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", REDIS_HOST, REDIS_PORT),
-		Password: REDIS_PASSWORD,
+		Addr:     fmt.Sprintf("%s:%s", redisHost, redisPort),
+		Password: redisPassword,
 		DB:       0,
 	})
 	if err := client.Ping(ctx).Err(); err != nil {
@@ -49,9 +47,9 @@ func TestRedis() {
 }
 
 func setupSessionStore(ctx context.Context) {
-	REDIS_HOST := os.Getenv("REDIS_HOST")
-	//REDIS_PASSWORD := os.Getenv("REDIS_PASSWORD")
-	//REDIS_PORT := os.Getenv("REDIS_PORT")
+	redisHost := os.Getenv("REDIS_HOST")
+	// REDIS_PASSWORD := os.Getenv("REDIS_PASSWORD")
+	// REDIS_PORT := os.Getenv("REDIS_PORT")
 
 	/*redisStore = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", REDIS_HOST, REDIS_PORT),
@@ -59,7 +57,7 @@ func setupSessionStore(ctx context.Context) {
 		DB:       0,
 	})*/
 	redisStore = redis.NewClusterClient(&redis.ClusterOptions{
-		Addrs: []string{fmt.Sprintf("%s:%s", REDIS_HOST, "6379")},
+		Addrs: []string{fmt.Sprintf("%s:%s", redisHost, "6379")},
 	})
 	if err := redisStore.Ping(ctx).Err(); err != nil {
 		slog.ErrorContext(ctx, "error connecting to redis", slog.Any("error", err))
@@ -69,14 +67,16 @@ func setupSessionStore(ctx context.Context) {
 
 func getSessionID(r *http.Request) (string, error) {
 	if r.Header.Get("Cookie") == "" {
-		return "", errors.New("No cookie found")
+		return "", errors.New("no cookie found")
 	}
 	sessionID := strings.Split(r.Header.Get("Cookie"), "movie-guru-sid=")[1]
 	return sessionID, nil
 }
 
-func authenticateAndGetSessionInfo(ctx context.Context, sessionInfo *SessionInfo, err error, r *http.Request, w http.ResponseWriter) (*SessionInfo, bool) {
-	sessionInfo, err = getSessionInfo(ctx, r)
+func authenticateAndGetSessionInfo(ctx context.Context, _ *SessionInfo,
+	err error, r *http.Request, w http.ResponseWriter,
+) (*SessionInfo, bool) {
+	sessionInfo, err := getSessionInfo(ctx, r)
 	if err != nil {
 		if err, ok := err.(*AuthorizationError); ok {
 			slog.InfoContext(ctx, "Unauthorized", slog.Any("error", err.Error()))
@@ -94,6 +94,7 @@ func authenticateAndGetSessionInfo(ctx context.Context, sessionInfo *SessionInfo
 	}
 	return sessionInfo, false
 }
+
 func getSessionInfo(ctx context.Context, r *http.Request) (*SessionInfo, error) {
 	session := &SessionInfo{}
 	sessionID, err := getSessionID(r)
@@ -101,6 +102,9 @@ func getSessionInfo(ctx context.Context, r *http.Request) (*SessionInfo, error) 
 		return session, &AuthorizationError{err.Error()}
 	}
 	s, err := redisStore.Get(ctx, sessionID).Result()
+	if err != nil {
+		return nil, fmt.Errorf("unable to fetch from redis: %v", err)
+	}
 	err = json.Unmarshal([]byte(s), session)
 	if err != nil {
 		return nil, err

@@ -23,7 +23,7 @@ import (
 	types "github.com/movie-guru/pkg/types"
 )
 
-func createPreferencesHandler(MovieDB *db.MovieDB) http.HandlerFunc {
+func createPreferencesHandler(movieDB *db.MovieDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var err error
 		ctx := r.Context()
@@ -37,13 +37,15 @@ func createPreferencesHandler(MovieDB *db.MovieDB) http.HandlerFunc {
 		}
 		user := sessionInfo.User
 		if r.Method == "GET" {
-			pref, err := MovieDB.GetCurrentProfile(ctx, user)
+			pref, err := movieDB.GetCurrentProfile(ctx, user)
 			if err != nil {
 				slog.ErrorContext(ctx, "Cannot get preferences", slog.String("user", user), slog.Any("error", err.Error()))
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			json.NewEncoder(w).Encode(pref)
+			if err = json.NewEncoder(w).Encode(pref); err != nil {
+				slog.ErrorContext(ctx, "Cannot encode preferences", slog.String("user", user), slog.Any("error", err.Error()))
+			}
 			return
 		}
 		if r.Method == "POST" {
@@ -56,14 +58,18 @@ func createPreferencesHandler(MovieDB *db.MovieDB) http.HandlerFunc {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			err = MovieDB.UpdateProfile(ctx, pref.Content, sessionInfo.User)
+			err = movieDB.UpdateProfile(ctx, pref.Content, sessionInfo.User)
 			if err != nil {
-				slog.ErrorContext(ctx, "Error while fetching preferences", slog.String("user", user), slog.Any("error", err.Error()))
+				slog.ErrorContext(ctx, "Error while fetching preferences",
+					slog.String("user", user), slog.Any("error", err.Error()))
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
-			json.NewEncoder(w).Encode(map[string]string{"update": "success"})
+			if err = json.NewEncoder(w).Encode(map[string]string{"update": "success"}); err != nil {
+				slog.ErrorContext(ctx, "Error encoding",
+					slog.String("user", user), slog.Any("error", err.Error()))
+			}
 			return
 		}
 	}

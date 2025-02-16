@@ -33,17 +33,17 @@ type Metadata struct {
 	ServerDomain             string `json:"server_domain"`
 }
 
-func (d *MovieDB) GetMetadata(ctx context.Context, appVersion string) (*Metadata, error) {
-	return d.getServerMetadata(ctx, appVersion)
+func (movieDB *MovieDB) GetMetadata(ctx context.Context, appVersion string) (*Metadata, error) {
+	return movieDB.getServerMetadata(ctx, appVersion)
 }
 
 // getMetadata retrieves metadata from the database
-func (d *MovieDB) getServerMetadata(ctx context.Context, appVersion string) (*Metadata, error) {
+func (movieDB *MovieDB) getServerMetadata(ctx context.Context, appVersion string) (*Metadata, error) {
 	dbCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 	query := `SELECT * FROM app_metadata WHERE "appversion" = $1;`
 	metadata := &Metadata{}
-	rows := d.DB.QueryRowContext(dbCtx, query, appVersion)
+	rows := movieDB.DB.QueryRowContext(dbCtx, query, appVersion)
 	err := rows.Scan(
 		&metadata.AppVersion,
 		&metadata.TokenAudience,

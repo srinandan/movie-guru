@@ -14,25 +14,20 @@
 
 package types
 
-import (
-	"fmt"
-	"regexp"
-)
-
-type RESULT string
+type Result string
 
 const (
-	UNDEFINED RESULT = "UNDEFINED"
-	SUCCESS   RESULT = "SUCCESS"
-	BAD_QUERY RESULT = "BAD_QUERY"
-	UNSAFE    RESULT = "UNSAFE"
-	TOO_LONG  RESULT = "TOO_LONG"
-	ERROR     RESULT = "ERROR"
+	UNDEFINED Result = "UNDEFINED"
+	SUCCESS   Result = "SUCCESS"
+	BAD_QUERY Result = "BAD_QUERY"
+	UNSAFE    Result = "UNSAFE"
+	TOO_LONG  Result = "TOO_LONG"
+	ERROR     Result = "ERROR"
 )
 
 type ModelOutputMetadata struct {
-	Justification string `json:"justification" omitempty`
-	SafetyIssue   bool   `json:"safetyIssue" omitempty`
+	Justification string `json:"justification,omitempty"`
+	SafetyIssue   bool   `json:"safetyIssue,omitempty"`
 }
 
 type AgentResponse struct {
@@ -40,7 +35,7 @@ type AgentResponse struct {
 	RelevantMovies []string        `json:"relevant_movies"`
 	Context        []*MovieContext `json:"context"`
 	ErrorMessage   string          `json:"error_message"`
-	Result         RESULT          `json:"result"`
+	Result         Result          `json:"result"`
 	Preferences    *UserProfile    `json:"preferences"`
 }
 
@@ -64,17 +59,4 @@ func NewErrorAgentResponse(errMessage string) *AgentResponse {
 	r.Result = ERROR
 	r.ErrorMessage = errMessage
 	return r
-}
-
-func makeJsonMarshallable(input string) (string, error) {
-	// Regex to extract JSON content from Markdown code block
-	re := regexp.MustCompile("```(json)?((\n|.)*?)```")
-	matches := re.FindStringSubmatch(input)
-
-	if len(matches) < 2 {
-		return input, fmt.Errorf("no JSON content found in the input")
-	}
-
-	jsonContent := matches[2]
-	return jsonContent, nil
 }

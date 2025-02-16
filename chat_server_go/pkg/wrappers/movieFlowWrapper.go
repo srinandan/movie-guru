@@ -33,14 +33,16 @@ type MovieFlowClient struct {
 	URL     string
 }
 
-func CreateMovieFlowClient(db *db.MovieDB, URL string) (*MovieFlowClient, error) {
+func CreateMovieFlowClient(db *db.MovieDB, url string) (*MovieFlowClient, error) {
 	return &MovieFlowClient{
 		MovieDB: db,
-		URL:     URL + "/movieQAFlow",
+		URL:     url + "/movieQAFlow",
 	}, nil
 }
 
-func (flowClient *MovieFlowClient) Run(movieDocs []*types.MovieContext, history []*types.SimpleMessage, userPreferences *types.UserProfile) (*types.AgentResponse, error) {
+func (flowClient *MovieFlowClient) Run(movieDocs []*types.MovieContext,
+	history []*types.SimpleMessage, userPreferences *types.UserProfile,
+) (*types.AgentResponse, error) {
 	input := &types.MovieFlowInput{
 		History:          history,
 		UserPreferences:  userPreferences,

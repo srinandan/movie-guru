@@ -16,9 +16,7 @@ package web
 
 import (
 	"context"
-
 	"net/http"
-
 	"strings"
 
 	"github.com/movie-guru/pkg/db"

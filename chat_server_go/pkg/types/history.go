@@ -49,15 +49,15 @@ func (ch *ChatHistory) UnmarshalBinary(data []byte) error {
 	return json.Unmarshal(data, ch)
 }
 
-func (m *ChatHistory) Trim(maxLength int) int {
+func (ch *ChatHistory) Trim(maxLength int) int {
 	startIndex := 0
 
-	if len(m.History) >= maxLength {
-		startIndex = len(m.History) - maxLength
+	if len(ch.History) >= maxLength {
+		startIndex = len(ch.History) - maxLength
 	}
-	recentMessages := m.History[startIndex:]
-	m.History = recentMessages
-	return len(m.History)
+	recentMessages := ch.History[startIndex:]
+	ch.History = recentMessages
+	return len(ch.History)
 }
 
 func NewChatHistory() *ChatHistory {
@@ -94,30 +94,30 @@ func ParseRecentHistory(aiMessages []*ai.Message, maxLength int) ([]*SimpleMessa
 	return messages, nil
 }
 
-func (m *ChatHistory) GetLastMessage() (string, error) {
-	if len(m.History) > 0 {
-		message := m.History[len(m.History)-1]
+func (ch *ChatHistory) GetLastMessage() (string, error) {
+	if len(ch.History) > 0 {
+		message := ch.History[len(ch.History)-1]
 		return message.Content[0].Text, nil
 	}
-	return "", errors.New("No messages found")
+	return "", errors.New("no messages found")
 }
 
-func (m *ChatHistory) AddUserMessage(message string) {
-	m.History = append(m.History, ai.NewUserTextMessage(message))
+func (ch *ChatHistory) AddUserMessage(message string) {
+	ch.History = append(ch.History, ai.NewUserTextMessage(message))
 }
 
-func (m *ChatHistory) AddAgentMessage(message string) {
-	m.History = append(m.History, ai.NewModelTextMessage(message))
+func (ch *ChatHistory) AddAgentMessage(message string) {
+	ch.History = append(ch.History, ai.NewModelTextMessage(message))
 }
 
-func (m *ChatHistory) AddAgentErrorMessage() {
-	m.History = append(m.History, ai.NewModelTextMessage("Something went wrong. Try again."))
+func (ch *ChatHistory) AddAgentErrorMessage() {
+	ch.History = append(ch.History, ai.NewModelTextMessage("Something went wrong. Try again."))
 }
 
-func (m *ChatHistory) AddSafetyIssueErrorMessage() {
-	m.History = append(m.History, ai.NewModelTextMessage("That was a naughty request. I cannot proces it."))
+func (ch *ChatHistory) AddSafetyIssueErrorMessage() {
+	ch.History = append(ch.History, ai.NewModelTextMessage("That was a naughty request. I cannot process it."))
 }
 
-func (m ChatHistory) GetHistory() []*ai.Message {
-	return m.History
+func (ch ChatHistory) GetHistory() []*ai.Message {
+	return ch.History
 }

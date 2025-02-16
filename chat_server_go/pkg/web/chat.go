@@ -21,9 +21,11 @@ import (
 	"github.com/movie-guru/pkg/types"
 )
 
-func chat(ctx context.Context, deps *Dependencies, metadata *db.Metadata, h *types.ChatHistory, user string, userMessage string) (*types.AgentResponse, *types.ResponseQualityOutput) {
+func chat(ctx context.Context, deps *Dependencies, metadata *db.Metadata,
+	h *types.ChatHistory, user string, userMessage string,
+) (*types.AgentResponse, *types.ResponseQualityOutput) {
 	h.AddUserMessage(userMessage)
-	simpleHistory, err := types.ParseRecentHistory(h.GetHistory(), metadata.HistoryLength)
+	simpleHistory, _ := types.ParseRecentHistory(h.GetHistory(), metadata.HistoryLength)
 
 	respQuality := &types.ResponseQualityOutput{
 		Outcome:       types.OutcomeUnknown,
@@ -41,7 +43,7 @@ func chat(ctx context.Context, deps *Dependencies, metadata *db.Metadata, h *typ
 	}
 
 	movieContext := []*types.MovieContext{}
-	if qResp.Intent == types.USERINTENT(types.REQUEST) || qResp.Intent == types.USERINTENT(types.RESPONSE) {
+	if qResp.Intent == types.UserIntent(types.REQUEST) || qResp.Intent == types.UserIntent(types.RESPONSE) {
 		movieContext, err = deps.MovieRetrieverFlowClient.RetriveDocuments(ctx, qResp.TransformedQuery)
 		if agentResp, shouldReturn := processFlowOutput(nil, err, h); shouldReturn {
 			return agentResp, respQuality
@@ -57,7 +59,9 @@ func chat(ctx context.Context, deps *Dependencies, metadata *db.Metadata, h *typ
 	return mAgentResp, respQuality
 }
 
-func processFlowOutput(metadata *types.ModelOutputMetadata, err error, h *types.ChatHistory) (*types.AgentResponse, bool) {
+func processFlowOutput(metadata *types.ModelOutputMetadata, err error,
+	h *types.ChatHistory,
+) (*types.AgentResponse, bool) {
 	if err != nil {
 		h.AddAgentErrorMessage()
 		return types.NewErrorAgentResponse(err.Error()), true

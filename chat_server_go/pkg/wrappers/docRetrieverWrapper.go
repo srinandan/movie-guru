@@ -23,6 +23,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	// using blamk import for pg
 	_ "github.com/lib/pq"
 	types "github.com/movie-guru/pkg/types"
 )
@@ -39,7 +40,9 @@ func CreateMovieRetrieverFlowClient(retrieverLength int, url string) *MovieRetri
 	}
 }
 
-func (flowClient *MovieRetrieverFlowClient) RetriveDocuments(ctx context.Context, query string) ([]*types.MovieContext, error) {
+func (flowClient *MovieRetrieverFlowClient) RetriveDocuments(_ context.Context,
+	query string,
+) ([]*types.MovieContext, error) {
 	rResp, err := flowClient.runFlow(query)
 	if err != nil {
 		return nil, err

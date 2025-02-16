@@ -27,7 +27,7 @@ type SessionInfo struct {
 }
 
 type LoginBody struct {
-	InviteCode string `json:"inviteCode" omitempty`
+	InviteCode string `json:"inviteCode,omitempty"`
 }
 
 type PrefBody struct {

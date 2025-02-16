@@ -17,6 +17,7 @@ package web
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -31,7 +32,7 @@ func createHistoryHandler(metadata *db.Metadata) http.HandlerFunc {
 		ctx := r.Context()
 		var err error
 		sessionInfo := &SessionInfo{}
-		if r.Method != "OPTIONS" {
+		if r.Method != OPTIONS {
 			var shouldReturn bool
 			sessionInfo, shouldReturn = authenticateAndGetSessionInfo(ctx, sessionInfo, err, r, w)
 			if shouldReturn {
@@ -39,7 +40,7 @@ func createHistoryHandler(metadata *db.Metadata) http.HandlerFunc {
 			}
 		}
 		user := sessionInfo.User
-		if r.Method == "GET" {
+		if r.Method == GET {
 			ch, err := getHistory(ctx, user)
 			if err != nil {
 				slog.ErrorContext(ctx, "Error while fetching history", slog.String("user", user), slog.Any("error", err.Error()))
@@ -53,7 +54,9 @@ func createHistoryHandler(metadata *db.Metadata) http.HandlerFunc {
 				return
 			}
 			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(simpleHistory)
+			if err = json.NewEncoder(w).Encode(simpleHistory); err != nil {
+				fmt.Println(err)
+			}
 		}
 		if r.Method == "DELETE" {
 			err := deleteHistory(ctx, sessionInfo.User)
@@ -81,14 +84,14 @@ func deleteHistory(ctx context.Context, user string) error {
 func getHistory(ctx context.Context, user string) (*types.ChatHistory, error) {
 	redisContext, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	historyJson, err := redisStore.Get(redisContext, user).Result()
+	historyJSON, err := redisStore.Get(redisContext, user).Result()
 	ch := types.NewChatHistory()
 	if err == redis.Nil {
 		return ch, nil
 	} else if err != nil {
 		return ch, err
 	}
-	err = json.Unmarshal([]byte(historyJson), ch)
+	err = json.Unmarshal([]byte(historyJSON), ch)
 	if err != nil {
 		return ch, err
 	}

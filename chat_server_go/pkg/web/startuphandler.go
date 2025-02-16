@@ -28,7 +28,6 @@ func randomisedFeaturedFilmsQuery() string {
 		"great films", "cool films", "best films", "new films", "high rated films", "classic films",
 	}
 	return queries[rand.Intn(len(queries))]
-
 }
 
 func createStartupHandler(deps *Dependencies) http.HandlerFunc {
@@ -62,7 +61,9 @@ func createStartupHandler(deps *Dependencies) http.HandlerFunc {
 			agentResp.Preferences = pref
 			agentResp.Result = types.SUCCESS
 
-			json.NewEncoder(w).Encode(agentResp)
+			if err = json.NewEncoder(w).Encode(agentResp); err != nil {
+				slog.ErrorContext(ctx, "Error encoding response", slog.Any("error", err.Error()))
+			}
 			return
 
 		}

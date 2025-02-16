@@ -20,7 +20,9 @@ import (
 	types "github.com/movie-guru/pkg/types"
 )
 
-func ProcessProfileChanges(userProfile *types.UserProfile, changes []*types.ProfileChangeRecommendation) (*types.UserProfile, error) {
+func ProcessProfileChanges(userProfile *types.UserProfile,
+	changes []*types.ProfileChangeRecommendation,
+) (*types.UserProfile, error) {
 	for _, change := range changes {
 		change.Item = strings.ToLower(change.Item)
 

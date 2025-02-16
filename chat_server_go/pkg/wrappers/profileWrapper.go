@@ -33,14 +33,16 @@ type UserProfileFlowClient struct {
 	URL     string
 }
 
-func CreateUserProfileFlowClient(db *db.MovieDB, URL string) (*UserProfileFlowClient, error) {
+func CreateUserProfileFlowClient(db *db.MovieDB, url string) (*UserProfileFlowClient, error) {
 	return &UserProfileFlowClient{
 		MovieDB: db,
-		URL:     URL + "/userProfileFlow",
+		URL:     url + "/userProfileFlow",
 	}, nil
 }
 
-func (flowClient *UserProfileFlowClient) Run(ctx context.Context, history *types.ChatHistory, user string) (*types.UserProfileOutput, error) {
+func (flowClient *UserProfileFlowClient) Run(ctx context.Context,
+	history *types.ChatHistory, user string,
+) (*types.UserProfileOutput, error) {
 	userProfile, err := flowClient.MovieDB.GetCurrentProfile(ctx, user)
 	userProfileOutput := &types.UserProfileOutput{
 		UserProfile: userProfile,
@@ -83,7 +85,9 @@ func (flowClient *UserProfileFlowClient) Run(ctx context.Context, history *types
 	return userProfileOutput, nil
 }
 
-func (flowClient *UserProfileFlowClient) runFlow(input *types.UserProfileFlowInput) (*types.UserProfileFlowOutput, error) {
+func (flowClient *UserProfileFlowClient) runFlow(
+	input *types.UserProfileFlowInput,
+) (*types.UserProfileFlowOutput, error) {
 	// Marshal the input struct to JSON
 	dataInput := DataInput{
 		Data: input,

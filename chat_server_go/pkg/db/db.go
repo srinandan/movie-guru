@@ -17,12 +17,12 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"log/slog"
-
-	"fmt"
 	"os"
 
+	// using a blank miport
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
@@ -49,16 +49,17 @@ func connectToDB() (*sql.DB, error) {
 	log.Println(dbURI)
 
 	db, err := sql.Open("pgx", dbURI)
-
 	if err != nil {
 		log.Fatal(err)
+		return nil, err
 	}
 	db.SetMaxOpenConns(5)
 	db.SetMaxIdleConns(2)
 
 	err = db.PingContext(context.Background())
 	if err != nil {
-		log.Fatal("Error pinging database: %v", err)
+		log.Fatalf("Error pinging database: %v", err)
+		return nil, err
 	}
 	slog.Log(context.Background(), slog.LevelInfo, "DB pinged successfully")
 	return db, nil

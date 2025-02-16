@@ -25,6 +25,8 @@ import (
 
 	jwt "github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+
+	// using blank import for postgres
 	_ "github.com/lib/pq"
 	"github.com/movie-guru/pkg/db"
 	m "github.com/movie-guru/pkg/metrics"
@@ -116,7 +118,7 @@ func createLoginHandler(ulh *UserLoginHandler, meters *m.LoginMeters, metadata *
 		if r.Method == "POST" {
 			startTime := time.Now()
 			defer func() {
-				meters.LoginLatencyHistogram.Record(ctx, int64(time.Since(startTime).Milliseconds()))
+				meters.LoginLatencyHistogram.Record(ctx, time.Since(startTime).Milliseconds())
 			}()
 
 			meters.LoginCounter.Add(ctx, 1)
@@ -165,10 +167,13 @@ func createLoginHandler(ulh *UserLoginHandler, meters *m.LoginMeters, metadata *
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 			meters.LoginSuccessCounter.Add(ctx, 1)
-			setCookieHeader := fmt.Sprintf("movie-guru-sid=%s; HttpOnly; SameSite=Lax; Path=/; Domain=%s; Max-Age=86400", sessionID, metadata.ServerDomain)
+			setCookieHeader := fmt.Sprintf("movie-guru-sid=%s; HttpOnly; SameSite=Lax; Path=/; Domain=%s; Max-Age=86400",
+				sessionID, metadata.ServerDomain)
 			w.Header().Set("Set-Cookie", setCookieHeader)
 			w.Header().Set("Vary", "Cookie, Origin")
-			json.NewEncoder(w).Encode(map[string]string{"login": "success"})
+			if err = json.NewEncoder(w).Encode(map[string]string{"login": "success"}); err != nil {
+				slog.ErrorContext(ctx, "Error while encoding response", slog.Any("error", err.Error()))
+			}
 		}
 	}
 }

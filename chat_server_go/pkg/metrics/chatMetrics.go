@@ -33,29 +33,35 @@ type ChatMeters struct {
 func NewChatMeters() *ChatMeters {
 	meter := otel.Meter("chat-handler")
 
-	cCounter, err := meter.Int64Counter("movieguru_chat_calls_total", metric.WithDescription("Total number of chat calls"))
+	cCounter, err := meter.Int64Counter("movieguru_chat_calls_total",
+		metric.WithDescription("Total number of chat calls"))
 	if err != nil {
 		log.Printf("Error creating chat calls counter: %v", err)
 	}
-	cSuccessCounter, err := meter.Int64Counter("movieguru_chat_calls_success_total", metric.WithDescription("Total number of chat calls that are successful"))
+	cSuccessCounter, err := meter.Int64Counter("movieguru_chat_calls_success_total",
+		metric.WithDescription("Total number of chat calls that are successful"))
 	if err != nil {
 		log.Printf("Error creating chat calls success counter: %v", err)
 	}
-	cSentimentCounter, err := meter.Int64Counter("movieguru_chat_sentiment_counter", metric.WithDescription("Bucketed Sentiment counter"))
+	cSentimentCounter, err := meter.Int64Counter("movieguru_chat_sentiment_counter",
+		metric.WithDescription("Bucketed Sentiment counter"))
 	if err != nil {
 		log.Printf("Error creating bucketed sentiment counter: %v", err)
 	}
 
-	cOutcomeCounter, err := meter.Int64Counter("movieguru_chat_outcome_counter", metric.WithDescription("Bucketed Outcome counter"))
+	cOutcomeCounter, err := meter.Int64Counter("movieguru_chat_outcome_counter",
+		metric.WithDescription("Bucketed Outcome counter"))
 	if err != nil {
 		log.Printf("Error creating bucketed outcome counter: %v", err)
 	}
 
-	cSafetyIssueCounter, err := meter.Int64Counter("movieguru_chat_safetyissue_counter", metric.WithDescription("Safety issue counter"))
+	cSafetyIssueCounter, err := meter.Int64Counter("movieguru_chat_safetyissue_counter",
+		metric.WithDescription("Safety issue counter"))
 	if err != nil {
 		log.Printf("Error creating safety issue counter: %v", err)
 	}
-	cLatencyHistogram, err := meter.Int64Histogram("movieguru_chat_latency", metric.WithDescription("Histogram of chat request latency"))
+	cLatencyHistogram, err := meter.Int64Histogram("movieguru_chat_latency",
+		metric.WithDescription("Histogram of chat request latency"))
 	if err != nil {
 		log.Printf("Error creating login latency histogram: %v", err)
 	}

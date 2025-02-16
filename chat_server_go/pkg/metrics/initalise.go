@@ -27,8 +27,6 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace"
 )
 
-// https://opentelemetry.io/docs/specs/otel/protocol/exporter/#endpoint-urls-for-otlphttp
-// https://github.com/GoogleCloudPlatform/golang-samples/blob/c4902ddc2934ae6997ae460038f007a3eee6f4ac/opentelemetry/instrumentation/app/setup.go
 // setupOpenTelemetry sets up the OpenTelemetry SDK and exporters for metrics and
 // traces. If it does not return an error, call shutdown for proper cleanup.
 func SetupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) error, err error) {
@@ -50,7 +48,7 @@ func SetupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 	texporter, err := autoexport.NewSpanExporter(ctx)
 	if err != nil {
 		err = errors.Join(err, shutdown(ctx))
-		return
+		return nil, err
 	}
 	tp := trace.NewTracerProvider(trace.WithBatcher(texporter))
 	shutdownFuncs = append(shutdownFuncs, tp.Shutdown)
@@ -60,7 +58,7 @@ func SetupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 	mreader, err := autoexport.NewMetricReader(ctx)
 	if err != nil {
 		err = errors.Join(err, shutdown(ctx))
-		return
+		return nil, err
 	}
 	mp := metric.NewMeterProvider(
 		metric.WithReader(mreader),
@@ -90,7 +88,7 @@ type spanContextLogHandler struct {
 	slog.Handler
 }
 
-func replacer(groups []string, a slog.Attr) slog.Attr {
+func replacer(_ []string, a slog.Attr) slog.Attr {
 	// Rename attribute keys to match Cloud Logging structured log format
 	switch a.Key {
 	case slog.LevelKey:

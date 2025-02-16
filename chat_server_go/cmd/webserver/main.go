@@ -28,7 +28,6 @@ import (
 )
 
 func main() {
-
 	log.SetFlags(log.LstdFlags | log.Llongfile)
 
 	ctx := context.Background()
@@ -36,7 +35,6 @@ func main() {
 	// Load environment variables
 	URL := os.Getenv("FLOWS_URL")
 	metricsEnabled, err := strconv.ParseBool(os.Getenv("ENABLE_METRICS"))
-
 	if err != nil {
 		slog.ErrorContext(ctx, "Error getting ENABLE_METRICS", slog.Any("error", err))
 		metricsEnabled = false
@@ -56,7 +54,7 @@ func main() {
 	metadata, err := movieAgentDB.GetMetadata(ctx, os.Getenv("APP_VERSION"))
 	if err != nil {
 		slog.ErrorContext(ctx, "Error getting metadata", slog.Any("error", err))
-		os.Exit(1)
+		return
 	}
 
 	// Set up dependencies
@@ -65,27 +63,26 @@ func main() {
 
 	// Start telemetry if metrics are enabled
 	if metricsEnabled {
-		if shutdown, err := met.SetupOpenTelemetry(ctx); err != nil {
+		var shutdown func(context.Context) error
+		if shutdown, err = met.SetupOpenTelemetry(ctx); err != nil {
 			slog.ErrorContext(ctx, "Error setting up OpenTelemetry", slog.Any("error", err))
-			os.Exit(1)
-		} else {
-			defer shutdown(ctx)
+			return
 		}
+		defer shutdown(ctx)
+
 	}
 
 	// Start the server
 	if err := web.StartServer(ctx, ulh, metadata, deps); err != nil {
 		slog.ErrorContext(ctx, "Server exited with error", slog.Any("error", err))
-		os.Exit(1)
+		return
 	}
 }
 
 func getDependencies(ctx context.Context, metadata *db.Metadata, db *db.MovieDB, url string) *web.Dependencies {
-
 	queryTransformFlowClient, err := wrappers.CreateQueryTransformFlowClient(db, url)
 	if err != nil {
 		slog.ErrorContext(ctx, "error setting up queryTransformFlowClient client")
-
 	}
 	userProfileFlowClient, err := wrappers.CreateUserProfileFlowClient(db, url)
 	if err != nil {
