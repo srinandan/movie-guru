@@ -46,3 +46,17 @@ spec:
     group: gateway.networking.k8s.io
     kind: Gateway
     name: movieguru-gateway
+---
+apiVersion: networking.gke.io/v1
+kind: GCPBackendPolicy
+metadata:
+  name: movie-guru-policy
+  namespace: movieguru
+spec:
+  default:
+    sessionAffinity:
+      type: CLIENT_IP
+  targetRef:
+    group: ""
+    kind: Service
+    name: server
