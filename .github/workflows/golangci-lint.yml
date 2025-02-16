@@ -36,3 +36,4 @@ jobs:
         with:
           version: latest
           args: --timeout=4m
+          working-directory: chat_server_go
