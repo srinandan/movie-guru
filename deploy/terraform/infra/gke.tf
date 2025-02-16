@@ -56,6 +56,10 @@ resource "google_container_cluster" "primary" {
       enabled = true
     }
 
+    gcs_fuse_csi_driver_config {
+      enabled = true
+    }
+
   }
 
   workload_identity_config {
