@@ -33,8 +33,13 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 4000
-
-
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "750m"
+              memory: "2Gi"
 ---
 apiVersion: v1
 kind: Service
@@ -50,7 +55,26 @@ spec:
       targetPort: 4000
   type: ClusterIP
 ---
-
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend
+  namespace: movieguru
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: 1
+  maxReplicas: 25
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
