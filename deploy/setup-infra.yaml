@@ -28,19 +28,11 @@ steps:
       terraform init -backend-config="bucket=${_PROJECT_ID}"
       terraform apply -var="project_id=${_PROJECT_ID}" -var="region=${_REGION}" --auto-approve
 
-- name: 'gcr.io/cloud-builders/docker'
-  id: "build-helm-deployer"
-  dir: "deploy/helm-builder"
-  args: ['build', '--tag=${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/helm:${_HELM_VERSION}', '--tag=${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/helm:latest', '--build-arg', 'HELM_VERSION=v${_HELM_VERSION}', '.']
-- name: 'gcr.io/cloud-builders/docker'
-  id: "push-helm-deployer"
-  args: [
-      'push',
-      '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/helm:latest'
-    ]
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  id: "run-db-init-job"
+  args: ['run', 'jobs', 'submit', '--region ${_REGION}', '--project ${_PROJECT_ID}']
 
 substitutions:
-  _HELM_VERSION: 3.15.4
   _REPO: "movie-guru"
 
 options:

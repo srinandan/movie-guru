@@ -28,7 +28,7 @@ import (
 )
 
 var (
-	redisStore *redis.Client
+	redisStore *redis.ClusterClient
 )
 
 func TestRedis() {
@@ -50,13 +50,16 @@ func TestRedis() {
 
 func setupSessionStore(ctx context.Context) {
 	REDIS_HOST := os.Getenv("REDIS_HOST")
-	REDIS_PASSWORD := os.Getenv("REDIS_PASSWORD")
-	REDIS_PORT := os.Getenv("REDIS_PORT")
+	//REDIS_PASSWORD := os.Getenv("REDIS_PASSWORD")
+	//REDIS_PORT := os.Getenv("REDIS_PORT")
 
-	redisStore = redis.NewClient(&redis.Options{
+	/*redisStore = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", REDIS_HOST, REDIS_PORT),
 		Password: REDIS_PASSWORD,
 		DB:       0,
+	})*/
+	redisStore = redis.NewClusterClient(&redis.ClusterOptions{
+		Addrs: []string{fmt.Sprintf("%s:%s", REDIS_HOST, "6379")},
 	})
 	if err := redisStore.Ping(ctx).Err(); err != nil {
 		slog.ErrorContext(ctx, "error connecting to redis", slog.Any("error", err))

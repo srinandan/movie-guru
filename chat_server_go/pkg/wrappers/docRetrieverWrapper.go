@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 
 	_ "github.com/lib/pq"
@@ -63,7 +64,7 @@ func (flowClient *MovieRetrieverFlowClient) runFlow(input string) ([]*types.Movi
 	}
 	req, err := http.NewRequest("POST", flowClient.URL, bytes.NewBuffer(inputJSON))
 	if err != nil {
-		fmt.Println("Error creating request:", err)
+		slog.Log(context.Background(), slog.LevelError, "Error creating request", "error", err)
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -71,7 +72,7 @@ func (flowClient *MovieRetrieverFlowClient) runFlow(input string) ([]*types.Movi
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error sending request:", err)
+		slog.Log(context.Background(), slog.LevelError, "Error sending request", "error", err)
 		return nil, err
 	}
 
@@ -86,9 +87,12 @@ func (flowClient *MovieRetrieverFlowClient) runFlow(input string) ([]*types.Movi
 	}
 	defer resp.Body.Close()
 
+	b, _ := io.ReadAll(resp.Body)
+	slog.Log(context.Background(), slog.LevelInfo, string(b))
+
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
-		fmt.Println("Error decoding JSON response:", err)
+		slog.Log(context.Background(), slog.LevelError, "Error decoding JSON response", "error", err)
 		return nil, err
 	}
 

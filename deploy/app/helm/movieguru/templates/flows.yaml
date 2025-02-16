@@ -34,6 +34,13 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 3400
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "750m"
+              memory: "2Gi"            
           env:
             - name: POSTGRES_HOST
               value: {{ .Values.DB_HOST }}

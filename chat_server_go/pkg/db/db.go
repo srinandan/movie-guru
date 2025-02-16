@@ -18,6 +18,7 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"log/slog"
 
 	"fmt"
 	"os"
@@ -59,6 +60,6 @@ func connectToDB() (*sql.DB, error) {
 	if err != nil {
 		log.Fatal("Error pinging database: %v", err)
 	}
-	fmt.Println("DB opened successfully")
+	slog.Log(context.Background(), slog.LevelInfo, "DB pinged successfully")
 	return db, nil
 }

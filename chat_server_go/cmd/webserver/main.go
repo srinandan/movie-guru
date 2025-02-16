@@ -16,7 +16,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -45,7 +44,6 @@ func main() {
 	// Set up database
 	movieAgentDB, err := db.GetDB()
 	if err != nil {
-		fmt.Println("Error setting up DB")
 		slog.ErrorContext(ctx, "Error setting up DB", slog.Any("error", err))
 		os.Exit(1)
 	}

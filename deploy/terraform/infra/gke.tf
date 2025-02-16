@@ -25,6 +25,10 @@ resource "google_container_cluster" "primary" {
     }
   }
 
+  cost_management_config {
+    enabled = true
+  }
+
   gateway_api_config {
     channel = "CHANNEL_STANDARD"
   }
@@ -90,6 +94,20 @@ resource "google_container_cluster" "primary" {
       start_time = "02:00"
     }
   }
+
+  monitoring_config {
+    enable_components = ["POD", "DEPLOYMENT", "APISERVER", "KUBELET", "HPA", "SYSTEM_COMPONENTS", "SCHEDULER", "CONTROLLER_MANAGER", "STORAGE", "STATEFULSET", "CADVISOR"]
+    advanced_datapath_observability_config {
+      enable_metrics = true
+      enable_relay   = false
+    }
+  }
+
+  enterprise_config {
+    desired_tier = "ENTERPRISE"
+  }
+
+  monitoring_service = "monitoring.googleapis.com/kubernetes"
 
   depends_on = [google_project_service.enable_apis]
 

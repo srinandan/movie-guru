@@ -13,9 +13,10 @@
 # limitations under the License.
 
 resource "google_cloud_run_v2_job" "db-init" {
-  name     = "db-init-job"
-  location = var.region
-  project  = var.project_id
+  name                = "db-init-job"
+  location            = var.region
+  project             = var.project_id
+  deletion_protection = false
   template {
     template {
       service_account = google_service_account.sa.email

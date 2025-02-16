@@ -16,8 +16,11 @@ package wrappers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log/slog"
 	"net/http"
 
 	db "github.com/movie-guru/pkg/db"
@@ -57,7 +60,7 @@ func (flowClient *QueryTransformFlowClient) runFlow(input *types.QueryTransformF
 	}
 	req, err := http.NewRequest("POST", flowClient.URL, bytes.NewBuffer(inputJSON))
 	if err != nil {
-		fmt.Println("Error creating request:", err)
+		slog.Log(context.Background(), slog.LevelError, "Error creating request", "error", err)
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -65,7 +68,7 @@ func (flowClient *QueryTransformFlowClient) runFlow(input *types.QueryTransformF
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error sending request:", err)
+		slog.Log(context.Background(), slog.LevelError, "Error sending request", "error", err)
 		return nil, err
 	}
 
@@ -74,9 +77,12 @@ func (flowClient *QueryTransformFlowClient) runFlow(input *types.QueryTransformF
 	}
 	defer resp.Body.Close()
 
+	b, _ := io.ReadAll(resp.Body)
+	slog.Log(context.Background(), slog.LevelInfo, string(b))
+
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
-		fmt.Println("Error decoding JSON response:", err)
+		slog.Log(context.Background(), slog.LevelError, "Error decoding JSON response", "error", err)
 		return nil, err
 	}
 
