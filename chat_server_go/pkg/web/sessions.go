@@ -74,7 +74,7 @@ func getSessionID(r *http.Request) (string, error) {
 }
 
 func authenticateAndGetSessionInfo(ctx context.Context, _ *SessionInfo,
-	err error, r *http.Request, w http.ResponseWriter,
+	r *http.Request, w http.ResponseWriter,
 ) (*SessionInfo, bool) {
 	sessionInfo, err := getSessionInfo(ctx, r)
 	if err != nil {

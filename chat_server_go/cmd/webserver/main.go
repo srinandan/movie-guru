@@ -63,7 +63,7 @@ func main() {
 
 	// Start telemetry if metrics are enabled
 	if metricsEnabled {
-		var shutdown func(context.Context) error
+		var shutdown func(context.Context)
 		if shutdown, err = met.SetupOpenTelemetry(ctx); err != nil {
 			slog.ErrorContext(ctx, "Error setting up OpenTelemetry", slog.Any("error", err))
 			return

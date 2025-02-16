@@ -32,12 +32,11 @@ func randomisedFeaturedFilmsQuery() string {
 
 func createStartupHandler(deps *Dependencies) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var err error
 		ctx := r.Context()
 		sessionInfo := &SessionInfo{}
 		if r.Method != "OPTIONS" {
 			var shouldReturn bool
-			sessionInfo, shouldReturn = authenticateAndGetSessionInfo(ctx, sessionInfo, err, r, w)
+			sessionInfo, shouldReturn = authenticateAndGetSessionInfo(ctx, sessionInfo, r, w)
 			if shouldReturn {
 				return
 			}

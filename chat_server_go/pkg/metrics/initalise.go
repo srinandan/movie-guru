@@ -17,6 +17,7 @@ package metrics
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 
@@ -29,16 +30,18 @@ import (
 
 // setupOpenTelemetry sets up the OpenTelemetry SDK and exporters for metrics and
 // traces. If it does not return an error, call shutdown for proper cleanup.
-func SetupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) error, err error) {
+func SetupOpenTelemetry(ctx context.Context) (shutdown func(context.Context), err error) {
 	var shutdownFuncs []func(context.Context) error
 
-	shutdown = func(ctx context.Context) error {
+	shutdown = func(ctx context.Context) {
 		var err error
 		for _, fn := range shutdownFuncs {
 			err = errors.Join(err, fn(ctx))
 		}
+		if err != nil {
+			fmt.Println(err)
+		}
 		shutdownFuncs = nil
-		return err
 	}
 
 	// Configure Context Propagation to use the default W3C traceparent format
@@ -47,7 +50,7 @@ func SetupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 	// Configure Trace Export to send spans as OTLP
 	texporter, err := autoexport.NewSpanExporter(ctx)
 	if err != nil {
-		err = errors.Join(err, shutdown(ctx))
+		shutdown(ctx)
 		return nil, err
 	}
 	tp := trace.NewTracerProvider(trace.WithBatcher(texporter))
@@ -57,7 +60,7 @@ func SetupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 	// Configure Metric Export to send metrics as OTLP
 	mreader, err := autoexport.NewMetricReader(ctx)
 	if err != nil {
-		err = errors.Join(err, shutdown(ctx))
+		shutdown(ctx)
 		return nil, err
 	}
 	mp := metric.NewMeterProvider(

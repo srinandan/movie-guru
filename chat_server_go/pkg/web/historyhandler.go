@@ -30,11 +30,10 @@ import (
 func createHistoryHandler(metadata *db.Metadata) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		var err error
 		sessionInfo := &SessionInfo{}
 		if r.Method != OPTIONS {
 			var shouldReturn bool
-			sessionInfo, shouldReturn = authenticateAndGetSessionInfo(ctx, sessionInfo, err, r, w)
+			sessionInfo, shouldReturn = authenticateAndGetSessionInfo(ctx, sessionInfo, r, w)
 			if shouldReturn {
 				return
 			}
