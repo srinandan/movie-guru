@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { gemini15Flash } from '@genkit-ai/vertexai';
+import { gemini20FlashExp } from '@genkit-ai/vertexai';
 import {
   USERINTENT,
   QueryTransformFlowInputSchema,
@@ -26,7 +26,7 @@ import { ai } from './genkitConfig';
 export const QueryTransformPrompt = ai.definePrompt(
   {
     name: 'queryTransformFlowPrompt',
-    model: gemini15Flash,
+    model: gemini20FlashExp,
     input: {
       schema: QueryTransformFlowInputSchema,
     },
