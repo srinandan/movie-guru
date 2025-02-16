@@ -45,6 +45,7 @@ steps:
 #       echo "export _VITE_CHAT_SERVER_URL=http://${gatewayIP}/server:4000" >> /workspace/env-vars.txt 
 #       echo "workspace file: $(cat /workspace/env-vars.txt)"
 
+- name: 
 - name: "gcr.io/cloud-builders/docker"
   id: "build-frontend"
   dir: './frontend'
@@ -119,30 +120,6 @@ steps:
     - |
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:${_SHORT_SHA}'  && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:latest'
-
-- name: 'gcr.io/cloud-builders/docker'
-  id: "build-db-image"
-  dir: './pgvector'
-  entrypoint: "sh"
-  args:
-    - -xe 
-    - -c
-    - |
-      docker build \
-         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:${_SHORT_SHA}" \
-         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:latest" \
-         --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:latest" \
-         .
-
-- name: 'gcr.io/cloud-builders/docker'
-  id: "push-db-image"
-  entrypoint: "sh"
-  args:
-    - -xe 
-    - -c
-    - |
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:${_SHORT_SHA}' && \
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:latest'
 
 # update from here https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/helm
 # - name: "gcr.io/${_PROJECT_ID}/helm"

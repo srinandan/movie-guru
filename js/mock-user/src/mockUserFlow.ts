@@ -26,7 +26,7 @@ export const MockUserPrompt = ai.definePrompt(
     async (input) => {
       try {
         console.log("Generating response...", input);
-        const response = await MockUserPrompt({ input: input });
+        const response = await MockUserPrompt({ expert_answer: input.expert_answer, response_mood: input.response_mood, response_type: input.response_type });
         const jsonResponse =  JSON.parse(response.text);
         const output: MockUserFlowOutput = {
           "answer":  jsonResponse.answer,

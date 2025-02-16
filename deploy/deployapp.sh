@@ -62,41 +62,30 @@ fi
 echo -e "\e[95mUsing PROJECT_ID: $PROJECT_ID\e[0m"
 echo -e "\e[95mUsing REGION: $REGION\e[0m"
 
+if [[ -z "$SHORT_SHA" ]]; then
+  SHORT_SHA="latest"
+fi
 # Set GCP project
 gcloud config set project "$PROJECT_ID"
 
-# Generate a short SHA identifier
-SHORT_SHA=$(LC_ALL=C tr -dc 'a-z0-9' </dev/urandom | fold -w 10 | head -n 1)
-echo -e "\e[95mGenerated SHORT_SHA: $SHORT_SHA\e[0m"
 
-# Start Cloud Build
-echo -e "\e[95mStarting Cloud Build...\e[0m"
-gcloud builds submit --config=deploy/ci.yaml --async --ignore-file=.gcloudignore \
-  --substitutions=_PROJECT_ID=$PROJECT_ID,_SHORT_SHA=$SHORT_SHA,_REGION=$REGION,_VITE_FIREBASE_API_KEY=$FIREBASE_API_KEY,_VITE_FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN,_VITE_GCP_PROJECT_ID=$PROJECT_ID,_VITE_FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET,_VITE_FIREBASE_MESSAGING_SENDERID=$FIREBASE_MESSAGING_SENDERID,_VITE_FIREBASE_APPID=$FIREBASE_APPID,_VITE_CHAT_SERVER_URL="${SERVER_URL}/server"
+echo -e "\e[95m Using Image tag: $SHORT_SHA\e[0m"
 
-echo -e "\e[92mCloud Build submitted successfully!\e[0m"
+echo -e "\e[95m Substituting env variables in init.sql\e[0m"
 
-echo -e "\e[92mDownloading and unzipping posters from the external archive..\e[0m"
+envsubst < pgvector/init.sql > pgvector/init_substituted.sql
 
-# Download the zip file with posters
-curl -o dataset/posters_small.zip https://storage.googleapis.com/movie-guru-posters/posters_small.zip
+gsutil cp pgvector/init_substituted.sql "gs://fb-webapp-${PROJECT_ID}/sql/init.sql"
+rm pgvector/init_substituted.sql 
 
-# Unzip into dataset/posters
-unzip dataset/posters_small.zip -d .
+echo -e "\e[95mConnecting to GKE cluster and deploying configmaps\e[0m"
+gcloud container clusters get-credentials movie-guru-cluster --region $REGION --project $PROJECT_ID
+echo -e "\e[95m Starting Helm deploy for app...\e[0m"
 
-# Upload posters to bucket
-echo -e "\e[92mUploading posters to bucket and deleting local posters\e[0m"
-
-# Delete zip file
-rm dataset/posters_small.zip
-
-gcloud storage cp ./dataset/posters_small/* "gs://${PROJECT_ID}_posters/"
-
-rm -rf dataset/posters_small
-
-echo -e "\e[ Making posters publicly readable\e[0m"
-
-gcloud storage buckets add-iam-policy-binding "gs://${PROJECT_ID}_posters/" \
-  --member="allUsers" \
-  --role="roles/storage.objectViewer"
-
+helm upgrade --install movieguru \
+./deploy/app/helm/movieguru \
+--namespace movieguru \
+--create-namespace \
+--set PROJECT_ID=${PROJECT_ID} \
+--set IMAGE.TAG=$SHORT_SHA \
+--set REGION=${REGION}
