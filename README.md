@@ -109,7 +109,7 @@ export REGION=<your-desired-gcp-region>
 Run the following script to deploy the infrastructure using Cloud Build:
 
 ```bash
-./deploy/deploy.sh --region $REGION
+./deploy/infra.sh --region $REGION
 ```
 
 This will trigger a pipeline that creates the required infrastructure on GCP. The process will take approximately **10-15 minutes** to complete.
@@ -144,7 +144,7 @@ After updating the file, run the script to apply the environment variables:
 Run the following script to build and push the application containers using Cloud Build:
 
 ```bash
-./deploy/ci.sh --region $REGION
+source ./deploy/ci.sh --region $REGION
 ```
 
 This should take around 10 minutes
@@ -161,13 +161,7 @@ Go to the **GKE page** in the **GCP Console** and find the connection string for
 Deploy the application to GKE using Helm:
 
 ```bash
-helm upgrade --install movieguru \
-./deploy/app/helm/movieguru \
---namespace movieguru \
---create-namespace \
---set PROJECT_ID=${PROJECT_ID} \
---set IMAGE.TAG=latest \
---set REGION=${REGION}
+source ./deploy/app.sh --region $REGION
 ```
 
 ## Final Step: Verify Deployment

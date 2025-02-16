@@ -23,15 +23,10 @@ fi
 # Export a SCRIPT_DIR var and make all links relative to SCRIPT_DIR
 export SCRIPT_DIR=$(dirname "$(readlink -f "$0" 2>/dev/null)" 2>/dev/null || echo "${PWD}/$(dirname "$0")")
 
-# Default region
-DEFAULT_REGION="europe-west4"
-REGION="$DEFAULT_REGION"
-
 # Usage function
 usage() {
    echo ""
    echo "Usage: $0 [--region <region>]"
-   echo -e "\t--region, -r : Specify a region (default: europe-west4)"
    echo -e "\tExample: ./deploy.sh --region us-central1"
    exit 1
 }
@@ -59,17 +54,27 @@ if [[ -z "$PROJECT_ID" ]]; then
     exit 1
 fi
 
+# Check if REGION is set
+if [[ -z "$REGION" ]]; then
+    echo -e "\e[91mERROR: REGION environment variable is required.\e[0m"
+    echo -e "Please set it using: \e[95mexport REGION=<your-gcp-region>\e[0m"
+    exit 1
+fi
+
 echo -e "\e[95mUsing PROJECT_ID: $PROJECT_ID\e[0m"
 echo -e "\e[95mUsing REGION: $REGION\e[0m"
 
 if [[ -z "$SHORT_SHA" ]]; then
   SHORT_SHA="latest"
+  echo -e "\e[95m Missing env var SHORT_SHA, using tag latest \e[0m"
+else
+  echo -e "\e[95mFound SHORT_SHA: $SHORT_SHA\e[0m"
+  echo -e "\e[95m Using Image tag: $SHORT_SHA\e[0m"
 fi
+
 # Set GCP project
 gcloud config set project "$PROJECT_ID"
 
-
-echo -e "\e[95m Using Image tag: $SHORT_SHA\e[0m"
 
 echo -e "\e[95m Substituting env variables in init.sql\e[0m"
 
@@ -78,7 +83,7 @@ envsubst < pgvector/init.sql > pgvector/init_substituted.sql
 gsutil cp pgvector/init_substituted.sql "gs://fb-webapp-${PROJECT_ID}/sql/init.sql"
 rm pgvector/init_substituted.sql 
 
-echo -e "\e[95mConnecting to GKE cluster and deploying configmaps\e[0m"
+echo -e "\e[95mConnecting to GKE cluster\e[0m"
 gcloud container clusters get-credentials movie-guru-cluster --region $REGION --project $PROJECT_ID
 echo -e "\e[95m Starting Helm deploy for app...\e[0m"
 

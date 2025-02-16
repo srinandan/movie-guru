@@ -23,15 +23,10 @@ fi
 # Export a SCRIPT_DIR var and make all links relative to SCRIPT_DIR
 export SCRIPT_DIR=$(dirname "$(readlink -f "$0" 2>/dev/null)" 2>/dev/null || echo "${PWD}/$(dirname "$0")")
 
-# Default region
-DEFAULT_REGION="europe-west4"
-REGION="$DEFAULT_REGION"
-
 # Usage function
 usage() {
    echo ""
    echo "Usage: $0 [--region <region>]"
-   echo -e "\t--region, -r : Specify a region (default: europe-west4)"
    echo -e "\tExample: ./deploy.sh --region us-central1"
    exit 1
 }
@@ -56,6 +51,13 @@ done
 if [[ -z "$PROJECT_ID" ]]; then
     echo -e "\e[91mERROR: PROJECT_ID environment variable is required.\e[0m"
     echo -e "Please set it using: \e[95mexport PROJECT_ID=<your-gcp-project-id>\e[0m"
+    exit 1
+fi
+
+# Check if REGION is set
+if [[ -z "$REGION" ]]; then
+    echo -e "\e[91mERROR: REGION environment variable is required.\e[0m"
+    echo -e "Please set it using: \e[95mexport REGION=<your-gcp-region>\e[0m"
     exit 1
 fi
 
