@@ -31,7 +31,7 @@ spec:
             - containerPort: 5432
           env:
             - name: POSTGRES_PASSWORD
-              value: "mainpassword"
+              value: "main"
           volumeMounts:
             - mountPath: /docker-entrypoint-initdb.d/
               name: sql-volume

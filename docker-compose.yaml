@@ -36,7 +36,7 @@ services:
       - LOCATION=europe-west4
       - LOCAL=true
     volumes:
-      - ./.key.json:/key.json  
+      - ./.key.json:/key.json:ro
   server:
     build: ./chat_server_go
     command: /app/webserver
@@ -60,12 +60,14 @@ services:
       - cache 
       - db
   db:
-    build: ./pgvector
+    image: pgvector/pgvector:17
     ports: 
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: main
       restart: always
+    volumes:
+      - ./pgvector/init_substituted.sql:/docker-entrypoint-initdb.d/init.sql:ro
   adminer:
     image: adminer
     restart: always
