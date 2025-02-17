@@ -3,12 +3,14 @@ import random
 import string
 
 class ChatUser(HttpUser):
-    wait_time = between(1, 3)
-    cookies = {}
-    @events.test_start.add_listener
+    wait_time = between(1, 2)
+
+    def on_stop(self):
+        self.client.post("/logout")
 
     def on_start(self):
-        name= ''.join(random.choices(string.ascii_lowercase, k=8))
+        # create random name
+        name=''.join(random.choices(string.ascii_lowercase, k=8))
 
         headers = {
         "ApiKey": "ABC",
@@ -27,12 +29,12 @@ class ChatUser(HttpUser):
         else:
             print("No Set-Cookie header received.")
 
-    @task
+    @task(1)
     def healthcheck(self):
         response = self.client.get("/")
     
-    @task
-    def chat(self):
+    @task(3)
+    def sayhi(self):
         chat_response = self.client.post(
                 "/chat",
                 json={"content":"hi"}
@@ -40,37 +42,20 @@ class ChatUser(HttpUser):
         answer = chat_response.json()["answer"]
         print(f"chat_response response is {answer}")
 
-
-
-
-# class ChatUser(HttpUser):
-#     wait_time = between(1, 2)
-#     @task(6)
-#     def conversation(self):
-#         self.client.post(f"/chat")
-
-#     @task(1)
-#     def login(self):
-#         self.client.post(f"/login")
-
-#     @task(1)
-#     def logout(self):
-#         self.client.post(f"/logout") 
-
-#     @task(1)
-#     def delete_history(self):
-#         self.client.post(f"/history") 
+    @task(1)
+    def startup(self):
+        self.client.get(
+                "/startup",
+            )
     
-#     @task(1)
-#     def get_history(self):
-#         self.client.get(f"/history") 
+    @task(2)
+    def preferences(self):
+        self.client.post(f"/preferences", json={
+                "Content": {
+                    "likes": {"genres": ["action"]},
+                    "dislikes": {}
+                }
+        }) 
+        self.client.get(f"/preferences") 
 
 
-#     @task(3)
-#     def preferences(self):
-#         self.client.post(f"/preferences") 
-#         self.client.get(f"/preferences") 
-       
-#     @task(1)
-#     def startup(self):
-#         self.client.get(f"/startup") 

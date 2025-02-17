@@ -103,7 +103,7 @@ kubectl delete configmap loadtest-locustfile -n locust
 kubectl create configmap loadtest-locustfile --from-file=locust/locustfile.py -n locust
 
 echo -e "\e[95m Starting Helm deploy for locust.\e[0m"
-
+helm delete locust -n locust
 helm upgrade --install locust \
   deliveryhero/locust \
   --namespace locust \
@@ -112,7 +112,7 @@ helm upgrade --install locust \
   --set loadtest.locust_locustfile=locustfile.py \
   --set loadtest.locust_host=http://server.movieguru.svc.cluster.local:8080 \
   --set service.type=ClusterIP \
-  --set worker.replicas=1
+  --set worker.replicas=5
 
 
 echo -e "\e[95m Starting Helm deploy for otel collector ...\e[0m"
@@ -121,8 +121,7 @@ helm upgrade --install otel \
 ./deploy/app/helm/otel \
 --namespace otel-collector \
 --create-namespace \
---set PROJECT_ID=${PROJECT_ID} \
-
+--set PROJECT_ID=${PROJECT_ID} 
 
 
 echo -e "\e[95m Port forwarding Locust to localhost:8089.\e[0m"

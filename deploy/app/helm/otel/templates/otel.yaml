@@ -4,7 +4,7 @@ metadata:
   name: otel-collector
   namespace: otel-collector
 spec:
-  replicas: 1
+  replicas: 5
   selector:
     matchLabels:
       app: otel-collector
