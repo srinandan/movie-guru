@@ -194,6 +194,26 @@ steps:
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/indexer:${_SHORT_SHA}' && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/indexer:latest'
 
+- name: 'gcr.io/cloud-builders/docker'
+  id: "tag-webserver-image"
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker tag \
+         ghcr.io/static-web-server/static-web-server:2.36 \
+         "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/static-web-server:2.36"
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: "push-webserver-image"
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/static-web-server:2.36
+
 options:
   machineType: E2_HIGHCPU_8
   logging: CLOUD_LOGGING_ONLY
