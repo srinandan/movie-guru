@@ -169,21 +169,30 @@ steps:
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:${_SHORT_SHA}' && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest'
 
-# update from here https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/helm
-# - name: "gcr.io/${_PROJECT_ID}/helm"
-#   id: "deploy-helm-chart"
-#   entrypoint: bash
-#   dir: deploy/app/helm 
-#   args:
-#     - "-c"
-#     - |
-#        helm upgrade --install movieguru \
-#         ./deploy/app/helm/movieguru \
-#        --namespace movieguru \
-#        --create-namespace \
-#         --set PROJECT_ID=${_PROJECT_ID} \
-#         --set IMAGE.TAG=${_SHORT_SHA} \
-#         --set REGION=${_REGION}
+- name: 'gcr.io/cloud-builders/docker'
+  id: "build-indexer-image"
+  dir: './indexer'
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker build \
+         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/indexer:${_SHORT_SHA}" \
+         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/indexer:latest" \
+         --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/indexer:latest" \
+         -f Dockerfile.init \
+         .
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: "push-indexer-image"
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/indexer:${_SHORT_SHA}' && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/indexer:latest'
 
 options:
   machineType: E2_HIGHCPU_8
