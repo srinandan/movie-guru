@@ -38,18 +38,18 @@ export default {
       xxl: "1536px",
     },
     extend: {
-        boxShadow: {
-          '3xl': '10px 10px 10px 5px rgba(0, 0, 0, 0.75)',
-        },
-        backgroundImage: {
-          'stars1': "url('/src/assets/stars1.jpeg')",
-          'reel': "url('/src/assets/reel-2.jpeg')",
+      boxShadow: {
+        '3xl': '10px 10px 10px 5px rgba(0, 0, 0, 0.75)',
+      },
+      backgroundImage: {
+        'stars1': "url('/src/assets/stars1.jpeg')",
+        'reel': "url('/src/assets/reel-2.jpeg')",
 
-                  }
-        ,
+      }
+      ,
       colors: {
         start: "#050a0d",
-        primary: "#244855", 
+        primary: "#244855",
         pop: "#E64833",
         accent: "#2e5c6b",
         text: "#FBE9D0",

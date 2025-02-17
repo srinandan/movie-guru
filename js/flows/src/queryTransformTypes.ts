@@ -50,7 +50,7 @@ export type UserProfile = z.infer<typeof UserProfileSchema>
 
 // SimpleMessage schema
 export const SimpleMessageSchema = z.object({
-  role: z.string(), 
+  role: z.string(),
   content: z.string(),
 });
 

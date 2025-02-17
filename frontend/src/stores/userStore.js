@@ -25,20 +25,20 @@ export const store = {
     accessToken: null
   },
   mutations: {
-    logIn(state, email){
-        state.email = email
-        state.loggedIn = true
+    logIn(state, email) {
+      state.email = email
+      state.loggedIn = true
     },
-    logOut(state){
-        state.email = null
-        state.loggedIn = false
+    logOut(state) {
+      state.email = null
+      state.loggedIn = false
     }
   },
   getters: {
-    loginStatus (state) {
+    loginStatus(state) {
       return state.loggedIn
     },
-    email (state) {
+    email(state) {
       return state.email
     },
   },

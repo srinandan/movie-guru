@@ -14,13 +14,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Default region
-#REGION="europe-west4"
+# Verify that the script is running on Linux (not macOS)
+if [[ $OSTYPE != "linux-gnu" ]]; then
+    echo -e "\e[91mERROR: This script has only been tested on Linux. Currently, only Linux (Debian) is supported. Please run in Cloud Shell or in a VM running Linux.\e[0m"
+    exit 1
+fi
+
+# Export a SCRIPT_DIR var and make all links relative to SCRIPT_DIR
+export SCRIPT_DIR=$(dirname "$(readlink -f "$0" 2>/dev/null)" 2>/dev/null || echo "${PWD}/$(dirname "$0")")
+
+# Usage function
+usage() {
+   echo ""
+   echo "Usage: $0 [--region <region>]"
+   echo -e "\tExample: ./deploy.sh --region us-central1"
+   exit 1
+}
+
+# Parse command-line arguments
+while [ "$1" != "" ]; do
+    case $1 in
+        --region | -r ) shift
+                        REGION=$1
+                        ;;
+        --help | -h )   usage
+                        ;;
+        * )             echo -e "\e[91mUnknown parameter: $1\e[0m"
+                        usage
+                        ;;
+    esac
+    shift
+done
+
 
 # Check if PROJECT_ID is set
 if [[ -z "$PROJECT_ID" ]]; then
     echo -e "\e[91mERROR: PROJECT_ID environment variable is required.\e[0m"
     echo -e "Please set it using: \e[95mexport PROJECT_ID=<your-gcp-project-id>\e[0m"
+    exit 1
+fi
+
+# Check if REGION is set
+if [[ -z "$REGION" ]]; then
+    echo -e "\e[91mERROR: REGION environment variable is required.\e[0m"
+    echo -e "Please set it using: \e[95mexport REGION=<your-gcp-region>\e[0m"
     exit 1
 fi
 
@@ -55,3 +92,28 @@ gcloud builds submit --config=deploy/ci.yaml --async --ignore-file=.gcloudignore
   --substitutions=_PROJECT_ID=$PROJECT_ID,_SHORT_SHA=$SHORT_SHA,_REGION=$REGION,_VITE_FIREBASE_API_KEY=$FIREBASE_API_KEY,_VITE_FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN,_VITE_GCP_PROJECT_ID=$PROJECT_ID,_VITE_FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET,_VITE_FIREBASE_MESSAGING_SENDERID=$FIREBASE_MESSAGING_SENDERID,_VITE_FIREBASE_APPID=$FIREBASE_APPID,_VITE_CHAT_SERVER_URL="${SERVER_URL}/server"
 
 echo -e "\e[92mCloud Build submitted successfully!\e[0m"
+
+echo -e "\e[92mDownloading and unzipping posters from the external archive..\e[0m"
+
+# Download the zip file with posters
+curl -o dataset/posters_small.zip https://storage.googleapis.com/movie-guru-posters/posters_small.zip
+
+# Unzip into dataset/posters
+unzip dataset/posters_small.zip -d .
+
+# Upload posters to bucket
+echo -e "\e[92mUploading posters to bucket and deleting local posters\e[0m"
+
+# Delete zip file
+rm dataset/posters_small.zip
+
+gcloud storage cp ./dataset/posters_small/* "gs://${PROJECT_ID}_posters/"
+
+rm -rf dataset/posters_small
+
+echo -e "\e[ Making posters publicly readable\e[0m"
+
+gcloud storage buckets add-iam-policy-binding "gs://${PROJECT_ID}_posters/" \
+  --member="allUsers" \
+  --role="roles/storage.objectViewer"
+

@@ -17,34 +17,6 @@ tags:
   - ci
 
 steps:
-# - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-#   id: "download-config"
-#   entrypoint: "bash"
-#   args:
-#     - "-c"
-#     - |
-#       gsutil cp gs://fb-webapp-$PROJECT_ID/app-config.json /workspace/app-config.json
-
-# Not needed
-# - name: "ubuntu"
-#   id: "set-env-vars"
-#   entrypoint: "bash"
-#   args:
-#     - "-c"
-#     - |
-#       apt-get update && apt-get install -y jq
-#       export $(jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | .[]' /workspace/app-config.json)
-      
-#       # Store variables as Cloud Build substitutions
-#       echo "export _VITE_FIREBASE_API_KEY=$apiKey" >> /workspace/env-vars.txt
-#       echo "export _VITE_FIREBASE_AUTH_DOMAIN=$authDomain" >> /workspace/env-vars.txt
-#       echo "export _VITE_GCP_PROJECT_ID=${_PROJECT_ID}" >> /workspace/env-vars.txt
-#       echo "export _VITE_FIREBASE_STORAGE_BUCKET=$storageBucket" >> /workspace/env-vars.txt
-#       echo "export _VITE_FIREBASE_MESSAGING_SENDERID=$messagingSenderId" >> /workspace/env-vars.txt
-#       echo "export _VITE_FIREBASE_APPID=$appId" >> /workspace/env-vars.txt
-#       echo "export _VITE_CHAT_SERVER_URL=http://${gatewayIP}/server:4000" >> /workspace/env-vars.txt 
-#       echo "workspace file: $(cat /workspace/env-vars.txt)"
-
 - name: "gcr.io/cloud-builders/docker"
   id: "build-frontend"
   dir: './frontend'

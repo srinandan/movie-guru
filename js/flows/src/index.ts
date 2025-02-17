@@ -28,5 +28,5 @@ import { MovieFlow } from './movieFlow'
 export { MovieFlowPrompt } from './movieFlow'
 
 ai.startFlowServer({
-    flows: [UserProfileFlow, QueryTransformFlow, MovieFlow, MovieDocFlow],
-  });
+  flows: [UserProfileFlow, QueryTransformFlow, MovieFlow, MovieDocFlow],
+});

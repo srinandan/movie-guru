@@ -100,12 +100,12 @@ export REGION=<your-desired-gcp-region>
 Run the following script to deploy the infrastructure using Cloud Build:
 
 ```bash
-./deploy/deploy.sh --region $REGION
+./deploy/infra.sh --region $REGION
 ```
 
 This will trigger a pipeline that creates the required infrastructure on GCP. The process will take approximately **10-15 minutes** to complete.
 
-## Step 3: Configure Firebase
+## Step 3: Get Firebase Web app Configuration
 
 Once the infrastructure setup is complete, go to the **Firebase Console**:
 
@@ -142,7 +142,7 @@ source set_env_vars.sh
 Run the following script to build and push the application containers using Cloud Build:
 
 ```bash
-./deploy/ci.sh
+source ./deploy/ci.sh --region $REGION
 ```
 
 This should take around 10 minutes

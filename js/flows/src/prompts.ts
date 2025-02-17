@@ -76,7 +76,7 @@ Respond with:
 * userIntent: One of: GREET, END_CONVERSATION, REQUEST, RESPONSE, ACKNOWLEDGE, UNCLEAR
 `
 
-export const MovieFlowPromptText =  ` 
+export const MovieFlowPromptText = ` 
 You are a friendly movie expert. Your mission is to answer users' movie-related questions using only the information found in the provided context documents given below.
   This means you cannot use any external knowledge or information to answer questions, even if you have access to it.
 

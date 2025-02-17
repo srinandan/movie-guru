@@ -18,7 +18,7 @@ import postgres from 'postgres';
 
 let sql: postgres.Sql<{}> | null = null; // Initialize sql as null
 
-export async function openDB(): Promise<postgres.Sql<{}> |null> {
+export async function openDB(): Promise<postgres.Sql<{}> | null> {
   if (sql) {
     return sql; // Return existing connection if already opened
   }
@@ -28,7 +28,7 @@ export async function openDB(): Promise<postgres.Sql<{}> |null> {
   const POSTGRES_DB_NAME = process.env.POSTGRES_DB_NAME;
   const POSTGRES_DB_USER = "main";//process.env.POSTGRES_DB_USER;
 
-  if (!POSTGRES_DB_USER_PASSWORD || !POSTGRES_HOST || !POSTGRES_DB_NAME ||!POSTGRES_DB_USER) {
+  if (!POSTGRES_DB_USER_PASSWORD || !POSTGRES_HOST || !POSTGRES_DB_NAME || !POSTGRES_DB_USER) {
     console.error('Missing environment variables for database connection');
     return null;
   }

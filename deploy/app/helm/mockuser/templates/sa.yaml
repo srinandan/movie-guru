@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mockuser-sa
+  namespace: mockserver
+  annotations:
+    iam.gke.io/gcp-service-account: movie-guru-chat-server-sa@{{ .Values.PROJECT_ID }}.iam.gserviceaccount.com 
