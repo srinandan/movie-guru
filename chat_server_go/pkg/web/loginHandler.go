@@ -194,7 +194,6 @@ func createLoginHandler(ulh *UserLoginHandler, meters *m.LoginMeters, metadata *
 			setCookieHeader := fmt.Sprintf("movie-guru-sid=%s; HttpOnly; SameSite=Lax; Path=/; Domain=%s; Max-Age=86400", sessionID, metadata.ServerDomain)
 			w.Header().Set("Set-Cookie", setCookieHeader)
 			w.Header().Set("Vary", "Cookie, Origin")
-			w.Header().Set("SID", sessionID)
 			json.NewEncoder(w).Encode(map[string]string{"login": "success"})
 		}
 	}

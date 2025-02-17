@@ -1,4 +1,6 @@
 from locust import HttpUser, task, between, events
+import random
+import string
 
 class ChatUser(HttpUser):
     wait_time = between(1, 3)
@@ -6,10 +8,12 @@ class ChatUser(HttpUser):
     @events.test_start.add_listener
 
     def on_start(self):
+        name= ''.join(random.choices(string.ascii_lowercase, k=8))
+
         headers = {
         "ApiKey": "ABC",
         "Content-Type": "application/json",
-        "User": "abc"
+        "User": name
         }
         response = self.client.post("/login", headers=headers, json={"inviteCode": "" })
         print(f"Login Headers {response.headers}")

@@ -4,7 +4,7 @@ metadata:
   name: otel-collector
   namespace: otel-collector
 spec:
-  replicas: 5
+  replicas: 1
   selector:
     matchLabels:
       app: otel-collector
@@ -13,6 +13,7 @@ spec:
       labels:
         app: otel-collector
     spec:
+      serviceAccountName: otel-sa
       containers:
       - name: otel-collector
         image: otel/opentelemetry-collector-contrib:0.106.0 
@@ -118,6 +119,9 @@ data:
           receivers: ["otlp"]
           processors: [batch, memory_limiter, resourcedetection, transform]
           exporters: [googlemanagedprometheus]
+      telemetry:
+          logs:
+            level: debug # or trace
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -137,7 +141,7 @@ metadata:
   namespace: otel-collector
 subjects:
 - kind: ServiceAccount
-  name: default  
+  name: otel-sa  
   namespace: otel-collector
 roleRef:
   kind: ClusterRole

@@ -120,7 +120,9 @@ echo -e "\e[95m Starting Helm deploy for otel collector ...\e[0m"
 helm upgrade --install otel \
 ./deploy/app/helm/otel \
 --namespace otel-collector \
---create-namespace
+--create-namespace \
+--set PROJECT_ID=${PROJECT_ID} \
+
 
 
 echo -e "\e[95m Port forwarding Locust to localhost:8089.\e[0m"

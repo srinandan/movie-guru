@@ -57,3 +57,12 @@ resource "google_service_account_iam_binding" "mockuser" {
   ]
   depends_on = [google_container_cluster.primary]
 }
+
+resource "google_service_account_iam_binding" "oteluser" {
+  service_account_id = google_service_account.sa.id
+  role               = "roles/iam.workloadIdentityUser"
+  members = [
+    "serviceAccount:${var.project_id}.svc.id.goog[otel-collector/otel-sa]"
+  ]
+  depends_on = [google_container_cluster.primary]
+}

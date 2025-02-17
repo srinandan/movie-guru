@@ -48,6 +48,10 @@ spec:
               value: "my_redis_pwd"
             - name: ENABLE_METRICS
               value: "true"
+            - name: OTEL_EXPORTER_OTLP_INSECURE
+              value: "true"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector.otel-collector.svc.cluster.local:4318
 
 ---
 apiVersion: v1
