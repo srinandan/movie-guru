@@ -116,12 +116,25 @@ Next, **copy the Firebase configuration parameters** (e.g., API key, auth domain
 
 ## Step 4: Update Environment Variables
 
-Open the file **`set_env_vars.sh`** and **replace the placeholder values** with the Firebase parameters and the external IP address obtained in the previous steps.
+Create a file **`set_env_vars.sh`** and **replace the placeholder values** with the Firebase parameters and the external IP address obtained in the previous steps.
+
+```bash
+export REGION="us-central1"
+export PROJECT_ID="change"
+export FIREBASE_API_KEY=""
+export FIREBASE_AUTH_DOMAIN=""
+export FIREBASE_GCP_ID=""
+export FIREBASE_STORAGE_BUCKET=""
+export FIREBASE_MESSAGING_SENDERID=""
+export FIREBASE_APPID=""
+export GATEWAY_IP="movie-guru.endpoints.${PROJECT_ID}$.cloud.goog"
+export SERVER_URL="https://${GATEWAY_IP}"
+```
 
 After updating the file, run the script to apply the environment variables:
 
 ```bash
-./set_env_vars.sh
+source set_env_vars.sh
 ```
 
 ## Step 5: Build and Push Containers
