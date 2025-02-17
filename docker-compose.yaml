@@ -52,7 +52,6 @@ services:
       - TABLE_NAME=movies
       - APP_VERSION=v1_local
       - LOCATION=$REGION
-      - LOCAL=true
       - FLOWS_URL=http://flows:3400
       - REDIS_HOST=cache
       - REDIS_PORT=6379
@@ -75,19 +74,19 @@ services:
     ports:
       - 8085:8080
 
-  locust-master:
-    image: locustio/locust
-    ports:
-     - "8089:8089"
-    volumes:
-      - ./locust:/mnt/locust
-    command: -f /mnt/locust/locustfile.py --master -H http://server:8080
+  # locust-master:
+  #   image: locustio/locust
+  #   ports:
+  #    - "8089:8089"
+  #   volumes:
+  #     - ./locust:/mnt/locust
+  #   command: -f /mnt/locust/locustfile.py --master -H http://server:8080
 
-  locust-worker:
-    image: locustio/locust
-    volumes:
-      - ./locust:/mnt/locust
-    command: -f /mnt/locust/locustfile.py --worker --master-host locust-master
+  # locust-worker:
+  #   image: locustio/locust
+  #   volumes:
+  #     - ./locust:/mnt/locust
+  #   command: -f /mnt/locust/locustfile.py --worker --master-host locust-master
   
   
 
