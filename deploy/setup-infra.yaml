@@ -30,7 +30,7 @@ steps:
 
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   id: "run-db-init-job"
-  args: ['run', 'jobs', 'submit', '--region ${_REGION}', '--project ${_PROJECT_ID}']
+  args: ['run', 'jobs', 'submit', 'execute', 'db-init-job', '--region ${_REGION}', '--project ${_PROJECT_ID}']
 
 substitutions:
   _REPO: "movie-guru"
