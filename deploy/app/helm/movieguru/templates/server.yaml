@@ -47,7 +47,7 @@ spec:
             - name: REDIS_PASSWORD
               value: "my_redis_pwd"
             - name: ENABLE_METRICS
-              value: "false"
+              value: "true"
 
 ---
 apiVersion: v1

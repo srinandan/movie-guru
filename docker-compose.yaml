@@ -10,7 +10,7 @@ services:
         VITE_FIREBASE_STORAGE_BUCKET: ${FIREBASE_STORAGE_BUCKET}
         VITE_FIREBASE_MESSAGING_SENDERID: ${FIREBASE_MESSAGING_SENDERID}
         VITE_FIREBASE_APPID: ${FIREBASE_APPID}
-        VITE_CHAT_SERVER_URL: http://localhost:8081
+        VITE_CHAT_SERVER_URL: http://localhost:8084
     ports:
       - "4001:4000"
   cache:
@@ -33,15 +33,16 @@ services:
       - POSTGRES_DB_NAME=fake-movies-db
       - APP_VERSION=v1_local
       - GOOGLE_APPLICATION_CREDENTIALS=/key.json
-      - LOCATION=europe-west4
+      - LOCATION=us-west1
       - LOCAL=true
     volumes:
       - ./.key.json:/key.json:ro
   server:
     build: ./chat_server_go
     command: /app/webserver
+    restart: always
     ports:
-      - 8081:8080
+      - 8084:8080
     environment:
       - POSTGRES_HOST=db
       - PROJECT_ID=$PROJECT_ID
@@ -50,7 +51,7 @@ services:
       - POSTGRES_DB_NAME=fake-movies-db
       - TABLE_NAME=movies
       - APP_VERSION=v1_local
-      - LOCATION=europe-west4
+      - LOCATION=$REGION
       - LOCAL=true
       - FLOWS_URL=http://flows:3400
       - REDIS_HOST=cache
@@ -60,20 +61,34 @@ services:
       - cache 
       - db
   db:
-    image: pgvector/pgvector:17
+    image: pgvector/pgvector:pg17
     ports: 
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: main
       restart: always
     volumes:
-      - ./pgvector/init_substituted.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./pgvector/init_substituted.sql:/docker-entrypoint-initdb.d/init_substituted.sql:ro
   adminer:
     image: adminer
     restart: always
     ports:
-      - 8082:8080
+      - 8085:8080
 
+  locust-master:
+    image: locustio/locust
+    ports:
+     - "8089:8089"
+    volumes:
+      - ./locust:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --master -H http://server:8080
 
+  locust-worker:
+    image: locustio/locust
+    volumes:
+      - ./locust:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --worker --master-host locust-master
+  
+  
 
   

@@ -44,8 +44,6 @@ steps:
 #       echo "export _VITE_FIREBASE_APPID=$appId" >> /workspace/env-vars.txt
 #       echo "export _VITE_CHAT_SERVER_URL=http://${gatewayIP}/server:4000" >> /workspace/env-vars.txt 
 #       echo "workspace file: $(cat /workspace/env-vars.txt)"
-
-- name: 
 - name: "gcr.io/cloud-builders/docker"
   id: "build-frontend"
   dir: './frontend'
@@ -120,19 +118,3 @@ steps:
     - |
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:${_SHORT_SHA}'  && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:latest'
-
-# update from here https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/helm
-# - name: "gcr.io/${_PROJECT_ID}/helm"
-#   id: "deploy-helm-chart"
-#   entrypoint: bash
-#   dir: deploy/app/helm 
-#   args:
-#     - "-c"
-#     - |
-#        helm upgrade --install movieguru \
-#         ./deploy/app/helm/movieguru \
-#        --namespace movieguru \
-#        --create-namespace \
-#         --set PROJECT_ID=${_PROJECT_ID} \
-#         --set IMAGE.TAG=${_SHORT_SHA} \
-#         --set REGION=${_REGION}

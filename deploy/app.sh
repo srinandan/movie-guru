@@ -57,7 +57,7 @@ fi
 # Check if REGION is set
 if [[ -z "$REGION" ]]; then
     echo -e "\e[91mERROR: REGION environment variable is required.\e[0m"
-    echo -e "Please set it using: \e[95mexport REGION=<your-gcp-region>\e[0m"
+    echo -e "Please set it using: --region "
     exit 1
 fi
 
@@ -94,3 +94,35 @@ helm upgrade --install movieguru \
 --set PROJECT_ID=${PROJECT_ID} \
 --set IMAGE.TAG=$SHORT_SHA \
 --set REGION=${REGION}
+
+echo -e "\e[95m Creating ns and configmap for locust.\e[0m"
+
+kubectl create ns locust
+
+kubectl delete configmap loadtest-locustfile -n locust
+kubectl create configmap loadtest-locustfile --from-file=locust/locustfile.py -n locust
+
+echo -e "\e[95m Starting Helm deploy for locust.\e[0m"
+
+helm upgrade --install locust \
+  deliveryhero/locust \
+  --namespace locust \
+  --set loadtest.name=movieguru-loadtest \
+  --set loadtest.locust_locustfile_configmap=loadtest-locustfile \
+  --set loadtest.locust_locustfile=locustfile.py \
+  --set loadtest.locust_host=http://server.movieguru.svc.cluster.local:8080 \
+  --set service.type=ClusterIP \
+  --set worker.replicas=1
+
+
+echo -e "\e[95m Starting Helm deploy for otel collector ...\e[0m"
+
+helm upgrade --install otel \
+./deploy/app/helm/otel \
+--namespace otel-collector \
+--create-namespace
+
+
+echo -e "\e[95m Port forwarding Locust to localhost:8089.\e[0m"
+
+kubectl --namespace locust port-forward service/locust 8089:8089

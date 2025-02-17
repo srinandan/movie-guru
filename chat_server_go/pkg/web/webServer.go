@@ -9,6 +9,7 @@ import (
 
 	"github.com/movie-guru/pkg/db"
 	metrics "github.com/movie-guru/pkg/metrics"
+	"golang.org/x/exp/slog"
 )
 
 func enableCORS(allowedOrigins []string, next http.Handler) http.Handler {
@@ -49,6 +50,8 @@ func StartServer(ctx context.Context, ulh *UserLoginHandler, metadata *db.Metada
 	corsOrigins := strings.Split(metadata.CorsOrigin, ",")
 	for i := range corsOrigins {
 		corsOrigins[i] = strings.TrimSpace(corsOrigins[i])
+		slog.InfoContext(ctx, "Setting cors origin", slog.Any("origin", corsOrigins[i]))
+
 	}
 
 	loginMeters := metrics.NewLoginMeters()
