@@ -12,27 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# resource "google_artifact_registry_repository" "repo" {
-#   location      =  var.region
-#   repository_id =  "movie-guru"
-#   description   = "docker repository for app movie-guru"
-#   format        = "DOCKER"
-#   docker_config {
-#     immutable_tags = false
-#   }
-# }
-
-data "google_artifact_registry_repository" "repo" {
+resource "google_artifact_registry_repository" "repo" {
   location      = var.region
   repository_id = "movie-guru"
+  description   = "docker repository for app movie-guru"
+  format        = "DOCKER"
+  docker_config {
+    immutable_tags = false
+  }
 }
 
-# resource "google_artifact_registry_repository" "repo" {
+# data "google_artifact_registry_repository" "repo" {
 #   location      = var.region
 #   repository_id = "movie-guru"
-#   description   = "docker repository for app movie-guru"
-#   format        = "DOCKER"
-#   docker_config {
-#     immutable_tags = false
-#   }
 # }
+

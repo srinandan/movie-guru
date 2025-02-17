@@ -35,3 +35,19 @@ variable "db_name" {
   description = "Database name. Defaults to fake-movies-db"
   default     = "fake-movies-db"
 }
+
+variable "support_email" {
+  description = "Email for IaP branding"
+}
+
+variable "disable_init" {
+  description = "enable or disable db init"
+  type        = bool
+  default     = true
+}
+
+variable "disable_identity_platform" {
+  description = "enable or disable identitiy platform"
+  type        = bool
+  default     = true
+}

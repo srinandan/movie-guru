@@ -22,7 +22,7 @@ import { ai } from './genkitConfig'
 export const UserProfileFlowPrompt = ai.definePrompt(
   {
     name: 'userProfileFlowPrompt',
-    model: gemini15Flash,
+    model: gemini20FlashExp,
     input: {
       schema: UserProfileFlowInputSchema,
     },

@@ -75,23 +75,15 @@ echo -e "\e[95mSubstituting env variables in init.sql\e[0m"
 
 envsubst < pgvector/init.sql > pgvector/init_substituted.sql
 
-PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format 'value(projectNumber)')
-
-find_string="https://storage.googleapis.com/apphub-srinandans-test-posters"
-replace_string="https://movie-guru-webserver-${PROJECT_NUMBER}.${REGION}.run.app"
-
-# Use sed to perform the replacement
-sed -i "s#$find_string#$replace_string#g" ../dataset/movies_with_posters.csv
-go-bindata -o ../indexer/pkg/dataset/dataset.go -pkg dataset ../dataset
-
-envsubst < pgvector/py_init.sql > pgvector/py_init_substituted.sql
-
 # Start Cloud Build
 echo -e "\e[95mStarting Cloud Build...\e[0m"
 gcloud builds submit --config=deploy/ci.yaml --async --ignore-file=.gcloudignore \
+  --worker-pool="projects/${PROJECT_ID}/locations/${REGION}/workerPools/movie-guru" --region=${REGION} \
   --substitutions=_PROJECT_ID=$PROJECT_ID,_SHORT_SHA=$SHORT_SHA,_REGION=$REGION,_VITE_FIREBASE_API_KEY=$FIREBASE_API_KEY,_VITE_FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN,_VITE_GCP_PROJECT_ID=$PROJECT_ID,_VITE_FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET,_VITE_FIREBASE_MESSAGING_SENDERID=$FIREBASE_MESSAGING_SENDERID,_VITE_FIREBASE_APPID=$FIREBASE_APPID,_VITE_CHAT_SERVER_URL="${SERVER_URL}/server"
 
 echo -e "\e[92mCloud Build submitted successfully!\e[0m"
+
+exit 0
 
 echo -e "\e[92mDownloading and unzipping posters from the external archive..\e[0m"
 

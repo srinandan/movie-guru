@@ -13,6 +13,7 @@
 # limitations under the License.
 
 resource "google_cloud_run_v2_job" "db-init" {
+  count               = var.disable_init ? 0 : 1
   name                = "db-init-job"
   location            = var.region
   project             = var.project_id
@@ -69,6 +70,7 @@ resource "google_cloud_run_v2_job" "db-init" {
 }
 
 resource "google_cloud_run_v2_job" "indexer" {
+  count               = var.disable_init ? 0 : 1
   name                = "indexer"
   location            = var.region
   project             = var.project_id

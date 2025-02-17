@@ -105,12 +105,6 @@ resource "google_container_cluster" "primary" {
     }
   }
 
-  enterprise_config {
-    desired_tier = "ENTERPRISE"
-  }
-
-  monitoring_service = "monitoring.googleapis.com/kubernetes"
-
   depends_on = [google_project_service.enable_apis]
 
 }
