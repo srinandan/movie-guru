@@ -31,7 +31,7 @@ module "cloud_run_v2" {
       subnetwork = google_compute_subnetwork.custom.name
     }
   }
-  service_account = data.google_service_account.app.email
+  service_account = google_service_account.sa.email
   ingress         = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 
   volumes = [
