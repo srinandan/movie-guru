@@ -169,11 +169,25 @@ You can go to `https://movie-guru.endpoints.${PROJECT_ID}.cloud.goog` to interac
 
 ___
 
-## Original repo
+## Appendix
+
+### Original repo
 
 This repo is a fork of this [repo](https://github.com/MKand/movie-guru)
 
-## Support
+### Indexer
+
+The index loads data in the database through a cloud run job. The dataset CSV must be modified and embedded. To embed the file, run the following steps:
+
+1. Update the CSV file as needed
+2. Run the command `cd indexer && go-bindata  -o pkg/dataset/dataset.go ../dataset`
+3. Fix the package name in  `pkg/dataset/dataset.go`
+4. Re-run `./deploy/ci.sh --region $REGION`
+5. Re-run `./deploy/deploy.sh --region $REGION` to deploy the cloud run job (if not already done)
+
+**NOTE**: Get `go-bindata` by running the command `go install -a -v github.com/go-bindata/go-bindata/...@latest`
+
+### Support
 
 This demo is *NOT* endorsed by Google or Google Cloud.  
 The repo is intended for educational/hobbyists use only.
