@@ -17,8 +17,8 @@ import (
 	"golang.org/x/time/rate"
 )
 
-// Rate limiter: 100 requests per minute
-var limiter = rate.NewLimiter(rate.Limit(100.0/60.0), 1)
+// Rate limiter: 10 requests per minute
+var limiter = rate.NewLimiter(rate.Limit(10.0/60.0), 1)
 
 const userPrompt = "Pretend to be a person between the ages 18 and 80 and ask for a type of movie you want to watch. Be creative."
 

@@ -42,8 +42,8 @@ spec:
           env:
             - name: VLLM_URL
               value: "http://llm-service.movieguru.svc.cluster.local:8000/"          
-            - name: FLOW_URL
-              value: "http://flows.movieguru.svc.cluster.local:3400/movieQAFlow"
+            - name: CHAT_SERVER
+              value: "http://server.movieguru.svc.cluster.local:8080"
 ---
 apiVersion: v1
 kind: Service
