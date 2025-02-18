@@ -50,30 +50,45 @@ export const MovieDocFlow = ai.defineFlow(
   {
     name: 'movieDocFlow',
     inputSchema: QuerySchema,
-    outputSchema: z.array(MovieContextSchema), // Array of MovieContextSchema
+    outputSchema: z.array(MovieContextSchema),
   },
   async (input) => {
-  
+    let searchFlowOutput= {
+      searchCategory: SearchTypeCategory.parse("NONE"), // Initialize with "NONE"
+      keywordQuery: "",
+      vectorQuery: "",
+      modelOutputMetadata: {
+        justification: "",
+        safetyIssue: false
+      }
+    };
+    const movieContexts: MovieContext[] = [];
+
+  try{
     const response = await SearchFlowPrompt( {
       query: input.query
     })
-    if (typeof response.text !== 'string') {
-      throw new Error('Invalid response format: text property is not a string.');
-    }
     const jsonResponse = JSON.parse(response.text)
-    const searchFlowOutput = {
+    searchFlowOutput = {
       vectorQuery: jsonResponse.vectorQuery || "",
       keywordQuery: jsonResponse.keywordQuery || "",
-      searchCategory: jsonResponse.searchCategory || 'NONE',
+      searchCategory: jsonResponse.searchCategory || SearchTypeCategory.parse("NONE"),
       modelOutputMetadata: {
         justification: jsonResponse.justification || "",
         safetyIssue: jsonResponse.safetyIssue || false,
       },
     }
-    const movieContexts: MovieContext[] = [];
-
-    try{
-      
+  }
+  catch (error){
+    console.error('MovieDocFlow: Error generating response:', {
+      error,
+      input,
+    });
+  }
+  try{
+    if (searchFlowOutput.searchCategory == "NONE"){
+      return movieContexts;
+    }
     const docs = await ai.retrieve({
       retriever: sqlRetriever,
       query: {
@@ -109,8 +124,8 @@ export const MovieDocFlow = ai.defineFlow(
     return movieContexts;
   }
   catch(e){
-    console.error(`Unable to get documents: ${e instanceof Error ? e.message : e}`)
-    throw new Error(`Unable to get documents: ${e instanceof Error ? e.message : e}`);
+    console.error(`Retriever: Unable to get documents: ${e instanceof Error ? e.message : e}`)
+    return movieContexts;
   }
   }
 );
@@ -127,7 +142,6 @@ export const sqlRetriever = ai.defineRetriever(
     }
 
     let results;
-
     if(options.searchCategory == "KEYWORD"){
       results =  await db`SELECT content, title, poster, released, runtime_mins, rating, genres, director, actors, plot, tconst
       FROM movies

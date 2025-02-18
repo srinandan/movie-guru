@@ -35,7 +35,7 @@ export const UserProfileFlowPrompt = ai.definePrompt(
         }
         return output
       } catch (error) {
-        console.error("Error generating response:", error);
+        console.error("UserProfileFlow: Error generating response:", error);
         return { 
           profileChangeRecommendations: [],
           modelOutputMetadata: {

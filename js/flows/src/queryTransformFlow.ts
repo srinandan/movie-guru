@@ -3,6 +3,7 @@ import {
   USERINTENT,
   QueryTransformFlowInputSchema,
   QueryTransformFlowOutputSchema,
+  QueryTransformFlowOutput
 } from './queryTransformTypes';
 import { QueryTransformPromptText } from './prompts';
 import { ai } from './genkitConfig';
@@ -35,29 +36,25 @@ export const QueryTransformFlow = ai.defineFlow(
         userProfile: input.userProfile,
       });
 
-      if (typeof response.text !== 'string') {
-        throw new Error('Invalid response format: text property is not a string.');
-      }
-
       const jsonResponse = JSON.parse(response.text)
-      return {
+      const qtOutput: QueryTransformFlowOutput = {
         transformedQuery: jsonResponse.transformedQuery || "",
-        userIntent: jsonResponse.userIntent || 'UNCLEAR',
+        userIntent: USERINTENT.parse(jsonResponse.userIntent) || USERINTENT.parse('UNCLEAR'),
         modelOutputMetadata: {
           justification: jsonResponse.justification || "",
           safetyIssue: jsonResponse.safetyIssue || false,
         },
       };
+      return qtOutput;
     } catch (error) {
-      console.error('Error generating response:', {
+      console.error('QTFlow: Error generating response:', {
         error,
         input,
       });
-
       // Return fallback response
       return {
-        transformedQuery: '',
-        userIntent: 'UNCLEAR',
+        transformedQuery: input.userMessage,
+        userIntent: USERINTENT.parse('UNCLEAR'),
         modelOutputMetadata: {
           justification: '',
           safetyIssue: false,

@@ -27,17 +27,17 @@ export const MovieFlowPrompt = ai.definePrompt(
         const response = await MovieFlowPrompt({ history: input.history, userPreferences: input.userPreferences, userMessage: input.userMessage, contextDocuments: input.contextDocuments });
         const jsonResponse =  JSON.parse(response.text);
         const output: MovieFlowOutput = {
-          "answer":  jsonResponse.answer,
-          "relevantMovies": jsonResponse.relevantMovies,
-          "wrongQuery": jsonResponse.wrongQuery,
+          "answer":  jsonResponse.answer || "",
+          "relevantMovies": jsonResponse.relevantMovies || [],
+          "wrongQuery": jsonResponse.wrongQuery || false,
           "modelOutputMetadata": {
-            "justification": jsonResponse.justification,
-            "safetyIssue": jsonResponse.safetyIssue,
+            "justification": jsonResponse.justification || "",
+            "safetyIssue": jsonResponse.safetyIssue || false,
           }
         }
         return output
       } catch (error) {
-        console.error("Error generating response:", error);
+        console.error("MovieFlow: Error generating response:", error);
         return { 
           relevantMovies: [],
           answer: "",

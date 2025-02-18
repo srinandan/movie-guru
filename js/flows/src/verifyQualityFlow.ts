@@ -1,5 +1,5 @@
 import { gemini15Flash } from '@genkit-ai/vertexai';
-import {ResponseQualityFlowInputSchema, ResponseQualityFlowOutputSchema, OUTCOME, USERSENTIMENT} from './verifyQualityTypes'
+import {ResponseQualityFlowInputSchema, ResponseQualityFlowOutputSchema, OUTCOME, USERSENTIMENT, ResponseQualityFlowOutput} from './verifyQualityTypes'
 import { ConversationQualityAnalysisPromptText } from './prompts';
 import { ai } from './genkitConfig'
 
@@ -27,15 +27,17 @@ export const QualityFlowPrompt = ai.definePrompt(
         console.log("history:", input.history)
         const response = await QualityFlowPrompt({ history: input.history });
         const jsonResponse =  JSON.parse(response.text);
-        return {
-          "outcome":  jsonResponse.outcome || 'OUTCOMEUNKNOWN',
-          "userSentiment": jsonResponse.userSentiment || 'SENTIMENTUNKNOWN',
+        console.log("quality response:", jsonResponse)
+        const output: ResponseQualityFlowOutput = {
+          "outcome":  jsonResponse.outcome || OUTCOME.parse('OUTCOMEUNKNOWN'),
+          "userSentiment": jsonResponse.sentiment  || USERSENTIMENT.parse('SENTIMENTUNKNOWN'),
         }
+        return output;
       } catch (error) {
         console.error("Error generating response:", error);
         return { 
-          outcome: 'OUTCOMEUNKNOWN',
-          userSentiment: 'SENTIMENTUNKNOWN',         
+          outcome: OUTCOME.parse('OUTCOMEUNKNOWN'),
+          userSentiment: USERSENTIMENT.parse('SENTIMENTUNKNOWN'),         
          }; 
       }
     }
