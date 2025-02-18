@@ -22,6 +22,8 @@ var limiter = rate.NewLimiter(rate.Limit(10.0/60.0), 1)
 
 const userPrompt = "Pretend to be a person between the ages 18 and 80 and ask for a type of movie you want to watch. Be creative."
 
+var maxChatLen = 750
+
 type Response struct {
 	Predictions []string `json:"predictions,omitempty"`
 }
@@ -108,6 +110,10 @@ func main() {
 			prompt = strings.ReplaceAll(prompt, "/\"", "")
 			prompt = strings.ReplaceAll(prompt, "*", "")
 			prompt = removeSpecialCharacters(prompt)
+
+			if len(prompt) > maxChatLen {
+				prompt = prompt[:maxChatLen]
+			}
 
 			slog.Log(context.Background(), slog.LevelInfo, "Prompt", "prompt", prompt)
 
