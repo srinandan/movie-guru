@@ -45,7 +45,7 @@ export const MovieFlow = ai.defineFlow(
       const output: MovieFlowOutput = {
         "answer": jsonResponse.answer,
         "relevantMovies": jsonResponse.relevantMovies,
-        "wrongQuery": jsonResponse.wrongQuery,
+        "wrongQuery": !!jsonResponse.wrongQuery,
         "modelOutputMetadata": {
           "justification": jsonResponse.justification,
           "safetyIssue": jsonResponse.safetyIssue,
