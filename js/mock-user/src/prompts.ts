@@ -45,6 +45,6 @@ If {{ response_mood }} is "NEGATIVE" and {{ response_type }} is "CONTINUE", your
 
 If {{ response_mood }} is "NEGATIVE" and {{ response_type }} is "END_CONVERSATION", your response might be:
 
-"Your responses are too slow and you are boring me. You suck. Bye" 
+"Your responses are too slow and you are boring me. You suck. Bye." 
 
 `

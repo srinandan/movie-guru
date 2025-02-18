@@ -52,7 +52,9 @@ class ChatUser(HttpUser):
         while(endConv == False):
             if(response_type == "END_CONVERSATION"): 
                 endConv = True
-            
+                
+
+            # post to mock user
             mock_response = self.helper_api_client.post(self.mock_url,
             json={
                 "data":{
@@ -61,16 +63,11 @@ class ChatUser(HttpUser):
                     "response_type": response_type
                 }
             })
-            if mock_response.status_code == 200:
-                try:
-                    response_json = mock_response.json()
-                    mock_response_answer = response_json.get("result")["answer"]
-                    print(f"BOT: {chat_answer}\n")
-                    print(f"MOCK: {response_mood}: {response_type}: {mock_response_answer} \n")
-                except ValueError:
-                    print(f"Helper API request failed: {mock_response.status_code}, {mock_response.text}")
-
-
+            mock_response_json = mock_response.json()
+            mock_response_answer = mock_response_json.get("result")["answer"]
+            print(f"BOT: {chat_answer}\n")
+            print(f"MOCK: {response_mood}: {mock_response_answer} \n")
+            # Post to movie guru
             chat_response = self.client.post(
                         "/chat",
                         json={"content":mock_response_answer}

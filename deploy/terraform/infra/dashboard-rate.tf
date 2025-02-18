@@ -2,7 +2,6 @@ resource "google_monitoring_dashboard" "startup_dashboard" {
   project        = var.project_id
   dashboard_json = <<EOF
   {
-   {
   "displayName": "Model API Rate",
   "mosaicLayout": {
     "columns": 48,

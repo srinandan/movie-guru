@@ -18,7 +18,7 @@ resource "google_identity_platform_config" "auth" {
 
   depends_on = [google_project_service.enable_apis]
   lifecycle {
-    ignore_changes = [project]
+    ignore_changes = all
   }
 }
 
@@ -27,18 +27,25 @@ resource "google_iap_brand" "default" {
   support_email     = var.support_email // Has to be the identity of the thing that is running the tf
   application_title = "movieguru"
   depends_on        = [google_project_service.enable_apis]
+    lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "google_iap_client" "google_oauth" {
   display_name = "Google Sign-In OAuth"
   brand        = google_iap_brand.default.name
   depends_on   = [google_project_service.enable_apis]
+    lifecycle {
+    ignore_changes = all
+  }
 }
 
 data "google_iap_client" "google_oauth" {
   client_id  = google_iap_client.google_oauth.client_id
   brand      = google_iap_brand.default.name
   depends_on = [google_project_service.enable_apis]
+    
 }
 
 resource "google_identity_platform_default_supported_idp_config" "google_signin" {
@@ -48,4 +55,7 @@ resource "google_identity_platform_default_supported_idp_config" "google_signin"
   client_id     = google_iap_client.google_oauth.client_id
   client_secret = google_iap_client.google_oauth.secret
   depends_on    = [google_project_service.enable_apis]
+  lifecycle {
+    ignore_changes = all
+  }
 }

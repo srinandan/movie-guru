@@ -103,6 +103,8 @@ kubectl delete configmap loadtest-locustfile -n locust
 kubectl create configmap loadtest-locustfile --from-file=locust/locustfile.py -n locust
 
 echo -e "\e[95m Starting Helm deploy for locust.\e[0m"
+
+# Need to delete to make sure the pods mount the updated config from cm
 helm delete locust -n locust
 helm upgrade --install locust \
   deliveryhero/locust \
@@ -123,6 +125,16 @@ helm upgrade --install otel \
 --create-namespace \
 --set PROJECT_ID=${PROJECT_ID} 
 
+echo -e "\e[95m Creating IAM bindings for the KSAs.\e[0m"
+
+gcloud iam service-accounts add-iam-policy-binding movie-guru-chat-server-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+ --role roles/iam.workloadIdentityUser     --member "serviceAccount:${PROJECT_ID}.svc.id.goog[movieguru/movieguru-sa]"
+
+gcloud iam service-accounts add-iam-policy-binding movie-guru-chat-server-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+ --role roles/iam.workloadIdentityUser     --member "serviceAccount:${PROJECT_ID}.svc.id.goog[mockuser/mockuser-sa]"
+
+gcloud iam service-accounts add-iam-policy-binding movie-guru-chat-server-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+ --role roles/iam.workloadIdentityUser     --member "serviceAccount:${PROJECT_ID}.svc.id.goog[otel-collector/otel-sa]"
 
 echo -e "\e[95m Port forwarding Locust to localhost:8089.\e[0m"
 
