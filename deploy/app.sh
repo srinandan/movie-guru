@@ -61,6 +61,16 @@ if [[ -z "$REGION" ]]; then
     exit 1
 fi
 
+if [[ -z "$DB_HOST" ]]; then
+    echo -e "\e[91mERROR: DB_HOST environment variable is required.\e[0m"
+    exit 1
+fi
+
+if [[ -z "$REDIS_HOST" ]]; then
+    echo -e "\e[91mERROR: REDIS_HOST environment variable is required.\e[0m"
+    exit 1
+fi
+
 echo -e "\e[95mUsing PROJECT_ID: $PROJECT_ID\e[0m"
 echo -e "\e[95mUsing REGION: $REGION\e[0m"
 
@@ -75,14 +85,6 @@ fi
 # Set GCP project
 gcloud config set project "$PROJECT_ID"
 
-
-echo -e "\e[95m Substituting env variables in init.sql\e[0m"
-
-envsubst < pgvector/init.sql > pgvector/init_substituted.sql
-
-gsutil cp pgvector/init_substituted.sql "gs://fb-webapp-${PROJECT_ID}/sql/init.sql"
-rm pgvector/init_substituted.sql 
-
 echo -e "\e[95mConnecting to GKE cluster\e[0m"
 gcloud container clusters get-credentials movie-guru-cluster --region $REGION --project $PROJECT_ID
 echo -e "\e[95m Starting Helm deploy for app...\e[0m"
@@ -93,7 +95,9 @@ helm upgrade --install movieguru \
 --create-namespace \
 --set PROJECT_ID=${PROJECT_ID} \
 --set IMAGE.TAG=$SHORT_SHA \
---set REGION=${REGION}
+--set REGION=${REGION} \
+--set REDIS_HOST=${REDIS_HOST} \
+--set DB_HOST=${DB_HOST}
 
 echo -e "\e[95m Creating ns and configmap for locust.\e[0m"
 
@@ -104,6 +108,8 @@ kubectl create configmap loadtest-locustfile --from-file=locust/locustfile.py -n
 
 echo -e "\e[95m Starting Helm deploy for locust.\e[0m"
 
+# Need to delete to make sure the pods mount the updated config from cm
+helm delete locust -n locust
 helm upgrade --install locust \
   deliveryhero/locust \
   --namespace locust \
@@ -112,7 +118,7 @@ helm upgrade --install locust \
   --set loadtest.locust_locustfile=locustfile.py \
   --set loadtest.locust_host=http://server.movieguru.svc.cluster.local:8080 \
   --set service.type=ClusterIP \
-  --set worker.replicas=1
+  --set worker.replicas=5
 
 
 echo -e "\e[95m Starting Helm deploy for otel collector ...\e[0m"
@@ -120,8 +126,19 @@ echo -e "\e[95m Starting Helm deploy for otel collector ...\e[0m"
 helm upgrade --install otel \
 ./deploy/app/helm/otel \
 --namespace otel-collector \
---create-namespace
+--create-namespace \
+--set PROJECT_ID=${PROJECT_ID} 
 
+echo -e "\e[95m Creating IAM bindings for the KSAs.\e[0m"
+
+gcloud iam service-accounts add-iam-policy-binding movie-guru-chat-server-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+ --role roles/iam.workloadIdentityUser     --member "serviceAccount:${PROJECT_ID}.svc.id.goog[movieguru/movieguru-sa]"
+
+gcloud iam service-accounts add-iam-policy-binding movie-guru-chat-server-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+ --role roles/iam.workloadIdentityUser     --member "serviceAccount:${PROJECT_ID}.svc.id.goog[mockuser/mockuser-sa]"
+
+gcloud iam service-accounts add-iam-policy-binding movie-guru-chat-server-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+ --role roles/iam.workloadIdentityUser     --member "serviceAccount:${PROJECT_ID}.svc.id.goog[otel-collector/otel-sa]"
 
 echo -e "\e[95m Port forwarding Locust to localhost:8089.\e[0m"
 
