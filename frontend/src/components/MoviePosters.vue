@@ -1,10 +1,17 @@
 <template>
     <div class=" flex flex-row overflow-y-auto flex-wrap justify-center items-start mt-5 scrollbar-thin scrollbar-thumb-primary scrollbar-track-accent">
       <div v-for="m in store.getters['chat/movies']" class="mb-4 mx-4 w-60 md:w-80 lg:w-80">
-        <img :src="m.poster" :alt="m.title" class="w-full h-auto rounded-lg shadow-[2px_2px_0_rgba(255,255,255,0.3)] filter grayscale-[30%] brightness-90 border-4 border-accent"/>
         <div class="bg-accent rounded-lg ">
             <p class="text-center text-text mt-2">{{ m.title }}</p>
         </div>
+        <img :src="m.poster" :alt="m.title" class="w-full h-auto rounded-lg shadow-[2px_2px_0_rgba(255,255,255,0.3)] filter grayscale-[30%] brightness-90 border-4 border-accent"/>
+      
+        <button 
+        class="bg-primary hover:bg-blue-700 text-white font-bold rounded-lg justify-center "
+        @click="tellMeMore(m.title)" 
+      >
+        Tell Me More
+      </button>
       </div>
     </div>
   
@@ -18,6 +25,11 @@
     data(){
       return {
         store: store
+      }
+    },
+    methods: {
+      tellMeMore(title){
+        const message = "tell me more about the movie: " + title
       }
     },
     created(){

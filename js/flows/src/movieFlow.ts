@@ -2,6 +2,7 @@ import { ai } from './genkitConfig'
 import { gemini15Flash } from '@genkit-ai/vertexai';
 import {MovieFlowInputSchema, MovieFlowOutputSchema, MovieFlowOutput} from './movieFlowTypes'
 import { MovieFlowPromptText } from './prompts';
+import { GenerationBlockedError } from 'genkit';
 
 export const MovieFlowPrompt = ai.definePrompt(
     {
@@ -35,17 +36,35 @@ export const MovieFlowPrompt = ai.definePrompt(
             "safetyIssue": jsonResponse.safetyIssue || false,
           }
         }
+        if(output.wrongQuery){
+          console.log("wrong query found")
+        }
         return output
       } catch (error) {
         console.error("MovieFlow: Error generating response:", error);
-        return { 
-          relevantMovies: [],
-          answer: "",
-          modelOutputMetadata: {
-            "justification": "",
-            "safetyIssue": false,
-          }
-         }; 
+        if(error instanceof GenerationBlockedError){
+          console.error("MovieFlow: GenerationBlockedError generating response:", error.message);
+          return { 
+            relevantMovies: [],
+            answer: "",
+            modelOutputMetadata: {
+              "justification": "",
+              "safetyIssue": true,
+            }
+           }; 
+        }
+        else{
+          console.error("MovieFlow: Error generating response:", error);
+          return { 
+            relevantMovies: [],
+            answer: "",
+            modelOutputMetadata: {
+              "justification": "",
+              "safetyIssue": false,
+            }
+           }; 
+        }
+       
       }
     }
   );

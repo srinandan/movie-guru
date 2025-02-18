@@ -1,8 +1,16 @@
 import {fetch as fetchPolyfill} from 'whatwg-fetch'
+import { ref } from 'vue';
 import store  from '../stores';
 
 class ChatClientService {
+  processingRequest = ref(false);
+  errorOccured = ref(false);
+
   async send(message){
+    this.errorOccured.value = false;
+    this.processingRequest.value = true
+    store.commit('chat/add', {"message":message, "sender":"user"})
+
     const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json'},
@@ -15,8 +23,27 @@ class ChatClientService {
         throw new Error(`Response status: ${response.status}`);
     }
       const json = await response.json();
+      const result = json["result"];
+      if(result == "SUCCESS"){
+        let answer = json["answer"]
+        let context = json["context"]
+        store.commit('chat/add',{"message":answer, "sender":"agent", "result":result});
+        store.commit('chat/addMovies', context)
+      }
+      else if (result == "ERROR"){
+        this.errorOccured.value = true;
+      }
+      else if (result == "UNSAFE"){
+        store.commit('chat/add',{"message":"That was a naughty query. I cannot answer that question.", "sender":"agent", "result":result});
+      }
+
+      if(json["preferences"]){
+        store.commit('preferences/update', response["preferences"])
+      }
+      this.processingRequest.value = false;
       return json
     } catch (error) {
+      this.errorOccured = true;
       console.error(error.message);
       throw error;
     }

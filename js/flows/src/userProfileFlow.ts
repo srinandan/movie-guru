@@ -2,6 +2,7 @@ import { gemini15Flash } from '@genkit-ai/vertexai';
 import {UserProfileFlowOutput, UserProfileFlowInputSchema, UserProfileFlowOutputSchema} from './userProfileTypes'
 import { UserProfilePromptText } from './prompts';
 import { ai } from './genkitConfig'
+import { GenerationBlockedError } from 'genkit';
 
 export const UserProfileFlowPrompt = ai.definePrompt(
     {
@@ -35,14 +36,26 @@ export const UserProfileFlowPrompt = ai.definePrompt(
         }
         return output
       } catch (error) {
-        console.error("UserProfileFlow: Error generating response:", error);
-        return { 
-          profileChangeRecommendations: [],
-          modelOutputMetadata: {
-            "justification": "",
-            "safetyIssue": false,
-          }
-         }; 
+        if(error instanceof GenerationBlockedError){
+          console.error("UserProfileFlow: GenerationBlockedError generating response:", error.message);
+          return { 
+            profileChangeRecommendations: [],
+            modelOutputMetadata: {
+              "justification": "",
+              "safetyIssue": true,
+            }
+           }; 
+        }
+        else{
+          console.error("UserProfileFlow: Error generating response:", error);
+          return { 
+            profileChangeRecommendations: [],
+            modelOutputMetadata: {
+              "justification": "",
+              "safetyIssue": false,
+            }
+           }; 
+        }
       }
     }
   );

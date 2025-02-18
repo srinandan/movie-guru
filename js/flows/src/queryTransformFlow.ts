@@ -7,6 +7,7 @@ import {
 } from './queryTransformTypes';
 import { QueryTransformPromptText } from './prompts';
 import { ai } from './genkitConfig';
+import { GenerationBlockedError } from 'genkit';
 
 export const QueryTransformPrompt = ai.definePrompt(
   {
@@ -51,15 +52,29 @@ export const QueryTransformFlow = ai.defineFlow(
         error,
         input,
       });
-      // Return fallback response
-      return {
-        transformedQuery: input.userMessage,
-        userIntent: USERINTENT.parse('UNCLEAR'),
-        modelOutputMetadata: {
-          justification: '',
-          safetyIssue: false,
-        },
-      };
+      if (error instanceof GenerationBlockedError){
+        console.error("QTFlow: GenerationBlockedError generating response:", error.message);
+        return {
+          transformedQuery: input.userMessage,
+          userIntent: USERINTENT.parse('UNCLEAR'),
+          modelOutputMetadata: {
+            justification: '',
+            safetyIssue: true,
+          },
+        };
+      }
+      else{
+        console.error("QTFlow: Error generating response:", error);
+        return {
+          transformedQuery: input.userMessage,
+          userIntent: USERINTENT.parse('UNCLEAR'),
+          modelOutputMetadata: {
+            justification: '',
+            safetyIssue: false,
+          },
+        };
+      }
+      
     }
   }
 );

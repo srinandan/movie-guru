@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	types "github.com/movie-guru/pkg/types"
@@ -45,16 +44,6 @@ func (flowClient *ResponseQualityFlowClient) runFlow(input *types.ResponseQualit
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-
-	body, err := io.ReadAll(req.Body)
-	if err != nil {
-		panic(err) // Handle the error appropriately in your actual code
-	}
-	fmt.Println("Request Body:", string(body))
-
-	// Reset the request body so it can be sent in the actual request
-	req.Body = io.NopCloser(bytes.NewBuffer(body))
-
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {

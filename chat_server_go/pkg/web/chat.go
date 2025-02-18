@@ -65,12 +65,13 @@ func chat(ctx context.Context, deps *Dependencies, metadata *db.Metadata, h *typ
 
 func processFlowOutput(metadata *types.ModelOutputMetadata, err error, h *types.ChatHistory) (*types.AgentResponse, bool) {
 	if err != nil {
-		h.AddAgentErrorMessage()
+		h.RemoveLastMessage()
 		return types.NewErrorAgentResponse(err.Error()), true
 	}
 	if metadata != nil && metadata.SafetyIssue {
-		h.AddSafetyIssueErrorMessage()
+		h.RemoveLastMessage()
 		return types.NewSafetyIssueAgentResponse(), true
 	}
-	return types.NewAgentResponse(), false
+
+	return nil, false
 }

@@ -41,6 +41,7 @@ func NewAgentResponse() *AgentResponse {
 
 func NewSafetyIssueAgentResponse() *AgentResponse {
 	r := NewAgentResponse()
+	r.Answer = "That was a naughty! I cannot answer that."
 	r.Result = UNSAFE
 	return r
 }
@@ -49,6 +50,7 @@ func NewErrorAgentResponse(errMessage string) *AgentResponse {
 	r := NewAgentResponse()
 	r.Result = ERROR
 	r.ErrorMessage = errMessage
+	r.Answer = "Something went wrong on my side. My apologies. Can you try that again?"
 	return r
 }
 
