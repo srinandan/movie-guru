@@ -66,6 +66,7 @@ resource "google_service_account_iam_binding" "workload_identity_binding" {
   members = [
     "serviceAccount:${var.project_id}.svc.id.goog[movieguru/movieguru-sa]"
   ]
+  depends_on = [google_container_cluster.primary]
 }
 
 resource "google_service_account_iam_binding" "mockuser" {
