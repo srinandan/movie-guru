@@ -1,17 +1,30 @@
-from locust import HttpUser, task, between, events
+from locust import HttpUser, task, between
+import requests
+import os
+import random
+import string
+
 
 class ChatUser(HttpUser):
-    wait_time = between(1, 3)
-    cookies = {}
-    @events.test_start.add_listener
+    wait_time = between(1, 2)
+    MOODS = ["POSITIVE", "NEUTRAL", "NEGATIVE"]
+    RESPONSE_TYPE = ["END_CONVERSATION",
+                     "CONTINUE", "DIVE_DEEP", "CHANGE_TOPIC"]
+
+    def on_stop(self):
+        self.client.post("/logout")
 
     def on_start(self):
+        # create random name
+        name = ''.join(random.choices(string.ascii_lowercase, k=8))
+
         headers = {
-        "ApiKey": "ABC",
-        "Content-Type": "application/json",
-        "User": "abc"
+            "ApiKey": "ABC",
+            "Content-Type": "application/json",
+            "User": name
         }
-        response = self.client.post("/login", headers=headers, json={"inviteCode": "" })
+        response = self.client.post(
+            "/login", headers=headers, json={"inviteCode": ""})
         print(f"Login Headers {response.headers}")
         print(f"Login Response {response.content}")
 
@@ -19,54 +32,64 @@ class ChatUser(HttpUser):
         set_cookie = response.headers.get('Set-Cookie').split(';', 1)[0]
         if set_cookie:
             print(f"Extracted cookie: {set_cookie}")
-            self.client.cookies.set("stored_cookie", set_cookie)  #Stores it in the locust client.
+            # Stores it in the locust client.
+            self.client.cookies.set("stored_cookie", set_cookie)
         else:
             print("No Set-Cookie header received.")
 
-    @task
+        self.helper_api_client = requests.Session()
+        self.mock_url = os.getenv(
+            "MOCK_URL", "http://mockuser.mockuser.svc.cluster.local:80/mockUserFlow")
+        print("using mock url", self.mock_url)
+
+    @task(1)
     def healthcheck(self):
         response = self.client.get("/")
-    
-    @task
-    def chat(self):
-        chat_response = self.client.post(
+
+    @task(1)
+    def chat_with_mock(self):
+        response_type = random.choice(self.RESPONSE_TYPE)
+        response_mood = random.choice(self.MOODS)
+        endConv = False
+        chat_answer = "Hi. How can I help you today?"
+        while (endConv == False):
+            if (response_type == "END_CONVERSATION"):
+                endConv = True
+
+            # post to mock user
+            mock_response = self.helper_api_client.post(self.mock_url,
+                                                        json={
+                                                            "data": {
+                                                                "expert_answer": chat_answer,
+                                                                "response_mood": response_mood,
+                                                                "response_type": response_type
+                                                            }
+                                                        })
+            mock_response_json = mock_response.json()
+            mock_response_answer = mock_response_json.get("result")["answer"]
+            print(f"BOT: {chat_answer}\n")
+            print(f"MOCK: {response_mood}: {mock_response_answer} \n")
+            # Post to movie guru
+            chat_response = self.client.post(
                 "/chat",
-                json={"content":"hi"}
+                json={"content": mock_response_answer}
             )
-        answer = chat_response.json()["answer"]
-        print(f"chat_response response is {answer}")
+            chat_answer = chat_response.json()["answer"]
+            response_type = random.choice(self.RESPONSE_TYPE)
+            response_mood = random.choice(self.MOODS)
 
+    # @task(1)
+    # def startup(self):
+    #     self.client.get(
+    #             "/startup",
+    #         )
 
-
-
-# class ChatUser(HttpUser):
-#     wait_time = between(1, 2)
-#     @task(6)
-#     def conversation(self):
-#         self.client.post(f"/chat")
-
-#     @task(1)
-#     def login(self):
-#         self.client.post(f"/login")
-
-#     @task(1)
-#     def logout(self):
-#         self.client.post(f"/logout") 
-
-#     @task(1)
-#     def delete_history(self):
-#         self.client.post(f"/history") 
-    
-#     @task(1)
-#     def get_history(self):
-#         self.client.get(f"/history") 
-
-
-#     @task(3)
-#     def preferences(self):
-#         self.client.post(f"/preferences") 
-#         self.client.get(f"/preferences") 
-       
-#     @task(1)
-#     def startup(self):
-#         self.client.get(f"/startup") 
+    # @task(2)
+    # def preferences(self):
+    #     self.client.post(f"/preferences", json={
+    #             "Content": {
+    #                 "likes": {"genres": ["action"]},
+    #                 "dislikes": {}
+    #             }
+    #     })
+    #     self.client.get(f"/preferences")
