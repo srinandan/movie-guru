@@ -1,0 +1,26 @@
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: movie-guru-db-init
+spec:
+  template:
+    spec:
+      containers:
+      - image: ${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest
+        env:
+        - name: DB_HOST
+          value: $DB_HOST
+        - name: DB_NAME
+          value: fake-movies-db
+        - name: DB_USER
+          value: postgres
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres-root-password-secret
+              key: latest # Cloud Run automatically fetches the latest version
+      serviceAccountName: movie-guru-chat-server-sa@${_PROJECT_ID}.iam.gserviceaccount.com
+      vpcAccess:
+        network: projects/${_PROJECT_ID}/global/networks/movie-guru-network
+        egress: all
+        subnet: projects/${_PROJECT_ID}/regions/${_REGION}/subnetworks/movie-guru-subnet
