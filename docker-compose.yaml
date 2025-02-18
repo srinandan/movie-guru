@@ -31,10 +31,12 @@ services:
       - POSTGRES_DB_USER=minimal-user
       - TABLE_NAME=movies
       - POSTGRES_DB_NAME=fake-movies-db
-      - APP_VERSION=v1_local
       - GOOGLE_APPLICATION_CREDENTIALS=/key.json
       - LOCATION=us-west1
-      - LOCAL=true
+      - FIREBASE_API_KEY=$FIREBASE_API_KEY
+      - FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET
+      - FIREBASE_MESSAGING_SENDERID=$FIREBASE_MESSAGING_SENDERID
+      - FIREBASE_APPID=$FIREBASE_APPID
     volumes:
       - ./.key.json:/key.json:ro
   server:
@@ -73,21 +75,38 @@ services:
     restart: always
     ports:
       - 8085:8080
+  mock:
+    build: ./js/mock-user
+    ports:
+      - "3402:3400"
+      - "4002:4000"
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/key.json
+      - LOCATION=us-west1
+      - PROJECT_ID=$PROJECT_ID
+      - FIREBASE_API_KEY=$FIREBASE_API_KEY
+      - FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET
+      - FIREBASE_MESSAGING_SENDERID=$FIREBASE_MESSAGING_SENDERID
+      - FIREBASE_APPID=$FIREBASE_APPID
+    volumes:
+      - ./.key.json:/key.json
 
-  # locust-master:
-  #   image: locustio/locust
-  #   ports:
-  #    - "8089:8089"
-  #   volumes:
-  #     - ./locust:/mnt/locust
-  #   command: -f /mnt/locust/locustfile.py --master -H http://server:8080
-
-  # locust-worker:
-  #   image: locustio/locust
-  #   volumes:
-  #     - ./locust:/mnt/locust
-  #   command: -f /mnt/locust/locustfile.py --worker --master-host locust-master
-  
+  locust-master:
+    image: locustio/locust
+    ports:
+     - "8089:8089"
+    volumes:
+      - ./locust:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --master -H http://server:8080
+    environment:
+      - MOCK_URL=http://mock:3400/mockUserFlow
+  locust-worker:
+    image: locustio/locust
+    volumes:
+      - ./locust:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --worker --master-host locust-master
+    environment:
+      - MOCK_URL=http://mock:3400/mockUserFlow
   
 
   

@@ -1,9 +1,13 @@
-from locust import HttpUser, task, between, events
+from locust import HttpUser, task, between
+import requests
+import os
 import random
 import string
 
 class ChatUser(HttpUser):
     wait_time = between(1, 2)
+    MOODS = ["POSITIVE", "NEUTRAL", "NEGATIVE"]
+    RESPONSE_TYPE=["END_CONVERSATION", "CONTINUE", "DIVE_DEEP", "CHANGE_TOPIC"]
 
     def on_stop(self):
         self.client.post("/logout")
@@ -28,34 +32,67 @@ class ChatUser(HttpUser):
             self.client.cookies.set("stored_cookie", set_cookie)  #Stores it in the locust client.
         else:
             print("No Set-Cookie header received.")
+        
+        self.helper_api_client = requests.Session()
+        self.mock_url = os.getenv("MOCK_URL", "http://mockuser.mockuser.svc.cluster.local:80/mockUserFlow")
+        print("using mock url", self.mock_url)
+
 
     @task(1)
     def healthcheck(self):
         response = self.client.get("/")
     
-    @task(3)
-    def sayhi(self):
-        chat_response = self.client.post(
-                "/chat",
-                json={"content":"hi"}
-            )
-        answer = chat_response.json()["answer"]
-        print(f"chat_response response is {answer}")
 
     @task(1)
-    def startup(self):
-        self.client.get(
-                "/startup",
-            )
-    
-    @task(2)
-    def preferences(self):
-        self.client.post(f"/preferences", json={
-                "Content": {
-                    "likes": {"genres": ["action"]},
-                    "dislikes": {}
+    def chat_with_mock(self):
+        response_type = random.choice(self.RESPONSE_TYPE)
+        response_mood = random.choice(self.MOODS)
+        endConv = False
+        chat_answer = "Hi. How can I help you today?"
+        while(endConv == False):
+            if(response_type == "END_CONVERSATION"): 
+                endConv = True
+            
+            mock_response = self.helper_api_client.post(self.mock_url,
+            json={
+                "data":{
+                    "expert_answer": chat_answer,
+                    "response_mood": response_mood,
+                    "response_type": response_type
                 }
-        }) 
-        self.client.get(f"/preferences") 
+            })
+            if mock_response.status_code == 200:
+                try:
+                    response_json = mock_response.json()
+                    mock_response_answer = response_json.get("result")["answer"]
+                    print(f"BOT: {chat_answer}\n")
+                    print(f"MOCK: {response_mood}: {response_type}: {mock_response_answer} \n")
+                except ValueError:
+                    print(f"Helper API request failed: {mock_response.status_code}, {mock_response.text}")
+
+
+            chat_response = self.client.post(
+                        "/chat",
+                        json={"content":mock_response_answer}
+                    )
+            chat_answer = chat_response.json()["answer"]
+            response_type = random.choice(self.RESPONSE_TYPE)
+            response_mood = random.choice(self.MOODS)
+
+    # @task(1)
+    # def startup(self):
+    #     self.client.get(
+    #             "/startup",
+    #         )
+    
+    # @task(2)
+    # def preferences(self):
+    #     self.client.post(f"/preferences", json={
+    #             "Content": {
+    #                 "likes": {"genres": ["action"]},
+    #                 "dislikes": {}
+    #             }
+    #     }) 
+    #     self.client.get(f"/preferences") 
 
 
