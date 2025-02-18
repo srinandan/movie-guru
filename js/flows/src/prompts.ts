@@ -103,7 +103,7 @@ Movie:
 
   * a *justification* about why you answered the way you did, with specific references to the context documents whenever possible.
   * an *answer* which is your answer to the user's question, written in a friendly and conversational way.
-  * a list of *relevantMovies* which is a list of objects of type relevantmovie with the *title* extracted from the context documents, with and *reason* for their relevance. If none are relevant, leave this list empty. 
+  * a list of *relevantMovies* which is a list of objects extracted from the context documents that are relevant to your response. Each object contains the reason why you think a movie relevant and the title of the movie. If none are relevant, leave this list empty. If any movies you are talking about in your answer are relevant, add them.
   * a *wrongQuery* boolean which is set to "true" if the user asks something outside your movie expertise; otherwise, set to "false."
   * a *safetyIssue* returned as true if the query is considered dangerous.
 
@@ -130,7 +130,9 @@ Determine the appropriate search category for the query: KEYWORD, VECTOR, or MIX
 
 1. KEYWORD search: Use when the query can be expressed with SQL operators for the postgres db (e.g., =, !=, >, <, IN) on the title, actors, director, genres, runtime_mins, released, or rating fields.
 Queries about movie quality, length, or release year may require transforming the query for KEYWORD search.
-If the query contains text searches, make them case insensitive. 
+If the query contains text searches, make them case insensitive.  When the search is based on titles or names always use the ILIKE operator to circumvent potential spelling and punctuation mismatches. 
+Please remove all special characters (e.g., ', @, #, $, %, etc.) from the names or titles, leaving only letters, numbers, and spaces.
+
 Transformations:
     Movie Quality:
         Bad: rating < 2

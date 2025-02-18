@@ -24,7 +24,6 @@ export const QualityFlowPrompt = ai.definePrompt(
     },
     async (input) => {
       try {
-        console.log("history:", input.history)
         const response = await QualityFlowPrompt({ history: input.history });
         const jsonResponse =  JSON.parse(response.text);
         console.log("quality response:", jsonResponse)

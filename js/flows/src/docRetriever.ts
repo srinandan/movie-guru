@@ -69,6 +69,7 @@ export const MovieDocFlow = ai.defineFlow(
       query: input.query
     })
     const jsonResponse = JSON.parse(response.text)
+    console.log("MovieDocFlow response: ", jsonResponse, " to query: ", input.query )
     searchFlowOutput = {
       vectorQuery: jsonResponse.vectorQuery || "",
       keywordQuery: jsonResponse.keywordQuery || "",
@@ -117,6 +118,7 @@ export const MovieDocFlow = ai.defineFlow(
           tconst: doc.metadata.tconst,
         };
         movieContexts.push(movieContext);
+        console.log("Movie Context: ", movieContext)
       } else {
         console.warn('Movie metadata is missing for a document.');
       }
@@ -147,6 +149,8 @@ export const sqlRetriever = ai.defineRetriever(
       FROM movies
       WHERE ${db.unsafe(options.keywordQuery)} 
       LIMIT ${options.k ?? 10}`
+
+      console.log("Keyword query results ", results)
     }
 
      //Vector Query
@@ -161,6 +165,8 @@ export const sqlRetriever = ai.defineRetriever(
           ORDER BY embedding <#> ${toSql(embedding)}
           LIMIT ${options.k ?? 10}
         ;`
+        console.log("Vector query results ", results)
+
     }
 
     //Mixed Query
@@ -194,7 +200,8 @@ export const sqlRetriever = ai.defineRetriever(
         LIMIT 
           ${options.k ?? 10}
       ;`;
-    
+      console.log("Mixed query results ", results)
+
     }
 
     if (!results) {

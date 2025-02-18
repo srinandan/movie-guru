@@ -30,7 +30,7 @@ export const store = {
           state.movies = []
           movies.forEach(element => {
             if (element.poster=="") {
-              element.poster="https://storage.googleapis.com/generated_posters/notfound.png"
+              element.poster="../assets/notfound.png"
             }
             state.movies.push(element)
           });
@@ -40,7 +40,7 @@ export const store = {
           state.placeHolderMovies = []
           movies.forEach(element => {
             if (element.poster=="") {
-              element.poster="https://storage.googleapis.com/generated_posters/notfound.png"
+              element.poster="../assets/notfound.png"
             }
             state.placeHolderMovies.push(element)
           });

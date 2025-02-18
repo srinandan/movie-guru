@@ -36,6 +36,8 @@ export const MovieFlowPrompt = ai.definePrompt(
             "safetyIssue": jsonResponse.safetyIssue || false,
           }
         }
+        console.log("Printing MovieFlow output ", output)
+
         if(output.wrongQuery){
           console.log("wrong query found")
         }

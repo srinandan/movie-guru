@@ -55,12 +55,18 @@ class ChatClientService {
         credentials: 'include'
     };
     const response = await fetchPolyfill(import.meta.env.VITE_CHAT_SERVER_URL + '/startup', requestOptions)
-    
+   
     if (!response.ok) {
         throw new Error(`Response status: ${response.status}`);
     }
       const json = await response.json();
-      return json
+      let context = json["context"]
+      let result = json["result"]
+      let preferences = json["preferences"]
+      if (result == "SUCCESS"){
+        store.commit('chat/addPlaceHolderMovies', context)
+        store.commit('preferences/update', preferences)
+        }
     } catch (error) {
       console.error(error.message);
       throw error;
