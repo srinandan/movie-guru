@@ -14,4 +14,25 @@
 # limitations under the License.
 
 source set_env_vars.sh
+if [[ -z "$PROJECT_ID" ]]; then
+    echo -e "\e[91mERROR: PROJECT_ID environment variable is required.\e[0m"
+    echo -e "Please set it using: \e[95mexport PROJECT_ID=<your-gcp-project-id>\e[0m"
+    exit 1
+fi
+
+if [[ -z "$REGION" ]]; then
+    echo -e "\e[91mERROR: REGION environment variable is required.\e[0m"
+    exit 1
+fi
+
+if [[ -z "$DB_HOST" ]]; then
+    echo -e "\e[91mERROR: DB_HOST environment variable is required.\e[0m"
+    exit 1
+fi
+
+if [[ -z "$REDIS_HOST" ]]; then
+    echo -e "\e[91mERROR: REDIS_HOST environment variable is required.\e[0m"
+    exit 1
+fi
+
 helm upgrade --install movieguru ./deploy/app/helm/movieguru --namespace movieguru --create-namespace --set PROJECT_ID=${PROJECT_ID} --set IMAGE.TAG=latest --set REGION=${REGION} --set REDIS_HOST=${REDIS_HOST} --set DB_HOST=${DB_HOST}
