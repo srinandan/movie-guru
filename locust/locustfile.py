@@ -45,16 +45,12 @@ class ChatUser(HttpUser):
 
     @task(1)
     def chat_with_mock(self):
-        response_type = random.choice(self.RESPONSE_TYPE)
-        response_mood = random.choice(self.MOODS)
         endConv = False
         chat_answer = "Hi. How can I help you today?"
         while(endConv == False):
-            if(response_type == "END_CONVERSATION"): 
-                endConv = True
-                
-
-            # post to mock user
+            response_type = random.choice(self.RESPONSE_TYPE)
+            response_mood = random.choice(self.MOODS)
+            # Post to mock user
             mock_response = self.helper_api_client.post(self.mock_url,
             json={
                 "data":{
@@ -66,15 +62,17 @@ class ChatUser(HttpUser):
             mock_response_json = mock_response.json()
             mock_response_answer = mock_response_json.get("result")["answer"]
             print(f"BOT: {chat_answer}\n")
-            print(f"MOCK: {response_mood}: {mock_response_answer} \n")
+            print(f"MOCK: {response_mood}: {response_type}: {mock_response_answer} \n")
             # Post to movie guru
             chat_response = self.client.post(
                         "/chat",
                         json={"content":mock_response_answer}
                     )
             chat_answer = chat_response.json()["answer"]
-            response_type = random.choice(self.RESPONSE_TYPE)
-            response_mood = random.choice(self.MOODS)
+            
+            if(response_type == "END_CONVERSATION"): 
+                endConv = True
+                print("--- END CONVERSATION ---")
 
     # @task(1)
     # def startup(self):
