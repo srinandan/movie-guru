@@ -39,7 +39,6 @@ func (flowClient *MovieFlowClient) Run(movieDocs []*types.MovieContext, history 
 	relevantMovies := make([]string, 0, len(resp.RelevantMoviesTitles))
 	for _, r := range resp.RelevantMoviesTitles {
 		relevantMovies = append(relevantMovies, r.Title)
-		fmt.Println("titles recieved from agent: ", r.Title)
 	}
 
 	agentResponse := &types.AgentResponse{

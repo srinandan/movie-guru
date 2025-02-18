@@ -149,8 +149,6 @@ export const sqlRetriever = ai.defineRetriever(
       FROM movies
       WHERE ${db.unsafe(options.keywordQuery)} 
       LIMIT ${options.k ?? 10}`
-
-      console.log("Keyword query results ", results)
     }
 
      //Vector Query
@@ -165,8 +163,6 @@ export const sqlRetriever = ai.defineRetriever(
           ORDER BY embedding <#> ${toSql(embedding)}
           LIMIT ${options.k ?? 10}
         ;`
-        console.log("Vector query results ", results)
-
     }
 
     //Mixed Query
@@ -200,8 +196,6 @@ export const sqlRetriever = ai.defineRetriever(
         LIMIT 
           ${options.k ?? 10}
       ;`;
-      console.log("Mixed query results ", results)
-
     }
 
     if (!results) {

@@ -14,7 +14,6 @@ import RequestedMovies from './components/RequestedMovies.vue';
 import FeaturedMovies from './components/FeaturedMovies.vue';
 import ChatWindow from './components/ChatWindow.vue';
 import Footer from './components/Footer.vue';
-import UserComponent from './components/UserComponent.vue';
 
 export default {
   components: {
@@ -23,7 +22,6 @@ export default {
     ChatWindow,
     Footer,
     FeaturedMovies,
-    UserComponent
   },
 };
 </script>
