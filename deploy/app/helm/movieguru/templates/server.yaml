@@ -64,10 +64,10 @@ spec:
               value: {{ .Values.REDIS_HOST }}
             - name: REDIS_PORT
               value: "6379"
-            - name: REDIS_PASSWORD
-              value: "my_redis_pwd"
+            - name: REDIS_MODE
+              value: {{ .Values.REDIS_MODE }}
             - name: ENABLE_METRICS
-              value: "false"
+              value: "true"
             - name: OTEL_EXPORTER_OTLP_INSECURE
               value: "true"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT

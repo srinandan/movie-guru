@@ -1,0 +1,4 @@
+REGION: us-west1
+POSTGRES_HOST: db.movieguru.svc.cluster.local
+REDIS_MODE: SINGLE
+REDIS_HOST: cache.movieguru.svc.cluster.local
