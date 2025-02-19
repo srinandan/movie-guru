@@ -54,9 +54,15 @@ resource "google_project_iam_member" "secret-reader" {
   member  = "serviceAccount:${google_service_account.sa.email}"
 }
 
-resource "google_project_iam_member" "objectc-reader" {
+resource "google_project_iam_member" "object-reader" {
   project = var.project_id
   role    = "roles/storage.objectUser"
+  member  = "serviceAccount:${google_service_account.sa.email}"
+}
+
+resource "google_project_iam_member" "blob-signer" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountTokenCreator"
   member  = "serviceAccount:${google_service_account.sa.email}"
 }
 

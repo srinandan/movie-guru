@@ -38,8 +38,9 @@ func GetSignedURL(poster string) (string, error) {
 	}
 
 	opts := &storage.SignedURLOptions{
-		Method:  "GET",
-		Expires: time.Now().Add(15 * time.Second),
+		GoogleAccessID: fmt.Sprintf("movie-guru-chat-server-sa@%s.iam.gserviceaccount.com", os.Getenv("PROJECT_ID")),
+		Method:         "GET",
+		Expires:        time.Now().Add(15 * time.Second),
 	}
 
 	url, err := storage.SignedURL(bucketName, poster, opts)
