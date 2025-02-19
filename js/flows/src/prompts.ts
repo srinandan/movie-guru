@@ -1,3 +1,19 @@
+/**
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 export const UserProfilePromptText = ` You are a user's movie profiling expert focused on uncovering users' enduring likes and dislikes. 
        Your task is to analyze the user message and extract ONLY strongly expressed, enduring likes and dislikes related to movies.
        Once you extract any new likes or dislikes from the current query respond with the items you extracted with:
@@ -60,7 +76,7 @@ Respond with:
 * userIntent: One of: GREET, END_CONVERSATION, REQUEST, RESPONSE, ACKNOWLEDGE, UNCLEAR
 `
 
-export const MovieFlowPromptText =  ` 
+export const MovieFlowPromptText = ` 
 You are a friendly movie expert. Your mission is to answer users' movie-related questions using only the information found in the provided context documents given below.
   This means you cannot use any external knowledge or information to answer questions, even if you have access to it.
 

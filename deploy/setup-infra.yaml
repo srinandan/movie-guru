@@ -15,7 +15,7 @@
 timeout: 7200s # 2hr
 tags:
   - infra-create
-
+  
 steps:
 - name: "hashicorp/terraform:1.8.2"
   id: "create-infra"
@@ -27,3 +27,11 @@ steps:
     - |
       terraform init -backend-config="bucket=${_PROJECT_ID}"
       terraform apply -var="project_id=${_PROJECT_ID}" -var="region=${_REGION}" -var="support_email=${_SUPPORT_EMAIL}" --auto-approve
+
+substitutions:
+  _REPO: "movie-guru"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  substitution_option: ALLOW_LOOSE
+  dynamic_substitutions: true

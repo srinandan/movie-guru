@@ -17,7 +17,6 @@ tags:
   - ci
 
 steps:
-
 - name: "gcr.io/cloud-builders/docker"
   id: "build-frontend"
   dir: './frontend'
@@ -47,6 +46,7 @@ steps:
     - |
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:${_SHORT_SHA}' && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:latest'
+
 - name: 'gcr.io/cloud-builders/docker'
   id: "build-server-image"
   dir: './chat_server_go'
@@ -114,3 +114,60 @@ steps:
     - |
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/mockuser:${_SHORT_SHA}'  && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/mockuser:latest'
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: "build-db-init-image"
+  dir: './pgvector'
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker build \
+         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:${_SHORT_SHA}" \
+         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest" \
+         --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest" \
+         -f Dockerfile.init \
+         .
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: "push-db-init-image"
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:${_SHORT_SHA}' && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest'
+
+- name: 'gcr.io/google.cloud.sdk:latest'
+  id: create_db_init_job
+  entrypoint: gcloud
+  args:
+  - 'run'
+  - 'jobs'
+  - 'replace'
+  - 'cloudrun.yaml'
+  - --project=${_PROJECT_ID} 
+  - --region=${_REGION}
+
+- name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+  args:
+  - run
+  - jobs 
+  - create 
+  - movie-guru-db-init 
+  - --image=${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest 
+  - --set-env-vars=DB_HOST=$DB_HOST,DB_NAME=fake-movies-db,DB_USER=postgres 
+  - --network=movie-guru-network 
+  - --subnet=movie-guru-subnet 
+  - --vpc-egress=all-traffic 
+  - --set-secrets=DB_PASS=postgres-root-password-secret:latest
+  - --service-account=movie-guru-chat-server-sa@${_PROJECT_ID}.iam.gserviceaccount.com 
+  - --project=${_PROJECT_ID} 
+  - --region=${_REGION}
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  substitution_option: ALLOW_LOOSE
+  dynamic_substitutions: true

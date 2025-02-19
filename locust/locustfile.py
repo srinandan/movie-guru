@@ -1,3 +1,17 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from locust import HttpUser, task, between
 import requests
 import os
@@ -21,7 +35,8 @@ class ChatUser(HttpUser):
         "Content-Type": "application/json",
         "User": name
         }
-        response = self.client.post("/login", headers=headers, json={"inviteCode": "" })
+        response = self.client.post(
+            "/login", headers=headers, json={"inviteCode": ""})
         print(f"Login Headers {response.headers}")
         print(f"Login Response {response.content}")
 
@@ -29,7 +44,8 @@ class ChatUser(HttpUser):
         set_cookie = response.headers.get('Set-Cookie').split(';', 1)[0]
         if set_cookie:
             print(f"Extracted cookie: {set_cookie}")
-            self.client.cookies.set("stored_cookie", set_cookie)  #Stores it in the locust client.
+            # Stores it in the locust client.
+            self.client.cookies.set("stored_cookie", set_cookie)
         else:
             print("No Set-Cookie header received.")
         
@@ -37,11 +53,9 @@ class ChatUser(HttpUser):
         self.mock_url = os.getenv("MOCK_URL", "http://mockuser.mockuser.svc.cluster.local:80/mockUserFlow")
         print("using mock url", self.mock_url)
 
-
     @task(1)
     def healthcheck(self):
         response = self.client.get("/")
-    
 
     @task(2)
     def chat_with_mock(self):
@@ -87,7 +101,5 @@ class ChatUser(HttpUser):
     #                 "likes": {"genres": ["action"]},
     #                 "dislikes": {}
     #             }
-    #     }) 
-    #     self.client.get(f"/preferences") 
-
-
+    #     })
+    #     self.client.get(f"/preferences")

@@ -1,3 +1,17 @@
+// Copyright 2025 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package web
 
 import (
@@ -14,18 +28,38 @@ import (
 )
 
 var (
-	redisStore *redis.Client
+	redisStore *redis.ClusterClient
 )
 
-func setupSessionStore(ctx context.Context) {
+func TestRedis() {
+	ctx := context.Background()
 	REDIS_HOST := os.Getenv("REDIS_HOST")
 	REDIS_PASSWORD := os.Getenv("REDIS_PASSWORD")
 	REDIS_PORT := os.Getenv("REDIS_PORT")
 
-	redisStore = redis.NewClient(&redis.Options{
+	client := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", REDIS_HOST, REDIS_PORT),
 		Password: REDIS_PASSWORD,
 		DB:       0,
+	})
+	if err := client.Ping(ctx).Err(); err != nil {
+		slog.ErrorContext(ctx, "error connecting to redis", slog.Any("error", err))
+		return
+	}
+}
+
+func setupSessionStore(ctx context.Context) {
+	REDIS_HOST := os.Getenv("REDIS_HOST")
+	//REDIS_PASSWORD := os.Getenv("REDIS_PASSWORD")
+	//REDIS_PORT := os.Getenv("REDIS_PORT")
+
+	/*redisStore = redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%s", REDIS_HOST, REDIS_PORT),
+		Password: REDIS_PASSWORD,
+		DB:       0,
+	})*/
+	redisStore = redis.NewClusterClient(&redis.ClusterOptions{
+		Addrs: []string{fmt.Sprintf("%s:%s", REDIS_HOST, "6379")},
 	})
 	if err := redisStore.Ping(ctx).Err(); err != nil {
 		slog.ErrorContext(ctx, "error connecting to redis", slog.Any("error", err))

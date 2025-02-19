@@ -1,3 +1,17 @@
+// Copyright 2025 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
@@ -13,15 +27,10 @@ import (
 )
 
 func main() {
+
 	ctx := context.Background()
 
 	// Load environment variables
-	projectID := os.Getenv("PROJECT_ID")
-	if projectID == "" {
-		slog.ErrorContext(ctx, "Error getting PROJECT_ID")
-		return
-	}
-
 	URL := os.Getenv("FLOWS_URL")
 	metricsEnabled, err := strconv.ParseBool(os.Getenv("ENABLE_METRICS"))
 
@@ -37,9 +46,11 @@ func main() {
 	}
 	defer movieAgentDB.DB.Close()
 
+	// test redis connection
+	web.TestRedis()
+
 	// Fetch metadata
-	app_version := os.Getenv("APP_VERSION")
-	metadata, err := movieAgentDB.GetMetadata(ctx, app_version)
+	metadata, err := movieAgentDB.GetMetadata(ctx, os.Getenv("APP_VERSION"))
 	if err != nil {
 		slog.ErrorContext(ctx, "Error getting metadata", slog.Any("error", err))
 		os.Exit(1)
