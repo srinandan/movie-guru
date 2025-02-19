@@ -84,7 +84,7 @@ helm upgrade --install movieguru \
 --namespace movieguru \
 --create-namespace \
 -f ./deploy/app/helm/movieguru/values.simple.yaml \
---set projectId=${PROJECT_ID} \
+--set projectID=${PROJECT_ID} \
 --set Image.tag=$SHORT_SHA \
 --set region=${REGION} \
 
@@ -117,7 +117,7 @@ helm upgrade --install mockuser \
 ./deploy/app/helm/mockuser \
 --namespace mockuser \
 --create-namespace \
---set projectId=${PROJECT_ID} \
+--set projectID=${PROJECT_ID} \
 --set Image.tag=${SHORT_SHA} \
 --set region=${REGION} \
 --set modelLocation:us-west-1

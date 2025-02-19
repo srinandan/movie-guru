@@ -24,12 +24,12 @@ Db:
 Hosts:
   postgres: db.movieguru.svc.cluster.local
   redis: cache.movieguru.svc.cluster.local
-  redis_mode: SINGLE
+  redisMode: SINGLE
 
 Server:
   replicas: 3
   version: v1
-  enable_metrics: true
+  enableMetrics: true
 
 Flows:
   replicas: 5

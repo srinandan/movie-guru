@@ -18,7 +18,7 @@ metadata:
   name: flows
   namespace: movieguru
 spec:
-  replicas: {{ .Values. Flows.replicas }}
+  replicas: 5 # {{ .Values.Flows.replicas }}
   selector:
     matchLabels:
       app: flows
@@ -56,7 +56,7 @@ spec:
             - name: LOCATION
               value: {{ .Values.Flows.modelLocation }}
             - name: USEGEMINIFLASH2
-              value: {{ .Values.Flows.geminiflash2 }}
+              value: "{{ .Values.Flows.geminiflash2 }}"
 
 ---
 apiVersion: v1

@@ -24,12 +24,12 @@ Db:
 Hosts:
   postgres: ""
   redis: ""
-  redis_mode: CLUSTER
+  redisMode: CLUSTER
 
 Server:
   replicas: 3
   version: v1
-  enable_metrics: true
+  enableMetrics: true
 
 Flows:
   replicas: 5

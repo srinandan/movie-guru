@@ -18,7 +18,7 @@ metadata:
   name: server
   namespace: movieguru
 spec:
-  replicas: {{ .Values.Server.replicas }}
+  replicas: 3 #{{ .Values.Server.replicas }}
   selector:
     matchLabels:
       app: server
@@ -67,7 +67,7 @@ spec:
             - name: REDIS_MODE
               value: {{ .Values.Hosts.redisMode }}
             - name: ENABLE_METRICS
-              value: {{ .Values.Server.enableMetrics }}
+              value: "{{ .Values.Server.enableMetrics }}"
             - name: OTEL_EXPORTER_OTLP_INSECURE
               value: "true"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
