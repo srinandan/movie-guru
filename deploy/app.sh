@@ -128,7 +128,7 @@ helm upgrade --install mockuser \
 --set projectID=${PROJECT_ID} \
 --set Image.tag=${SHORT_SHA} \
 --set region=${REGION} \
---set modelLocation:us-west-1
+--set modelLocation=us-west1
 
 
 echo -e "\e[95m Starting Helm deploy for otel collector ...\e[0m"
@@ -138,7 +138,7 @@ helm upgrade --install otel \
 ./deploy/app/helm/otel \
 --namespace otel-collector \
 --create-namespace \
---set projectId=${PROJECT_ID} 
+--set projectID=${PROJECT_ID} 
 
 echo -e "\e[95m Creating IAM bindings for the KSAs.\e[0m"
 

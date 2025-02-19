@@ -20,11 +20,15 @@ import { initializeApp } from 'firebase-admin/app';
 
 import { genkit } from 'genkit';
 
-const gemini20 = !! process.env.USEGEMINIFLASH2 || false;
+const gemini20:boolean = !! process.env.USEGEMINIFLASH2 || false;
 export let modelRef = gemini15Flash
-if(gemini20){
+if(gemini20 == true){
+  console.log("Using gemini 2.0 flash")
   modelRef = gemini20FlashExp
 } 
+else{
+  console.log("Using gemini 1.5 flash")
+}
 
 const LOCATION = process.env.LOCATION || 'us-central1';
 const PROJECT_ID = process.env.PROJECT_ID;

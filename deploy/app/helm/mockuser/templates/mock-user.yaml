@@ -30,7 +30,7 @@ spec:
       serviceAccountName: mockuser-sa
       containers:
       - name: mock-user-js
-        image: "{{ .Values.region }}-docker.pkg.dev/{{ .Values.projectId }}/movie-guru/mockuser:{{ .Values.Image.tag }}"
+        image: "{{ .Values.region }}-docker.pkg.dev/{{ .Values.projectID }}/movie-guru/mockuser:{{ .Values.Image.tag }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 3400
