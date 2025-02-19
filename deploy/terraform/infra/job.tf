@@ -13,7 +13,6 @@
 # limitations under the License.
 
 resource "google_cloud_run_v2_job" "db-init" {
-  count               = var.disable_init ? 0 : 1
   name                = "db-init-job"
   location            = var.region
   project             = var.project_id
@@ -22,7 +21,8 @@ resource "google_cloud_run_v2_job" "db-init" {
     template {
       service_account = google_service_account.sa.email
       containers {
-        image = "${var.region}-docker.pkg.dev/${var.project_id}/${var.app_name}/db-init:latest"
+        # should be replaced later.
+        image = "us-docker.pkg.dev/cloudrun/container/hello:latest"
         name  = "db-init"
         env {
           name = "DB_PASS"

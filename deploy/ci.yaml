@@ -133,15 +133,9 @@ steps:
   args:
   - run
   - jobs 
-  - create 
+  - deploy 
   - movie-guru-db-init 
   - --image=${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest 
-  - --set-env-vars=DB_HOST=$DB_HOST,DB_NAME=fake-movies-db,DB_USER=postgres 
-  - --network=movie-guru-network 
-  - --subnet=movie-guru-subnet 
-  - --vpc-egress=all-traffic 
-  - --set-secrets=DB_PASS=postgres-root-password-secret:latest
-  - --service-account=movie-guru-chat-server-sa@${_PROJECT_ID}.iam.gserviceaccount.com 
   - --project=${_PROJECT_ID} 
   - --region=${_REGION}
 
