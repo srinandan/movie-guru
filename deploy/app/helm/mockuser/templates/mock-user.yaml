@@ -4,7 +4,7 @@ metadata:
   name: mockuser
   namespace: mockuser
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: mockuser
@@ -24,7 +24,7 @@ spec:
         - name: PROJECT_ID
           value: {{ .Values.PROJECT_ID }}
         - name: LOCATION
-          value: {{ .Values.REGION }}
+          value: us-west-1
 ---
 apiVersion: v1
 kind: Service

@@ -117,8 +117,20 @@ helm upgrade --install locust \
   --set worker.replicas=5
 
 
+echo -e "\e[95m Starting Helm deploy for mock user ...\e[0m"
+
+helm upgrade --install mockuser \
+./deploy/app/helm/mockuser \
+--namespace mockuser \
+--create-namespace \
+--set PROJECT_ID=${PROJECT_ID} \
+--set IMAGE.TAG=${SHORT_SHA} \
+--set REGION=${REGION}
+
+
 echo -e "\e[95m Starting Helm deploy for otel collector ...\e[0m"
 
+helm delete otel -n otel-collector
 helm upgrade --install otel \
 ./deploy/app/helm/otel \
 --namespace otel-collector \

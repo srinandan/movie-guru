@@ -121,7 +121,7 @@ data:
           exporters: [googlemanagedprometheus]
       telemetry:
           logs:
-            level: debug # or trace
+            level: info # or trace
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole

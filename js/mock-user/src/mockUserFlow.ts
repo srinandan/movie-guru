@@ -1,7 +1,7 @@
 import { ai } from './genkitConfig'
 import { gemini15Flash } from '@genkit-ai/vertexai';
 import {MockUserFlowInputSchema, MockUserFlowOutputSchema, MockUserFlowOutput} from './mockUserFlowTypes'
-import { MockUserFlowPrompt } from './prompts';
+import { MockUserFlowPromptText } from './prompts';
 
 export const MockUserPrompt = ai.definePrompt(
     {
@@ -12,10 +12,9 @@ export const MockUserPrompt = ai.definePrompt(
       },
       output: {
         format: 'json',
-        schema: MockUserFlowOutputSchema,
       },  
     }, 
-    MockUserFlowPrompt
+    MockUserFlowPromptText
 )
   export const MockUserFlow = ai.defineFlow(
     {

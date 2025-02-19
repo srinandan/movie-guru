@@ -3,7 +3,6 @@ package web
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -191,8 +190,15 @@ func createLoginHandler(ulh *UserLoginHandler, meters *m.LoginMeters, metadata *
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 			meters.LoginSuccessCounter.Add(ctx, 1)
-			setCookieHeader := fmt.Sprintf("movie-guru-sid=%s; HttpOnly; SameSite=Lax; Path=/; Domain=%s; Max-Age=86400", sessionID, metadata.ServerDomain)
-			w.Header().Set("Set-Cookie", setCookieHeader)
+			cookie := http.Cookie{
+				Name:     "movie-guru-sid",
+				Value:    sessionID,
+				Path:     "/",
+				MaxAge:   86400,
+				HttpOnly: true,
+				SameSite: http.SameSiteLaxMode,
+			}
+			http.SetCookie(w, &cookie)
 			w.Header().Set("Vary", "Cookie, Origin")
 			json.NewEncoder(w).Encode(map[string]string{"login": "success"})
 		}

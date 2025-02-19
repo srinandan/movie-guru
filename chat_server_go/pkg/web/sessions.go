@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
-	"strings"
 
 	redis "github.com/redis/go-redis/v9"
 )
@@ -34,10 +34,20 @@ func setupSessionStore(ctx context.Context) {
 }
 
 func getSessionID(r *http.Request) (string, error) {
-	if r.Header.Get("Cookie") == "" {
-		return "", errors.New("No cookie found")
+	cookie, err := r.Cookie("movie-guru-sid")
+	if err != nil {
+		switch {
+		case errors.Is(err, http.ErrNoCookie):
+			return "", errors.New("No cookie found")
+		default:
+			log.Println(err)
+			return "", err
+		}
 	}
-	sessionID := strings.Split(r.Header.Get("Cookie"), "movie-guru-sid=")[1]
+	sessionID := cookie.Value
+	if sessionID == "" {
+		return "", errors.New("None or malformed cookie found")
+	}
 	return sessionID, nil
 }
 
@@ -60,18 +70,22 @@ func authenticateAndGetSessionInfo(ctx context.Context, sessionInfo *SessionInfo
 	}
 	return sessionInfo, false
 }
+
 func getSessionInfo(ctx context.Context, r *http.Request) (*SessionInfo, error) {
-	session := &SessionInfo{}
 	sessionID, err := getSessionID(r)
 	if err != nil {
-		return session, &AuthorizationError{err.Error()}
+		return nil, &AuthorizationError{err.Error()}
 	}
+	session := &SessionInfo{}
 	s, err := redisStore.Get(ctx, sessionID).Result()
+	if err != nil {
+		return nil, &AuthorizationError{fmt.Sprintf("Unknown session: %s", sessionID)}
+	}
 	err = json.Unmarshal([]byte(s), session)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("Unable to retrieve session info. %s", err))
 	}
-	return session, err
+	return session, nil
 }
 
 func deleteSessionInfo(ctx context.Context, sessionID string) error {

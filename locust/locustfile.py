@@ -7,7 +7,7 @@ import string
 class ChatUser(HttpUser):
     wait_time = between(1, 2)
     MOODS = ["POSITIVE", "NEUTRAL", "NEGATIVE"]
-    RESPONSE_TYPE=["END_CONVERSATION", "CONTINUE", "DIVE_DEEP", "CHANGE_TOPIC"]
+    RESPONSE_TYPE=["END_CONVERSATION", "CONTINUE", "CHANGE_TOPIC"]
 
     def on_stop(self):
         self.client.post("/logout")
@@ -43,7 +43,7 @@ class ChatUser(HttpUser):
         response = self.client.get("/")
     
 
-    @task(1)
+    @task(2)
     def chat_with_mock(self):
         endConv = False
         chat_answer = "Hi. How can I help you today?"
