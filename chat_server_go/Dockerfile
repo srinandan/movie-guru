@@ -32,11 +32,12 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -a -
 
 # use debug because it includes busybox
 FROM gcr.io/distroless/static-debian11:debug-nonroot@sha256:55716e80a7d4320ce9bc2dc8636fc193b418638041b817cf3306696bd0f975d1
-LABEL org.opencontainers.image.url='https://github.com/srinandan/movie-guru' \
-    org.opencontainers.image.documentation='https://github.com/srinandan/movie-guru' \
-    org.opencontainers.image.source='https://github.com/srinandan/movie-guru' \
+LABEL org.opencontainers.image.url='https://github.com/mkand/movie-guru' \
+    org.opencontainers.image.documentation='https://github.com/mkand/movie-guru' \
+    org.opencontainers.image.source='https://github.com/mkand/movie-guru' \
     org.opencontainers.image.vendor='Google LLC' \
     org.opencontainers.image.licenses='Apache-2.0'
+
 COPY --from=builder /app/webserver /usr/local/bin/webserver    
 
 ENTRYPOINT [ "webserver" ]

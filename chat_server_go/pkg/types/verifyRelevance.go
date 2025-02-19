@@ -67,14 +67,13 @@ const (
 
 // ResponseQualityFlowInput represents the input to the response quality analysis flow.
 type ResponseQualityFlowInput struct {
-	MessageHistory []*SimpleMessage `json:"messageHistory"`
+	History []*SimpleMessage `json:"history"`
 }
 
 // ResponseQualityFlowOutput represents the output of the response quality analysis flow.
 type ResponseQualityFlowOutput struct {
 	Outcome       ConversationTurnOutcome `json:"outcome"`
 	UserSentiment UserSentiment           `json:"userSentiment"` // Now using the UserSentiment type
-	*ModelOutputMetadata
 }
 
 type ResponseQualityOutput struct {

@@ -106,6 +106,13 @@ func (m *ChatHistory) AddUserMessage(message string) {
 	m.History = append(m.History, ai.NewUserTextMessage(message))
 }
 
+func (m *ChatHistory) RemoveLastMessage() {
+	if len(m.History) > 0 {
+		// m.History[len(m.History)-1] = ai.NewUserTextMessage("REDACTED")
+		m.History = m.History[:len(m.History)-1]
+	}
+}
+
 func (m *ChatHistory) AddAgentMessage(message string) {
 	m.History = append(m.History, ai.NewModelTextMessage(message))
 }
@@ -115,7 +122,7 @@ func (m *ChatHistory) AddAgentErrorMessage() {
 }
 
 func (m *ChatHistory) AddSafetyIssueErrorMessage() {
-	m.History = append(m.History, ai.NewModelTextMessage("That was a naughty request. I cannot proces it."))
+	m.History = append(m.History, ai.NewModelTextMessage("That was a naughty request. I cannot process it."))
 }
 
 func (m ChatHistory) GetHistory() []*ai.Message {

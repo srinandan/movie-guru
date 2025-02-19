@@ -32,12 +32,12 @@ type ResponseQualityFlowClient struct {
 
 func CreateResponseQualityFlowClient(URL string) (*ResponseQualityFlowClient, error) {
 	return &ResponseQualityFlowClient{
-		URL: URL + "/responseQualityFlow",
+		URL: URL + "/qualityFlow",
 	}, nil
 }
 
 func (flowClient *ResponseQualityFlowClient) Run(ctx context.Context, history []*types.SimpleMessage, user string) (*types.ResponseQualityOutput, error) {
-	responseQualityFlowInput := types.ResponseQualityFlowInput{MessageHistory: history}
+	responseQualityFlowInput := types.ResponseQualityFlowInput{History: history}
 	resp, err := flowClient.runFlow(&responseQualityFlowInput)
 	if err != nil {
 		return nil, err
@@ -47,7 +47,10 @@ func (flowClient *ResponseQualityFlowClient) Run(ctx context.Context, history []
 
 func (flowClient *ResponseQualityFlowClient) runFlow(input *types.ResponseQualityFlowInput) (*types.ResponseQualityOutput, error) {
 	// Marshal the input struct to JSON
-	inputJSON, err := json.Marshal(input)
+	dataInput := DataInput{
+		Data: input,
+	}
+	inputJSON, err := json.Marshal(dataInput)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling input to JSON: %w", err)
 	}
@@ -57,7 +60,6 @@ func (flowClient *ResponseQualityFlowClient) runFlow(input *types.ResponseQualit
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {

@@ -18,4 +18,4 @@ metadata:
   name: otel-sa
   namespace: otel-collector
   annotations:
-    iam.gke.io/gcp-service-account: movie-guru-chat-server-sa@{{ .Values.PROJECT_ID }}.iam.gserviceaccount.com 
+    iam.gke.io/gcp-service-account: "movie-guru-chat-server-sa@{{ .Values.projectID }}.iam.gserviceaccount.com" 

@@ -92,6 +92,28 @@ steps:
     - |
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:${_SHORT_SHA}'  && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:latest'
+- name: 'gcr.io/cloud-builders/docker'
+  id: "build-mock-image"
+  dir: './js/mock-user'
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker build \
+         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/mockuser:${_SHORT_SHA}" \
+         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/mockuser:latest" \
+         --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/mockuser:latest" \
+         .
+- name: 'gcr.io/cloud-builders/docker'
+  id: "push-mock-image"
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/mockuser:${_SHORT_SHA}'  && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/mockuser:latest'
 
 - name: 'gcr.io/cloud-builders/docker'
   id: "build-db-init-image"
@@ -117,17 +139,6 @@ steps:
     - |
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:${_SHORT_SHA}' && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest'
-
-- name: 'gcr.io/google.cloud.sdk:latest'
-  id: create_db_init_job
-  entrypoint: gcloud
-  args:
-  - 'run'
-  - 'jobs'
-  - 'replace'
-  - 'cloudrun.yaml'
-  - --project=${_PROJECT_ID} 
-  - --region=${_REGION}
 
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
   args:

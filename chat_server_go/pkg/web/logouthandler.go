@@ -40,7 +40,6 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		json.NewEncoder(w).Encode(map[string]string{"logout": "success"})
-
 		return
 	}
 

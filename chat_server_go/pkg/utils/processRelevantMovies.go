@@ -30,6 +30,7 @@ func FilterRelevantContext(relevantMovies []string, fullContext []*types.MovieCo
 				if m.Poster != "" {
 					relevantContext = append(relevantContext, m)
 				}
+
 			}
 		}
 	}

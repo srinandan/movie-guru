@@ -22,7 +22,7 @@ import { ModelOutputMetadata, ModelOutputMetadataSchema } from './modelOutputMet
 // RelevantMovie schema
 export const RelevantMovieSchema = z.object({
   title: z.string(),
-  reason: z.string(),
+  reason: z.string().optional(),
 });
 export type RelevantMovie = z.infer<typeof RelevantMovieSchema>
 

@@ -36,10 +36,6 @@ variable "db_name" {
   default     = "fake-movies-db"
 }
 
-variable "support_email" {
-  description = "Email for IaP branding"
-}
-
 variable "disable_init" {
   description = "enable or disable db init"
   type        = bool

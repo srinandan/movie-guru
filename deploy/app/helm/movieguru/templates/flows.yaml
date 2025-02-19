@@ -18,7 +18,7 @@ metadata:
   name: flows
   namespace: movieguru
 spec:
-  replicas: 1
+  replicas: 5 # {{ .Values.Flows.replicas }}
   selector:
     matchLabels:
       app: flows
@@ -30,7 +30,7 @@ spec:
       serviceAccountName: movieguru-sa
       containers:
         - name: flows
-          image: "{{ .Values.REGION }}-docker.pkg.dev/{{ .Values.PROJECT_ID }}/movie-guru/flows:{{ .Values.IMAGE.TAG }}"
+          image: "{{ .Values.region }}-docker.pkg.dev/{{ .Values.projectID }}/movie-guru/flows:{{ .Values.Image.tag }}"
           imagePullPolicy: Always
           ports:
             - containerPort: 3400
@@ -43,9 +43,8 @@ spec:
               memory: "2Gi"            
           env:
             - name: POSTGRES_HOST
-              value: {{ .Values.DB_HOST }}
-            - name: PROJECT_ID
-              value: {{ .Values.PROJECT_ID }}
+              value: {{ .Values.Hosts.postgres }}
+              value: {{ .Values.projectID }}
             - name: POSTGRES_DB_USER_PASSWORD
               value: "minimal"
             - name: POSTGRES_DB_USER
@@ -54,10 +53,10 @@ spec:
               value: "movies"
             - name: POSTGRES_DB_NAME
               value: "fake-movies-db"
-            - name: APP_VERSION
-              value: "v1"
             - name: LOCATION
-              value: {{ .Values.REGION }}
+              value: {{ .Values.Flows.modelLocation }}
+            - name: USEGEMINIFLASH2
+              value: "{{ .Values.Flows.geminiflash2 }}"
 
 ---
 apiVersion: v1
