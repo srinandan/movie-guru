@@ -28,6 +28,9 @@ export const store = {
     movies(state) {
       return state.movies
     },
+    placeHolderMovies (state) {
+      return state.placeHolderMovies
+    }},
     mutations: {
         add(state, message) {
           // mutate state
@@ -59,5 +62,4 @@ export const store = {
         },
         }
     }
-}
 export default store;

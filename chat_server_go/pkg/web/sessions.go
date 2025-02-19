@@ -28,7 +28,7 @@ import (
 )
 
 var (
-	redisStore *redis.ClusterClient
+	redisStore redis.Cmdable
 )
 
 func TestRedis() {
@@ -50,17 +50,24 @@ func TestRedis() {
 
 func setupSessionStore(ctx context.Context) {
 	REDIS_HOST := os.Getenv("REDIS_HOST")
-	//REDIS_PASSWORD := os.Getenv("REDIS_PASSWORD")
-	//REDIS_PORT := os.Getenv("REDIS_PORT")
+	REDIS_MODE := os.Getenv("REDIS_MODE")
+	if REDIS_MODE == "" {
+		REDIS_MODE = "SINGLE"
+	}
 
-	/*redisStore = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", REDIS_HOST, REDIS_PORT),
-		Password: REDIS_PASSWORD,
-		DB:       0,
-	})*/
-	redisStore = redis.NewClusterClient(&redis.ClusterOptions{
-		Addrs: []string{fmt.Sprintf("%s:%s", REDIS_HOST, "6379")},
-	})
+	//REDIS_PASSWORD := os.Getenv("REDIS_PASSWORD")
+	REDIS_PORT := os.Getenv("REDIS_PORT")
+	if REDIS_MODE == "SINGLE" {
+		redisStore = redis.NewClient(&redis.Options{
+			Addr: fmt.Sprintf("%s:%s", REDIS_HOST, REDIS_PORT),
+			DB:   0,
+		})
+	} else if REDIS_MODE == "CLUSTER" {
+		redisStore = redis.NewClusterClient(&redis.ClusterOptions{
+			Addrs: []string{fmt.Sprintf("%s:%s", REDIS_HOST, "6379")},
+		})
+	}
+
 	if err := redisStore.Ping(ctx).Err(); err != nil {
 		slog.ErrorContext(ctx, "error connecting to redis", slog.Any("error", err))
 		os.Exit(1)
