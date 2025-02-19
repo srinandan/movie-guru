@@ -33,7 +33,10 @@ resource "google_project_service" "enable_apis" {
     "apphub.googleapis.com",
     "compute.googleapis.com",
     "container.googleapis.com",
-    "sqladmin.googleapis.com"
+    "sqladmin.googleapis.com",
+    "secretmanager.googleapis.com",
+    "apphub.googleapis.com",
+    "redis.googleapis.com"
   ])
 
   service = each.key
