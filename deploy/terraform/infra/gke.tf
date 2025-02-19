@@ -36,7 +36,6 @@ resource "google_container_cluster" "primary" {
   binary_authorization {
     evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
   }
-
   enable_autopilot = true
 
   addons_config {
@@ -72,7 +71,6 @@ resource "google_container_cluster" "primary" {
     mode               = "DISABLED"
     vulnerability_mode = "VULNERABILITY_DISABLED"
   }
-
   ip_allocation_policy {
     cluster_secondary_range_name  = "pod-ranges"
     services_secondary_range_name = "services-range"
@@ -106,12 +104,6 @@ resource "google_container_cluster" "primary" {
       enable_relay   = false
     }
   }
-
-  enterprise_config {
-    desired_tier = "ENTERPRISE"
-  }
-
-  monitoring_service = "monitoring.googleapis.com/kubernetes"
 
   depends_on = [google_project_service.enable_apis]
 

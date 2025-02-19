@@ -77,6 +77,7 @@ echo -e "\e[95mVersioning enabled on $BUCKET_NAME\e[0m"
 # Enable Cloud APIs
 echo -e "\e[95mEnabling required Cloud APIs in ${PROJECT_ID}\e[0m"
 gcloud services enable servicenetworking.googleapis.com \
+    compute.googleapis.com \
     cloudbuild.googleapis.com \
     serviceusage.googleapis.com \
     cloudresourcemanager.googleapis.com \
@@ -89,9 +90,8 @@ export PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format 'value(p
 
 gcloud projects add-iam-policy-binding ${PROJECT_ID} --member serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com --role roles/owner --condition=None
 
-
 # Start Cloud Build
 echo -e "\e[95mStarting Cloud Build to CREATE infrastructure using Terraform...\e[0m"
 
 gcloud builds submit --config=deploy/setup-infra.yaml --async --ignore-file=.gcloudignore --substitutions=_PROJECT_ID="${PROJECT_ID}",\
-_REGION="${REGION}"
+_REGION="${REGION}",_SUPPORT_EMAIL="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" --worker-pool="projects/${PROJECT_ID}/locations/${REGION}/workerPools/movie-guru" --region=${REGION}

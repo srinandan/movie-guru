@@ -68,6 +68,10 @@ spec:
               value: "my_redis_pwd"
             - name: ENABLE_METRICS
               value: "false"
+            - name: OTEL_EXPORTER_OTLP_INSECURE
+              value: "true"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector.otel-collector.svc.cluster.local:4318                
       #     tty: true
       #     volumeMounts:
       #       - mountPath: "/var/secrets"

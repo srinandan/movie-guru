@@ -100,14 +100,17 @@ export REGION=<your-desired-gcp-region>
 Run the following script to deploy the infrastructure using Cloud Build:
 
 ```bash
-./deploy/deploy.sh --region $REGION
+./deploy/infra.sh --region $REGION
 ```
 
 This will trigger a pipeline that creates the required infrastructure on GCP. The process will take approximately **10-15 minutes** to complete.
 
-## Step 3: Configure Firebase
+## Step 3: Get Firebase Web app Configuration
 
-Once the infrastructure setup is complete, go to the **Firebase Console**:
+Once the infrastructure setup is complete,
+
+1. Perform the steps [here](./firebase-setup/README.md)
+2. Go to the **Firebase Console**:
 
 - A new project with the **Display Name: "Movie Guru App"** should be created.
 - Navigate to the **Authentication** section and **enable Google Auth** for the web app.
@@ -129,6 +132,8 @@ export FIREBASE_MESSAGING_SENDERID=""
 export FIREBASE_APPID=""
 export GATEWAY_IP="movie-guru.endpoints.${PROJECT_ID}$.cloud.goog"
 export SERVER_URL="https://${GATEWAY_IP}"
+export DB_HOST=""
+export REDIS_HOST=""
 ```
 
 After updating the file, run the script to apply the environment variables:
@@ -142,12 +147,18 @@ source set_env_vars.sh
 Run the following script to build and push the application containers using Cloud Build:
 
 ```bash
-./deploy/ci.sh
+source ./deploy/ci.sh --region $REGION
 ```
 
 This should take around 10 minutes
 
-## Step 6: Connect to GKE Cluster
+## Step 6: Run the Cloud Run Job
+
+```bash
+gcloud run job execute movie-guru-db-init --region $REGION --project $PROJECT_ID
+```
+
+## Step 7: Connect to GKE Cluster
 
 Go to the **GKE page** in the **GCP Console** and find the connection string for your cluster.
 
@@ -155,21 +166,15 @@ Go to the **GKE page** in the **GCP Console** and find the connection string for
 gcloud container clusters get-credentials movie-guru-cluster --region ${REGION} --project ${PROJECT_ID}
 ```
 
-## Step 7: Deploy Application Using Helm
+## Step 8: Deploy Application Using Helm
 
 Deploy the application to GKE using Helm:
 
 ```bash
-helm upgrade --install movieguru \
-./deploy/app/helm/movieguru \
---namespace movieguru \
---create-namespace \
---set PROJECT_ID=${PROJECT_ID} \
---set IMAGE.TAG=latest \
---set REGION=${REGION}
+./deploy_helm.sh --region $REGION
 ```
 
-## Step 8: Register Workloads and Services with App Hub
+## Step 9: Register Workloads and Services with App Hub
 
 ```bash
 ./deploy/register.sh --region $REGION

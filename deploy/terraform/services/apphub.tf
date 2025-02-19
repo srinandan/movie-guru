@@ -16,13 +16,12 @@ locals {
   services = ["//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/services/server",
     "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/services/frontend",
     "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/services/flows",
-    "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/services/adminer",
     "//redis.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/${var.app_name}",
-  "//gkebackup.googleapis.com/projects/${var.project_id}/locations/${var.region}/backupPlans/${var.app_name}-cluster-plan"]
+    "//gkebackup.googleapis.com/projects/${var.project_id}/locations/${var.region}/backupPlans/${var.app_name}-cluster-plan",
+  "//compute.googleapis.com/projects/${var.project_id}/regions/${var.region}/addresses/cloudsql-address"]
   workloads = ["//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/apps/deployments/server",
     "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/apps/deployments/frontend",
-    "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/apps/deployments/flows",
-  "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/apps/deployments/adminer"]
+  "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/apps/deployments/flows"]
   database = "//sqladmin.googleapis.com/projects/${var.project_id}/instances/${var.app_name}"
 }
 

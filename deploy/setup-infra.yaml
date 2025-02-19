@@ -26,17 +26,12 @@ steps:
     - -c
     - |
       terraform init -backend-config="bucket=${_PROJECT_ID}"
-      terraform apply -var="project_id=${_PROJECT_ID}" -var="region=${_REGION}" --auto-approve
-
-- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-  id: "run-db-init-job"
-  args: ['run', 'jobs', 'submit', 'execute', 'db-init-job', '--region ${_REGION}', '--project ${_PROJECT_ID}']
+      terraform apply -var="project_id=${_PROJECT_ID}" -var="region=${_REGION}" -var="support_email=${_SUPPORT_EMAIL}" --auto-approve
 
 substitutions:
   _REPO: "movie-guru"
 
 options:
-  machineType: E2_HIGHCPU_8
   logging: CLOUD_LOGGING_ONLY
   substitution_option: ALLOW_LOOSE
   dynamic_substitutions: true

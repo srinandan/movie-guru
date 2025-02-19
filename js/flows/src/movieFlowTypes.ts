@@ -15,7 +15,7 @@
  */
 
 import { z } from 'genkit';
-import { SimpleMessageSchema, UserProfileSchema } from './queryTransformTypes'; 
+import { SimpleMessageSchema, UserProfileSchema } from './queryTransformTypes';
 import { ModelOutputMetadata, ModelOutputMetadataSchema } from './modelOutputMetadataTypes';
 
 

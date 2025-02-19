@@ -17,34 +17,6 @@ tags:
   - ci
 
 steps:
-# - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-#   id: "download-config"
-#   entrypoint: "bash"
-#   args:
-#     - "-c"
-#     - |
-#       gsutil cp gs://fb-webapp-$PROJECT_ID/app-config.json /workspace/app-config.json
-
-# Not needed
-# - name: "ubuntu"
-#   id: "set-env-vars"
-#   entrypoint: "bash"
-#   args:
-#     - "-c"
-#     - |
-#       apt-get update && apt-get install -y jq
-#       export $(jq -r 'to_entries | map("\(.key)=\(.value|tostring)") | .[]' /workspace/app-config.json)
-      
-#       # Store variables as Cloud Build substitutions
-#       echo "export _VITE_FIREBASE_API_KEY=$apiKey" >> /workspace/env-vars.txt
-#       echo "export _VITE_FIREBASE_AUTH_DOMAIN=$authDomain" >> /workspace/env-vars.txt
-#       echo "export _VITE_GCP_PROJECT_ID=${_PROJECT_ID}" >> /workspace/env-vars.txt
-#       echo "export _VITE_FIREBASE_STORAGE_BUCKET=$storageBucket" >> /workspace/env-vars.txt
-#       echo "export _VITE_FIREBASE_MESSAGING_SENDERID=$messagingSenderId" >> /workspace/env-vars.txt
-#       echo "export _VITE_FIREBASE_APPID=$appId" >> /workspace/env-vars.txt
-#       echo "export _VITE_CHAT_SERVER_URL=http://${gatewayIP}/server:4000" >> /workspace/env-vars.txt 
-#       echo "workspace file: $(cat /workspace/env-vars.txt)"
-
 - name: "gcr.io/cloud-builders/docker"
   id: "build-frontend"
   dir: './frontend'
@@ -74,6 +46,7 @@ steps:
     - |
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:${_SHORT_SHA}' && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:latest'
+
 - name: 'gcr.io/cloud-builders/docker'
   id: "build-server-image"
   dir: './chat_server_go'
@@ -121,30 +94,6 @@ steps:
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:latest'
 
 - name: 'gcr.io/cloud-builders/docker'
-  id: "build-db-image"
-  dir: './pgvector'
-  entrypoint: "sh"
-  args:
-    - -xe 
-    - -c
-    - |
-      docker build \
-         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:${_SHORT_SHA}" \
-         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:latest" \
-         --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:latest" \
-         .
-
-- name: 'gcr.io/cloud-builders/docker'
-  id: "push-db-image"
-  entrypoint: "sh"
-  args:
-    - -xe 
-    - -c
-    - |
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:${_SHORT_SHA}' && \
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db:latest'
-
-- name: 'gcr.io/cloud-builders/docker'
   id: "build-db-init-image"
   dir: './pgvector'
   entrypoint: "sh"
@@ -169,53 +118,34 @@ steps:
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:${_SHORT_SHA}' && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest'
 
-- name: 'gcr.io/cloud-builders/docker'
-  id: "build-indexer-image"
-  dir: './indexer'
-  entrypoint: "sh"
+- name: 'gcr.io/google.cloud.sdk:latest'
+  id: create_db_init_job
+  entrypoint: gcloud
   args:
-    - -xe 
-    - -c
-    - |
-      docker build \
-         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/indexer:${_SHORT_SHA}" \
-         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/indexer:latest" \
-         --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/indexer:latest" \
-         -f Dockerfile.init \
-         .
+  - 'run'
+  - 'jobs'
+  - 'replace'
+  - 'cloudrun.yaml'
+  - --project=${_PROJECT_ID} 
+  - --region=${_REGION}
 
-- name: 'gcr.io/cloud-builders/docker'
-  id: "push-indexer-image"
-  entrypoint: "sh"
+- name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
   args:
-    - -xe 
-    - -c
-    - |
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/indexer:${_SHORT_SHA}' && \
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/indexer:latest'
-
-- name: 'gcr.io/cloud-builders/docker'
-  id: "tag-webserver-image"
-  entrypoint: "sh"
-  args:
-    - -xe 
-    - -c
-    - |
-      docker tag \
-         ghcr.io/static-web-server/static-web-server:2.36 \
-         "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/static-web-server:2.36"
-
-- name: 'gcr.io/cloud-builders/docker'
-  id: "push-webserver-image"
-  entrypoint: "sh"
-  args:
-    - -xe 
-    - -c
-    - |
-      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/static-web-server:2.36
+  - run
+  - jobs 
+  - create 
+  - movie-guru-db-init 
+  - --image=${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest 
+  - --set-env-vars=DB_HOST=$DB_HOST,DB_NAME=fake-movies-db,DB_USER=postgres 
+  - --network=movie-guru-network 
+  - --subnet=movie-guru-subnet 
+  - --vpc-egress=all-traffic 
+  - --set-secrets=DB_PASS=postgres-root-password-secret:latest
+  - --service-account=movie-guru-chat-server-sa@${_PROJECT_ID}.iam.gserviceaccount.com 
+  - --project=${_PROJECT_ID} 
+  - --region=${_REGION}
 
 options:
-  machineType: E2_HIGHCPU_8
   logging: CLOUD_LOGGING_ONLY
   substitution_option: ALLOW_LOOSE
   dynamic_substitutions: true

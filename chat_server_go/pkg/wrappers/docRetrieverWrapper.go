@@ -22,6 +22,9 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"os"
+
+	utils "github.com/movie-guru/pkg/utils"
 
 	_ "github.com/lib/pq"
 	types "github.com/movie-guru/pkg/types"
@@ -40,10 +43,24 @@ func CreateMovieRetrieverFlowClient(retrieverLength int, url string) *MovieRetri
 }
 
 func (flowClient *MovieRetrieverFlowClient) RetriveDocuments(ctx context.Context, query string) ([]*types.MovieContext, error) {
+	// make this defensive
+	projectId := os.Getenv("PROJECT_ID")
 	rResp, err := flowClient.runFlow(query)
+
 	if err != nil {
 		return nil, err
 	}
+
+	for _, c := range rResp {
+		c.Poster = fmt.Sprintf("https://storage.googleapis.com/%s_posters/%s", projectId, c.Poster)
+		if os.Getenv("USE_SIGNED_URL") != "" {
+			c.Poster, err = utils.GetSignedURL(c.Poster)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	return rResp, nil
 }
 
@@ -90,11 +107,20 @@ func (flowClient *MovieRetrieverFlowClient) runFlow(input string) ([]*types.Movi
 	b, _ := io.ReadAll(resp.Body)
 	slog.Log(context.Background(), slog.LevelInfo, string(b))
 
+	err = json.Unmarshal(b, &result)
+	if err != nil {
+		slog.Log(context.Background(), slog.LevelError, "Error unmarshaling JSON response", "error", err)
+		return nil, err
+	}
+
+	/*b = bytes.TrimSpace(b)
+	resp.Body = ioutil.NopCloser(bytes.NewReader(b))
+
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
 		slog.Log(context.Background(), slog.LevelError, "Error decoding JSON response", "error", err)
 		return nil, err
-	}
+	}*/
 
 	return result.Result, nil
 }
