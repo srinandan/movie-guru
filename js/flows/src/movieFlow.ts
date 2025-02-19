@@ -15,7 +15,6 @@
  */
 
 import { ai } from './genkitConfig'
-import { gemini20FlashExp } from '@genkit-ai/vertexai';
 import { MovieFlowInputSchema, MovieFlowOutputSchema, MovieFlowOutput } from './movieFlowTypes'
 import { MovieFlowPromptText } from './prompts';
 import { GenerationBlockedError } from 'genkit';
@@ -23,7 +22,6 @@ import { GenerationBlockedError } from 'genkit';
 export const MovieFlowPrompt = ai.definePrompt(
   {
     name: 'movieFlowPrompt',
-    model: gemini20FlashExp,
     input: {
       schema: MovieFlowInputSchema,
     },

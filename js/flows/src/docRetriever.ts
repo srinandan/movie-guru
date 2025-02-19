@@ -92,7 +92,7 @@ export const MovieDocFlow = ai.defineFlow(
       searchCategory: jsonResponse.searchCategory || SearchTypeCategory.parse("NONE"),
       modelOutputMetadata: {
         justification: jsonResponse.justification || "",
-        safetyIssue: jsonResponse.safetyIssue || false,
+        safetyIssue: !! jsonResponse.safetyIssue || false,
       },
     }
   }

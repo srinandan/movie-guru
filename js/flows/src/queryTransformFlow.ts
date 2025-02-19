@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { gemini20FlashExp } from '@genkit-ai/vertexai';
 import {
   USERINTENT,
   QueryTransformFlowInputSchema,
@@ -28,7 +27,6 @@ import { GenerationBlockedError } from 'genkit';
 export const QueryTransformPrompt = ai.definePrompt(
   {
     name: 'queryTransformFlowPrompt',
-    model: gemini20FlashExp,
     input: {
       schema: QueryTransformFlowInputSchema,
     },
@@ -59,7 +57,7 @@ export const QueryTransformFlow = ai.defineFlow(
         userIntent: USERINTENT.parse(jsonResponse.userIntent) || USERINTENT.parse('UNCLEAR'),
         modelOutputMetadata: {
           justification: jsonResponse.justification || "",
-          safetyIssue: jsonResponse.safetyIssue || false,
+          safetyIssue: !! jsonResponse.safetyIssue || false,
         },
       };
       return qtOutput;

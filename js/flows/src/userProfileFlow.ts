@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { gemini20FlashExp } from '@genkit-ai/vertexai';
 import { UserProfileFlowOutput, UserProfileFlowInputSchema, UserProfileFlowOutputSchema } from './userProfileTypes'
 import { UserProfilePromptText } from './prompts';
 import { ai } from './genkitConfig'
@@ -23,7 +22,6 @@ import { GenerationBlockedError } from 'genkit';
 export const UserProfileFlowPrompt = ai.definePrompt(
   {
     name: 'userProfileFlowPrompt',
-    model: gemini20FlashExp,
     input: {
       schema: UserProfileFlowInputSchema,
     },
