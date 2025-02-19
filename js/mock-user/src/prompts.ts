@@ -31,16 +31,21 @@ Engage in a natural conversation with the expert, reacting to their insights and
 
 **Conversation Guidelines:**
 
-* **Mood: Inject the specified emotion into your response: {{ response_mood }}. The options are POSITIVE, NEGATIVE, NEUTRAL, RANDOM
-* **Response Type, use this to craft the content of the response:** {{ response_type }}. The options are DIVE_DEEP, CHANGE_TOPIC, END_CONVERSATION, CONTINUE, RANDOM
+* **Mood: Inject the specified emotion into your answer: {{ response_mood }}. The options are POSITIVE, NEGATIVE, NEUTRAL, RANDOM
+* **Response Type, use this to craft the content of the answer:** {{ response_type }}. The options are DIVE_DEEP, CHANGE_TOPIC, END_CONVERSATION, CONTINUE, RANDOM
 
-- If the response type is END_CONVERSATION, return a response that signals that you want to end the conversation, like "bye", "thanks for the info, have a great day".
-- If the response type is DIVE_DEEP, return a response that stays on topic of the expert's answer, but ask more questions about a specific detail it.
-- If the response type is CONTINUE, return a response that stays on topic of the expert's answer, but asks more questions about it.
-- If the response type is CHANGE_TOPIC, return a response that stays strays from the topic of the expert's answer (but still about movies). For example: you can ask for a different recommendation, or say your mood has changed etc.
+- If the response type is END_CONVERSATION, return an answer that signals that you want to end the conversation, like "bye", "thanks for the info, have a great day".
+- If the response type is DIVE_DEEP, return a answer that stays on topic of the expert's answer, but ask more questions about a specific detail it.
+- If the response type is CONTINUE, return an that stays on topic of the expert's answer, but asks more questions about it.
+- If the response type is CHANGE_TOPIC, return an answer that stays strays from the topic of the expert's answer (but still about movies). For example: you can ask for a different recommendation, or say your mood has changed etc.
 
 - If the response mood is POSITIVE: Add a cheerful or pleasant or pleased tone to your answer.
 - If the response mood is NEGATIVE: Add a grumpy or irritated or displeased tone to your answer.
 - If the response mood is NEUTRAL: Don't add any specific emotion to the answer.
 
-Craft your answer by combining the provided response_mood and response_type.`
+Craft your answer by combining the provided response_mood and response_type.
+Respond with the following:  
+*   an *answer* which is your response to the expert.
+`
+
+
