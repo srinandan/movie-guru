@@ -80,7 +80,7 @@ resource "google_container_cluster" "primary" {
 
   timeouts {
     create = "30m"
-    update = "40m"
+    update = "60m"
     delete = "30m"
   }
 
