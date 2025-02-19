@@ -12,10 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: movieguru-sa
-  namespace: movieguru
-  annotations:
-    iam.gke.io/gcp-service-account: movie-guru-chat-server-sa@{{ .Values.projectID }}.iam.gserviceaccount.com
+region: us-west2
+projectID: ""
+
+Cache:
+  replicas: 1
+
+Db:
+  replicas: 1
+
+Hosts:
+  postgres: db.movieguru.svc.cluster.local
+  redis: cache.movieguru.svc.cluster.local
+  redisMode: SINGLE
+
+Server:
+  replicas: 3
+  version: v1
+  enableMetrics: true
+
+Flows:
+  replicas: 5
+  modelLocation: us-central1
+  postgres: db.movieguru.svc.cluster.local
+  geminiflash2: false
+    
+Image:
+  tag: latest

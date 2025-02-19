@@ -4,7 +4,7 @@ metadata:
   name: db
   namespace: movieguru
 spec:
-  replicas: 1
+  replicas: {{ .Values.Db.replicas }}
   selector:
     matchLabels:
       app: db
@@ -15,12 +15,12 @@ spec:
     spec:
       containers:
         - name: db
-          image: "{{ .Values.REGION }}-docker.pkg.dev/{{ .Values.PROJECT_ID }}/movie-guru/db:{{ .Values.IMAGE.TAG }}"
+          image: pgvector/pgvector:pg17
           ports:
             - containerPort: 5432
           env:
             - name: POSTGRES_PASSWORD
-              value: "mainpassword"
+              value: "main"
 ---
 apiVersion: v1
 kind: Service

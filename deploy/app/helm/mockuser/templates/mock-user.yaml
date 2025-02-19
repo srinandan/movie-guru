@@ -30,15 +30,15 @@ spec:
       serviceAccountName: mockuser-sa
       containers:
       - name: mock-user-js
-        image: "{{ .Values.REGION }}-docker.pkg.dev/{{ .Values.PROJECT_ID }}/movie-guru/mockuser:{{ .Values.IMAGE.TAG }}"
+        image: "{{ .Values.region }}-docker.pkg.dev/{{ .Values.projectId }}/movie-guru/mockuser:{{ .Values.Image.tag }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 3400
         env:
         - name: PROJECT_ID
-          value: {{ .Values.PROJECT_ID }}
+          value: {{ .Values.projectID }}
         - name: LOCATION
-          value: us-west-1
+          value: {{ .Values.modelLocation }}
 ---
 apiVersion: v1
 kind: Service

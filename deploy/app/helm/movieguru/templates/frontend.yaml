@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: "{{ .Values.REGION }}-docker.pkg.dev/{{ .Values.PROJECT_ID }}/movie-guru/frontend:{{ .Values.IMAGE.TAG }}"
+          image: "{{ .Values.region }}-docker.pkg.dev/{{ .Values.projectID }}/movie-guru/frontend:{{ .Values.Image.tag }}"
           imagePullPolicy: Always
           ports:
             - containerPort: 4000

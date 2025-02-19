@@ -20,7 +20,7 @@ import { initializeApp } from 'firebase-admin/app';
 
 import { genkit } from 'genkit';
 
-const gemini20 = !! process.env.USEGEMINI20 || false;
+const gemini20 = !! process.env.USEGEMINIFLASH2 || false;
 export let modelRef = gemini15Flash
 if(gemini20){
   modelRef = gemini20FlashExp
