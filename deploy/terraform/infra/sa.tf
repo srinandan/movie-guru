@@ -66,7 +66,7 @@ resource "google_project_iam_member" "blob-signer" {
   member  = "serviceAccount:${google_service_account.sa.email}"
 }
 
-resource "google_service_account_iam_binding" "workload_identity_binding" {
+resource "google_service_account_iam_binding" "movieguru" {
   service_account_id = google_service_account.sa.id
   role               = "roles/iam.workloadIdentityUser"
   members = [
