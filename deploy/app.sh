@@ -75,6 +75,14 @@ fi
 # Set GCP project
 gcloud config set project "$PROJECT_ID"
 
+echo -e "\e[95m Substituting env variables in init.sql\e[0m"
+
+envsubst < pgvector/init.sql > pgvector/init_substituted.sql
+
+gsutil cp pgvector/init_substituted.sql "gs://fb-webapp-${PROJECT_ID}/sql/init.sql"
+rm pgvector/init_substituted.sql 
+
+
 echo -e "\e[95mConnecting to GKE cluster\e[0m"
 gcloud container clusters get-credentials movie-guru-cluster --region $REGION --project $PROJECT_ID
 echo -e "\e[95m Starting Helm deploy for app...\e[0m"
