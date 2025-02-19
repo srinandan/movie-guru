@@ -24,6 +24,8 @@ import (
 	"net/http"
 	"os"
 
+	utils "github.com/movie-guru/pkg/utils"
+
 	_ "github.com/lib/pq"
 	types "github.com/movie-guru/pkg/types"
 )
@@ -51,6 +53,12 @@ func (flowClient *MovieRetrieverFlowClient) RetriveDocuments(ctx context.Context
 
 	for _, c := range rResp {
 		c.Poster = fmt.Sprintf("https://storage.googleapis.com/%s_posters/%s", projectId, c.Poster)
+		if os.Getenv("USE_SIGNED_URL") != "" {
+			c.Poster, err = utils.GetSignedURL(c.Poster)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	return rResp, nil
