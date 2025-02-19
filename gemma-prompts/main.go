@@ -25,18 +25,17 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	"golang.org/x/time/rate"
 )
 
-// Rate limiter: 10 requests per minute
-var limiter = rate.NewLimiter(rate.Limit(10.0/60.0), 1)
-
 const userPrompt = "Pretend to be a person between the ages 18 and 80 and ask for a type of movie you want to watch. Be creative."
 
 var maxChatLen = 750
+var limiter *rate.Limiter
 
 type Response struct {
 	Predictions []string `json:"predictions,omitempty"`
@@ -62,6 +61,18 @@ func main() {
 	} else {
 		fmt.Println("CHAT_SERVER not set")
 		return
+	}
+
+	if os.Getenv("RATE_LIMIT") != "" {
+		if r, err := strconv.ParseFloat(os.Getenv("RATE_LIMIT"), 64); err != nil {
+			slog.Log(context.Background(), slog.LevelWarn, "Error parsing RATE_LIMIT, using defaults", "warning", err)
+			r = 5.0
+		} else {
+			limiter = rate.NewLimiter(rate.Limit(r/60.0), 1)
+		}
+	} else {
+		// Rate limiter: 5 requests per minute
+		limiter = rate.NewLimiter(rate.Limit(5.0/60.0), 1)
 	}
 
 	cookie, err := getCookie()
