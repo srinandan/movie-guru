@@ -174,6 +174,7 @@ export const sqlRetriever = ai.defineRetriever(
         embedder: textEmbedding004,
         content: options.vectorQuery,
       });  
+      console.log('length', embedding.length)
         results = await db`
         SELECT content, title, poster, released, runtime_mins, rating, genres, director, actors, plot, tconst
        FROM movies

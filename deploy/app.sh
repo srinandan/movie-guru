@@ -91,7 +91,7 @@ helm upgrade --install movieguru \
 ./deploy/app/helm/movieguru \
 --namespace movieguru \
 --create-namespace \
--f ./deploy/app/helm/movieguru/values.full.yaml \
+-f ./deploy/app/helm/movieguru/values.simple.yaml \
 --set projectID=${PROJECT_ID} \
 --set Image.tag=$SHORT_SHA \
 --set region=${REGION}
