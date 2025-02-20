@@ -44,11 +44,16 @@ export const UserProfileFlowPrompt = ai.definePrompt(
       try {
         const response = await UserProfileFlowPrompt({ query: input.query, agentMessage: input.agentMessage });
         const jsonResponse =  JSON.parse(response.text);
+        const safetyIssueSet = (typeof jsonResponse.safetyIssue === 'string' && jsonResponse.safetyIssue != null) 
+        var safetyIssue = false
+        if (safetyIssueSet) {
+           safetyIssue = jsonResponse.safetyIssue.toLowerCase()==="true"
+        }
         const output: UserProfileFlowOutput = {
-          "profileChangeRecommendations":  jsonResponse.profileChangeRecommendations,
-          "modelOutputMetadata": {
-            "justification": jsonResponse.justification,
-            "safetyIssue": !! jsonResponse.safetyIssue,
+          profileChangeRecommendations:  jsonResponse.profileChangeRecommendations,
+          modelOutputMetadata: {
+            justification: jsonResponse.justification,
+            safetyIssue: safetyIssue
           }
         }
         return output
@@ -58,8 +63,8 @@ export const UserProfileFlowPrompt = ai.definePrompt(
           return { 
             profileChangeRecommendations: [],
             modelOutputMetadata: {
-              "justification": "",
-              "safetyIssue": true,
+              justification: "",
+              safetyIssue: true,
             }
            }; 
         }
@@ -68,9 +73,9 @@ export const UserProfileFlowPrompt = ai.definePrompt(
           return { 
             profileChangeRecommendations: [],
             modelOutputMetadata: {
-              "justification": "",
-              "safetyIssue": false,
-              "quotaIssue": true
+              justification: "",
+              safetyIssue: false,
+              quotaIssue: true
             }
            };
           }

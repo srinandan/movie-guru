@@ -87,13 +87,18 @@ export const MovieDocFlow = ai.defineFlow(
       query: input.query
     })
     const jsonResponse = JSON.parse(response.text)
+    const safetyIssueSet = (typeof jsonResponse.safetyIssue === 'string' && jsonResponse.safetyIssue != null) 
+      var safetyIssue = false
+        if (safetyIssueSet) {
+           safetyIssue = jsonResponse.safetyIssue.toLowerCase()==="true"
+        }
     searchFlowOutput = {
       vectorQuery: jsonResponse.vectorQuery || "",
       keywordQuery: jsonResponse.keywordQuery || "",
       searchCategory: jsonResponse.searchCategory || SearchTypeCategory.parse("NONE"),
       modelOutputMetadata: {
         justification: jsonResponse.justification || "",
-        safetyIssue: !! jsonResponse.safetyIssue || false,
+        safetyIssue: safetyIssue,
       },
     }
   }

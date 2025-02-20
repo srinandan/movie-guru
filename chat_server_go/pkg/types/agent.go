@@ -14,11 +14,6 @@
 
 package types
 
-import (
-	"fmt"
-	"regexp"
-)
-
 type RESULT string
 
 const (
@@ -57,7 +52,7 @@ func NewAgentResponse() *AgentResponse {
 
 func NewSafetyIssueAgentResponse() *AgentResponse {
 	r := NewAgentResponse()
-	r.Answer = "That was a naughty! I cannot answer that."
+	r.Answer = "That was very naughty of you! I cannot answer that."
 	r.Result = UNSAFE
 	return r
 }
@@ -76,17 +71,4 @@ func NewErrorAgentResponse(errMessage string) *AgentResponse {
 	r.ErrorMessage = errMessage
 	r.Answer = "Something went wrong on my side. My apologies. Can you try that again?"
 	return r
-}
-
-func makeJsonMarshallable(input string) (string, error) {
-	// Regex to extract JSON content from Markdown code block
-	re := regexp.MustCompile("```(json)?((\n|.)*?)```")
-	matches := re.FindStringSubmatch(input)
-
-	if len(matches) < 2 {
-		return input, fmt.Errorf("no JSON content found in the input")
-	}
-
-	jsonContent := matches[2]
-	return jsonContent, nil
 }

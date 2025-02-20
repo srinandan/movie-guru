@@ -37,6 +37,7 @@ services:
       - FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET
       - FIREBASE_MESSAGING_SENDERID=$FIREBASE_MESSAGING_SENDERID
       - FIREBASE_APPID=$FIREBASE_APPID
+      - USEGEMINIFLASH2=false
     volumes:
       - ./.key.json:/key.json:ro
   server:
