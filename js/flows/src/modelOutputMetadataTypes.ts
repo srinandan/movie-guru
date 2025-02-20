@@ -18,7 +18,8 @@ import { z } from 'genkit';
 
 export const ModelOutputMetadataSchema = z.object({
     justification: z.string(),
-    safetyIssue: z.boolean()
+    safetyIssue: z.boolean(),
+    quotaIssue: z.boolean().optional()
 })
 
 export type ModelOutputMetadata = z.infer<typeof ModelOutputMetadataSchema>;

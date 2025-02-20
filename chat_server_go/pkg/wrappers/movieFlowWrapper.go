@@ -102,9 +102,8 @@ func (flowClient *MovieFlowClient) runFlow(input *types.MovieFlowInput) (*types.
 	defer resp.Body.Close()
 
 	b, _ := io.ReadAll(resp.Body)
-	slog.Log(context.Background(), slog.LevelInfo, string(b))
-
 	err = json.Unmarshal(b, &result)
+
 	if err != nil {
 		slog.Log(context.Background(), slog.LevelError, "Error unmarshaling JSON response", "error", err)
 		return nil, err

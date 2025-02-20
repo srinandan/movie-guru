@@ -63,6 +63,17 @@ export const UserProfileFlowPrompt = ai.definePrompt(
             }
            }; 
         }
+        else if(error instanceof Error && (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED'))){
+          console.error("UserProfileFlow: There is a quota issue:", error.message);
+          return { 
+            profileChangeRecommendations: [],
+            modelOutputMetadata: {
+              "justification": "",
+              "safetyIssue": false,
+              "quotaIssue": true
+            }
+           };
+          }
         else{
           console.error("UserProfileFlow: Error generating response:", error);
           throw error;

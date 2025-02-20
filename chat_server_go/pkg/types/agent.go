@@ -22,17 +22,19 @@ import (
 type RESULT string
 
 const (
-	UNDEFINED RESULT = "UNDEFINED"
-	SUCCESS   RESULT = "SUCCESS"
-	BAD_QUERY RESULT = "BAD_QUERY"
-	UNSAFE    RESULT = "UNSAFE"
-	TOO_LONG  RESULT = "TOO_LONG"
-	ERROR     RESULT = "ERROR"
+	UNDEFINED  RESULT = "UNDEFINED"
+	SUCCESS    RESULT = "SUCCESS"
+	BAD_QUERY  RESULT = "BAD_QUERY"
+	UNSAFE     RESULT = "UNSAFE"
+	TOO_LONG   RESULT = "TOO_LONG"
+	ERROR      RESULT = "ERROR"
+	QUOTALIMIT RESULT = "QUOTALIMIT"
 )
 
 type ModelOutputMetadata struct {
 	Justification string `json:"justification" omitempty`
 	SafetyIssue   bool   `json:"safetyIssue" omitempty`
+	QuotaIssue    bool   `json: "quotaIssue" omitempty`
 }
 
 type AgentResponse struct {
@@ -57,6 +59,14 @@ func NewSafetyIssueAgentResponse() *AgentResponse {
 	r := NewAgentResponse()
 	r.Answer = "That was a naughty! I cannot answer that."
 	r.Result = UNSAFE
+	return r
+}
+
+func NewQuotaIssueAgentResponse() *AgentResponse {
+	r := NewAgentResponse()
+	r.Answer = "There are too many requests to the underlying LLM. Can you wait a bit and try again?"
+	r.Result = QUOTALIMIT
+	r.ErrorMessage = "Vertex Quota exceeded"
 	return r
 }
 

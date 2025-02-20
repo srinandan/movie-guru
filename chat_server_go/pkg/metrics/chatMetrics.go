@@ -27,7 +27,9 @@ type ChatMeters struct {
 	CSentimentCounter   metric.Int64Counter
 	COutcomeCounter     metric.Int64Counter
 	CSafetyIssueCounter metric.Int64Counter
-	CLatencyHistogram   metric.Int64Histogram
+	CQuotaLimitCounter  metric.Int64Counter
+
+	CLatencyHistogram metric.Int64Histogram
 }
 
 func NewChatMeters() *ChatMeters {
@@ -55,6 +57,10 @@ func NewChatMeters() *ChatMeters {
 	if err != nil {
 		log.Printf("Error creating safety issue counter: %v", err)
 	}
+	cQuotaLimitCounter, err := meter.Int64Counter("movieguru_chat_quotaissue_counter", metric.WithDescription("Quota issue counter"))
+	if err != nil {
+		log.Printf("Error creating quota issue counter: %v", err)
+	}
 	cLatencyHistogram, err := meter.Int64Histogram("movieguru_chat_latency", metric.WithDescription("Histogram of chat request latency"))
 	if err != nil {
 		log.Printf("Error creating login latency histogram: %v", err)
@@ -66,5 +72,6 @@ func NewChatMeters() *ChatMeters {
 		CSafetyIssueCounter: cSafetyIssueCounter,
 		CSentimentCounter:   cSentimentCounter,
 		COutcomeCounter:     cOutcomeCounter,
+		CQuotaLimitCounter:  cQuotaLimitCounter,
 	}
 }

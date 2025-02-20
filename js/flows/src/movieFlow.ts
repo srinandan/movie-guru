@@ -70,7 +70,18 @@ export const MovieFlow = ai.defineFlow(
           }
          }; 
       }
-      else{
+      else if(error instanceof Error && (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED'))){
+        console.error("MovieFlow: There is a quota issue:", error.message);
+        return { 
+          relevantMovies: [],
+          answer: "",
+          modelOutputMetadata: {
+            "justification": "",
+            "safetyIssue": false,
+            "quotaIssue": true
+          }
+         };}
+        else {
         console.error("MovieFlow: Error generating response:", error);
         throw error;
       }

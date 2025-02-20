@@ -104,7 +104,6 @@ func (flowClient *MovieRetrieverFlowClient) runFlow(input string) ([]*types.Movi
 	defer resp.Body.Close()
 
 	b, _ := io.ReadAll(resp.Body)
-	slog.Log(context.Background(), slog.LevelInfo, string(b))
 
 	err = json.Unmarshal(b, &result)
 	if err != nil {

@@ -81,7 +81,19 @@ export const QueryTransformFlow = ai.defineFlow(
           },
         };
       }
-      else{
+      else if(error instanceof Error && (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED'))){
+        console.error("QTFlow: There is a quota issue:", error.message);
+        return { 
+          transformedQuery: "",
+          userIntent: USERINTENT.parse('UNCLEAR'),
+          modelOutputMetadata: {
+            "justification": "",
+            "safetyIssue": false,
+            "quotaIssue": true
+          }
+         };
+        }
+        else {
         console.error("QTFlow: Error generating response:", error);
         throw error;
       }

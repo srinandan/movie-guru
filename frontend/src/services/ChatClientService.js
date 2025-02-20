@@ -5,8 +5,10 @@ import store  from '../stores';
 class ChatClientService {
   processingRequest = ref(false);
   errorOccured = ref(false);
+  errorMessage = ref("");
 
   async send(message){
+    this.errorMessage.value = ""
     this.errorOccured.value = false;
     this.processingRequest.value = true
     store.commit('chat/add', {"message":message, "sender":"user"})
@@ -30,11 +32,9 @@ class ChatClientService {
         store.commit('chat/add',{"message":answer, "sender":"agent", "result":result});
         store.commit('chat/addMovies', context)
       }
-      else if (result == "ERROR"){
+      else if (result == "ERROR" || result == "QUOTALIMIT" || result == "UNSAFE"){
         this.errorOccured.value = true;
-      }
-      else if (result == "UNSAFE"){
-        store.commit('chat/add',{"message":"That was a naughty query. I cannot answer that question.", "sender":"agent", "result":result});
+        this.errorMessage.value = json["answer"]
       }
 
       if(json["preferences"]){

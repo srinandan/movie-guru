@@ -17,10 +17,10 @@ package web
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/movie-guru/pkg/db"
 	"github.com/movie-guru/pkg/types"
-	"golang.org/x/exp/slog"
 )
 
 func chat(ctx context.Context, deps *Dependencies, metadata *db.Metadata, h *types.ChatHistory, user string, userMessage string) (*types.AgentResponse, *types.ResponseQualityOutput) {
@@ -84,12 +84,16 @@ func chat(ctx context.Context, deps *Dependencies, metadata *db.Metadata, h *typ
 func processFlowOutput(metadata *types.ModelOutputMetadata, err error, h *types.ChatHistory) (*types.AgentResponse, bool) {
 	if err != nil {
 		h.RemoveLastMessage()
+		slog.ErrorContext(context.Background(), err.Error(), err)
 		return types.NewErrorAgentResponse(err.Error()), true
 	}
 	if metadata != nil && metadata.SafetyIssue {
 		h.RemoveLastMessage()
 		return types.NewSafetyIssueAgentResponse(), true
 	}
-
+	if metadata != nil && metadata.QuotaIssue {
+		h.RemoveLastMessage()
+		return types.NewQuotaIssueAgentResponse(), true
+	}
 	return nil, false
 }

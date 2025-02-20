@@ -64,10 +64,11 @@ func (flowClient *UserProfileFlowClient) Run(ctx context.Context, history *types
 	userProfileFlowInput := types.UserProfileFlowInput{Query: lastUserMessage, AgentMessage: agentMessage}
 	resp, err := flowClient.runFlow(&userProfileFlowInput)
 	if err != nil {
-		return userProfileOutput, err
+		return nil, err
 	}
 	userProfileOutput.ModelOutputMetadata.Justification = resp.ModelOutputMetadata.Justification
 	userProfileOutput.ModelOutputMetadata.SafetyIssue = resp.ModelOutputMetadata.SafetyIssue
+	userProfileOutput.ModelOutputMetadata.QuotaIssue = resp.ModelOutputMetadata.QuotaIssue
 
 	if len(resp.ProfileChangeRecommendations) > 0 {
 		updatedProfile, err := utils.ProcessProfileChanges(userProfile, resp.ProfileChangeRecommendations)

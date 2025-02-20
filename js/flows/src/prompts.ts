@@ -247,7 +247,6 @@ export const ConversationQualityAnalysisPromptText =
 		*   OUTCOMEENGAGED: The user shows interest in the agent's response and wants to delve deeper into the topic. This could be through follow-up questions, requests for more details, or expressing a desire to learn more about the movie or topic mentioned by the agent.
 		*   OUTCOMETOPICCHANGE: The user shifts the conversation to a new topic unrelated to the agent's response.
 		*   OUTCOMEAMBIGUOUS: The user's response is too vague or open-ended to determine the outcome with certainty.
-		*   OUTCOMEOTHER: The user's response doesn't fit into any of the above categories. You can use this if the user's message is the only one in the history.
 
 		Examples:
 
@@ -272,7 +271,6 @@ export const ConversationQualityAnalysisPromptText =
 		* SENTIMENTPOSITIVE: If the user expresses excitement, joy etc. Simply rejecting an agent's suggestion is not negative.
 		* SENTIMENTNEGATIVE: If the user expresses frustration, irritation, anger etc. Simply rejecting an agent's suggestion is not negative.
 		* SENTIMENTNEUTRAL: If the user expresses no specific emotion
-		* SENTIMENTAMBIGUOUS: If the user sentiment is not clear.
 
 		Remember:
 

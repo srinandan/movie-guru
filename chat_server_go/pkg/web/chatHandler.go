@@ -88,6 +88,9 @@ func updateChatMeters(ctx context.Context, agentResp *types.AgentResponse, meter
 	if agentResp.Result == types.SUCCESS {
 		meters.CSuccessCounter.Add(ctx, 1)
 	}
+	if agentResp.Result == types.QUOTALIMIT {
+		meters.CQuotaLimitCounter.Add(ctx, 1)
+	}
 	switch strings.ToUpper(string(respQuality.UserSentiment)) {
 	case strings.ToUpper(string(types.SentimentPositive)):
 		meters.CSentimentCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("Sentiment", "Positive")))
