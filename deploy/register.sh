@@ -75,5 +75,5 @@ export PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format 'value(p
 # Start Cloud Build
 echo -e "\e[95mStarting Cloud Build to CREATE infrastructure using Terraform...\e[0m"
 
-gcloud builds submit --config=deploy/register.yaml --async --ignore-file=.gcloudignore --substitutions=_PROJECT_ID="${PROJECT_ID}",\
+gcloud builds submit --config=deploy/register.yaml --worker-pool="projects/${PROJECT_ID}/locations/${REGION}/workerPools/movie-guru" --project=${PROJECT_ID} --async --ignore-file=.gcloudignore --substitutions=_PROJECT_ID="${PROJECT_ID}",\
 _REGION="${REGION}"
