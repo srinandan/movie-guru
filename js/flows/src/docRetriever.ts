@@ -87,7 +87,6 @@ export const MovieDocFlow = ai.defineFlow(
       query: input.query
     })
     const jsonResponse = JSON.parse(response.text)
-    console.log("MovieDocFlow response: ", jsonResponse, " to query: ", input.query )
     searchFlowOutput = {
       vectorQuery: jsonResponse.vectorQuery || "",
       keywordQuery: jsonResponse.keywordQuery || "",
@@ -136,7 +135,6 @@ export const MovieDocFlow = ai.defineFlow(
           tconst: doc.metadata.tconst,
         };
         movieContexts.push(movieContext);
-        console.log("Movie Context: ", movieContext)
       } else {
         console.warn('Movie metadata is missing for a document.');
       }

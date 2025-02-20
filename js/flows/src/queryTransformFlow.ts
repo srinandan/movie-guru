@@ -83,14 +83,7 @@ export const QueryTransformFlow = ai.defineFlow(
       }
       else{
         console.error("QTFlow: Error generating response:", error);
-        return {
-          transformedQuery: input.userMessage,
-          userIntent: USERINTENT.parse('UNCLEAR'),
-          modelOutputMetadata: {
-            justification: '',
-            safetyIssue: false,
-          },
-        };
+        throw error;
       }
       
     }

@@ -44,7 +44,6 @@ export const UserProfileFlowPrompt = ai.definePrompt(
       try {
         const response = await UserProfileFlowPrompt({ query: input.query, agentMessage: input.agentMessage });
         const jsonResponse =  JSON.parse(response.text);
-        console.log("Profile FLow Output ", jsonResponse)
         const output: UserProfileFlowOutput = {
           "profileChangeRecommendations":  jsonResponse.profileChangeRecommendations,
           "modelOutputMetadata": {
@@ -66,13 +65,7 @@ export const UserProfileFlowPrompt = ai.definePrompt(
         }
         else{
           console.error("UserProfileFlow: Error generating response:", error);
-          return { 
-            profileChangeRecommendations: [],
-            modelOutputMetadata: {
-              "justification": "",
-              "safetyIssue": false,
-            }
-           }; 
+          throw error;
         }
       }
     } 

@@ -72,14 +72,7 @@ export const MovieFlow = ai.defineFlow(
       }
       else{
         console.error("MovieFlow: Error generating response:", error);
-        return { 
-          relevantMovies: [],
-          answer: "",
-          modelOutputMetadata: {
-            "justification": "",
-            "safetyIssue": false,
-          }
-         }; 
+        throw error;
       }
     }
   }

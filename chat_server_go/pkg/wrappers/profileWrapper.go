@@ -107,14 +107,16 @@ func (flowClient *UserProfileFlowClient) runFlow(input *types.UserProfileFlowInp
 		slog.Log(context.Background(), slog.LevelError, "Error sending request", "error", err)
 		return nil, err
 	}
-
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		slog.Log(context.Background(), slog.LevelError, "Genkit returned an Error", "error", err)
+		return nil, fmt.Errorf("genkit server returned error: %s (%d)", http.StatusText(resp.StatusCode), resp.StatusCode)
+	}
 	var result struct {
 		Result *types.UserProfileFlowOutput `json:"result"`
 	}
 	defer resp.Body.Close()
 
 	b, _ := io.ReadAll(resp.Body)
-	slog.Log(context.Background(), slog.LevelInfo, string(b))
 
 	err = json.Unmarshal(b, &result)
 	if err != nil {

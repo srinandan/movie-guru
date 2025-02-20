@@ -16,6 +16,7 @@ package web
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/movie-guru/pkg/db"
 	"github.com/movie-guru/pkg/types"
@@ -24,11 +25,14 @@ import (
 
 func chat(ctx context.Context, deps *Dependencies, metadata *db.Metadata, h *types.ChatHistory, user string, userMessage string) (*types.AgentResponse, *types.ResponseQualityOutput) {
 	h.AddUserMessage(userMessage)
-	simpleHistory, err := types.ParseRecentHistory(h.GetHistory(), metadata.HistoryLength)
 
 	respQuality := &types.ResponseQualityOutput{
 		Outcome:       types.OutcomeUnknown,
 		UserSentiment: types.SentimentUnknown,
+	}
+	simpleHistory, err := types.ParseRecentHistory(h.GetHistory(), metadata.HistoryLength)
+	if err != nil {
+		return types.NewErrorAgentResponse(fmt.Sprintf("Error getting user history %w", &err)), respQuality
 	}
 
 	respQualityChan := make(chan *types.ResponseQualityOutput)
@@ -36,11 +40,11 @@ func chat(ctx context.Context, deps *Dependencies, metadata *db.Metadata, h *typ
 
 	// Launch the goroutine
 	go func() {
-		pResp, err := deps.ResponseQualityFlowClient.Run(ctx, simpleHistory, user)
+		qualityResp, err := deps.ResponseQualityFlowClient.Run(ctx, simpleHistory, user)
 		if err != nil {
 			errChan <- err
 		} else {
-			respQualityChan <- pResp
+			respQualityChan <- qualityResp
 		}
 	}()
 
@@ -69,7 +73,7 @@ func chat(ctx context.Context, deps *Dependencies, metadata *db.Metadata, h *typ
 	h.AddAgentMessage(mAgentResp.Answer)
 	select {
 	case respQuality = <-respQualityChan:
-		slog.InfoContext(ctx, "Output response quality flow", slog.Any("responseQuality", respQuality))
+		// do nothing
 	case err := <-errChan:
 		slog.ErrorContext(ctx, "Error while executing response quality flow", slog.Any("error", err.Error()))
 	}
