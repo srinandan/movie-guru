@@ -210,12 +210,12 @@ Example:
     Input: "fun movies released after 2004"
     Output:
         searchCategory: MIXED
-        KeywordQuery: "fun movies"
-        VectorQuery: "released > 2004"
+        KeywordQuery: "released > 2004"
+        VectorQuery: "fun movies"
     Input: "horror movies with great ratings that have Tom Hanks"
     Output:
         searchCategory: MIXED
-        "KeywordQuery": "rating > 4.5 AND 'Tom Hanks' ILIKE ANY(string_to_array(actors, ', '))",
+        KeywordQuery: "rating > 4.5 AND 'Tom Hanks' ILIKE ANY(string_to_array(actors, ', '))",
         VectorQuery: "horror"
 
 Respond with the following:
