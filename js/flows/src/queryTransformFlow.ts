@@ -55,13 +55,18 @@ export const QueryTransformFlow = ai.defineFlow(
         userProfile: input.userProfile,
       });
 
-      const jsonResponse = JSON.parse(response.text)
+      const jsonResponse = JSON.parse(response.text);
+      const safetyIssueSet = (typeof jsonResponse.safetyIssue === 'string' && jsonResponse.safetyIssue != null) 
+      var safetyIssue = false
+        if (safetyIssueSet) {
+           safetyIssue = jsonResponse.safetyIssue.toLowerCase()==="true"
+        }
       const qtOutput: QueryTransformFlowOutput = {
         transformedQuery: jsonResponse.transformedQuery || "",
         userIntent: USERINTENT.parse(jsonResponse.userIntent) || USERINTENT.parse('UNCLEAR'),
         modelOutputMetadata: {
           justification: jsonResponse.justification || "",
-          safetyIssue: !! jsonResponse.safetyIssue || false,
+          safetyIssue: safetyIssue
         },
       };
       return qtOutput;
@@ -87,9 +92,9 @@ export const QueryTransformFlow = ai.defineFlow(
           transformedQuery: "",
           userIntent: USERINTENT.parse('UNCLEAR'),
           modelOutputMetadata: {
-            "justification": "",
-            "safetyIssue": false,
-            "quotaIssue": true
+            justification: "",
+            safetyIssue: false,
+            quotaIssue: true
           }
          };
         }

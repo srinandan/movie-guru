@@ -28,102 +28,6 @@ import (
 	metric "go.opentelemetry.io/otel/metric"
 )
 
-// func chat(ctx context.Context, deps *Dependencies, metadata *db.Metadata, h *types.ChatHistory, user string, userMessage string) *types.AgentResponse {
-// 	h.AddUserMessage(userMessage)
-
-// 	userProfile, err := deps.DB.GetCurrentProfile(ctx, user)
-// 	if err != nil {
-// 		slog.ErrorContext(ctx, "Unable to get profile info for user", err)
-// 	}
-
-// 	defaultRespQuality := &types.ResponseQualityOutput{
-// 		Outcome:       types.OutcomeUnknown,
-// 		UserSentiment: types.SentimentUnknown,
-// 	}
-
-// 	simpleHistory, err := types.ParseRecentHistory(h.GetHistory(), metadata.HistoryLength)
-// 	if err != nil {
-// 		return types.NewErrorAgentResponse(fmt.Sprintf("Error getting user history: %w", err)), defaultRespQuality
-// 	}
-
-// 	var wg sync.WaitGroup
-
-// 	respQualityChan := make(chan *types.ResponseQualityOutput, 1)
-// 	userProfileChan := make(chan *types.UserProfileOutput, 1)
-
-// 	errChanQuality := make(chan error, 1)
-// 	errChanProfile := make(chan error, 1)
-
-// 	// Launch the goroutines
-// 	wg.Add(1)
-// 	go func() {
-// 		defer wg.Done()
-// 		qualityResp, err := deps.ResponseQualityFlowClient.Run(ctx, simpleHistory, user)
-// 		if err != nil {
-// 			errChanQuality <- err
-// 			return
-// 		}
-// 		respQualityChan <- qualityResp
-// 	}()
-
-// 	go func() {
-// 		defer wg.Done()
-// 		pResp, err := deps.UserProfileFlowClient.Run(ctx, h, user, userProfile)
-// 		if err != nil {
-// 			errChanProfile <- err
-// 			return
-// 		}
-// 		userProfileChan <- pResp
-// 	}()
-
-// 	// This is in the main thread, not async
-// 	qResp, err := deps.QueryTransformFlowClient.Run(simpleHistory, userProfile)
-// 	if agentResp, shouldReturn := processFlowOutput(qResp.ModelOutputMetadata, err, h); shouldReturn {
-// 		return agentResp
-// 	}
-
-// 	movieContext := []*types.MovieContext{}
-// 	if qResp.Intent == types.USERINTENT(types.REQUEST) || qResp.Intent == types.USERINTENT(types.RESPONSE) {
-// 		movieContext, err = deps.MovieRetrieverFlowClient.RetriveDocuments(ctx, qResp.TransformedQuery)
-// 		if agentResp, shouldReturn := processFlowOutput(nil, err, h); shouldReturn {
-// 			return agentResp
-// 		}
-// 	}
-
-// 	mAgentResp, err := deps.MovieFlowClient.Run(movieContext, simpleHistory, userProfile)
-// 	if agentResp, shouldReturn := processFlowOutput(nil, err, h); shouldReturn {
-// 		return agentResp
-// 	}
-
-// 	h.AddAgentMessage(mAgentResp.Answer)
-
-// 	// Wait for goroutines to complete
-// 	wg.Wait()
-// 	close(respQualityChan)
-// 	close(userProfileChan)
-// 	close(errChanQuality)
-// 	close(errChanProfile)
-
-// 	var respQuality *types.ResponseQualityOutput
-
-// 	select {
-// 	case respQuality = <-respQualityChan:
-// 		if respQuality == nil {
-// 			respQuality = defaultRespQuality
-// 		}
-// 	case err := <-errChanQuality:
-// 		slog.ErrorContext(ctx, "ResponseQualityFlowClient failed", err.Error(), err)
-// 	}
-
-// 	select {
-// 	case <-userProfileChan:
-// 	case err := <-errChanProfile:
-// 		slog.ErrorContext(ctx, "UserProfileFlowClient failed", err.Error(), err)
-// 	}
-
-// 	return mAgentResp
-// }
-
 func chat(ctx context.Context, deps *Dependencies, metadata *db.Metadata, h *types.ChatHistory, user string, userMessage string, meters *m.ChatMeters) *types.AgentResponse {
 	h.AddUserMessage(userMessage)
 
@@ -221,7 +125,6 @@ func processFlowOutput(metadata *types.ModelOutputMetadata, err error, h *types.
 }
 
 func updateChatQualityMeters(ctx context.Context, meters *m.ChatMeters, respQuality *types.ResponseQualityOutput) {
-	slog.InfoContext(ctx, "Updating chat meters for quality")
 	switch strings.ToUpper(string(respQuality.UserSentiment)) {
 	case strings.ToUpper(string(types.SentimentPositive)):
 		meters.CSentimentCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("Sentiment", "Positive")))

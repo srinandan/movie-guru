@@ -44,13 +44,24 @@ export const MovieFlow = ai.defineFlow(
     try {
       const response = await MovieFlowPrompt({ history: input.history, userPreferences: input.userPreferences, userMessage: input.userMessage, contextDocuments: input.contextDocuments });
       const jsonResponse =  JSON.parse(response.text);
+      const safetyIssueSet = (typeof jsonResponse.safetyIssue === 'string' && jsonResponse.safetyIssue != null) 
+      var safetyIssue = false
+        if (safetyIssueSet) {
+           safetyIssue = jsonResponse.safetyIssue.toLowerCase()==="true"
+        }
+      const wrongQuerySet = (typeof jsonResponse.wrongQuery === 'string' && jsonResponse.wrongQuery != null) 
+      var wrongQuery = false
+        if (wrongQuerySet) {
+          wrongQuery = jsonResponse.wrongQuery.toLowerCase()==="true"
+        }
+
       const output: MovieFlowOutput = {
-        "answer":  jsonResponse.answer || "",
-        "relevantMovies": jsonResponse.relevantMovies || [],
-        "wrongQuery": jsonResponse.wrongQuery || false,
-        "modelOutputMetadata": {
-          "justification": jsonResponse.justification || "",
-          "safetyIssue": !! jsonResponse.safetyIssue || false,
+        answer:  jsonResponse.answer || "",
+        relevantMovies : jsonResponse.relevantMovies || [],
+        wrongQuery: wrongQuery,
+        modelOutputMetadata: {
+          justification: jsonResponse.justification || "",
+          safetyIssue: safetyIssue
         }
       }
 
@@ -65,8 +76,8 @@ export const MovieFlow = ai.defineFlow(
           relevantMovies: [],
           answer: "",
           modelOutputMetadata: {
-            "justification": "",
-            "safetyIssue": true,
+            justification: "",
+            safetyIssue: true,
           }
          }; 
       }
@@ -76,9 +87,9 @@ export const MovieFlow = ai.defineFlow(
           relevantMovies: [],
           answer: "",
           modelOutputMetadata: {
-            "justification": "",
-            "safetyIssue": false,
-            "quotaIssue": true
+            justification: "",
+            safetyIssue: false,
+            quotaIssue: true
           }
          };}
         else {
