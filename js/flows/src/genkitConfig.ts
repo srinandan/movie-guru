@@ -14,34 +14,42 @@
  * limitations under the License.
  */
 
-import { gemini20FlashExp, gemini15Flash, vertexAI, } from '@genkit-ai/vertexai';
+import { gemini20FlashExp, gemini15Flash, vertexAI } from '@genkit-ai/vertexai';
 import { enableFirebaseTelemetry } from '@genkit-ai/firebase';
 import { initializeApp } from 'firebase-admin/app';
+import { HarmCategory, HarmBlockThreshold } from '@google-cloud/vertexai';
 
 import { genkit } from 'genkit';
 
 const gemini20:boolean = !! process.env.USEGEMINIFLASH2 || false;
-export let modelRef = gemini15Flash
+const LOCATION = process.env.LOCATION || 'us-central1';
+const PROJECT_ID = process.env.PROJECT_ID;
+
+export var model = gemini15Flash
 if(gemini20 == true){
   console.log("Using gemini 2.0 flash")
-  modelRef = gemini20FlashExp
+  model = gemini20FlashExp
 } 
 else{
   console.log("Using gemini 1.5 flash")
 }
 
-const LOCATION = process.env.LOCATION || 'us-central1';
-const PROJECT_ID = process.env.PROJECT_ID;
+enableFirebaseTelemetry();
 
 
 initializeApp({
   projectId: PROJECT_ID,
 });
 
-enableFirebaseTelemetry();
 
+export const safetySettings = [
+  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+  { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+  { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+  { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+];
 
 export const ai = genkit({
   plugins: [vertexAI({ location: LOCATION, projectId: PROJECT_ID })],
-  model: modelRef, // set default model
+  model: model, // set default model
 });

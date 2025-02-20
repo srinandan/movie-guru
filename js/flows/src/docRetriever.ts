@@ -18,7 +18,7 @@ import { Document } from '@genkit-ai/ai/retriever';
 import { textEmbedding004 } from '@genkit-ai/vertexai';
 import { toSql } from 'pgvector';
 import { openDB } from './db';
-import { ai } from './genkitConfig'
+import { ai, safetySettings } from './genkitConfig'
 import { z } from 'genkit';
 import { MovieContextSchema, MovieContext } from './movieFlowTypes';
 import { gemini15Flash } from '@genkit-ai/vertexai';
@@ -50,7 +50,6 @@ export const SearchFlowOutputSchema = z.object({
 export const SearchFlowPrompt = ai.definePrompt(
   {
     name: 'MixedSearchFlowPrompt',
-    model: gemini15Flash,
     input: {
       schema: QuerySchema,
     },
@@ -58,6 +57,9 @@ export const SearchFlowPrompt = ai.definePrompt(
       format: 'json',
       schema: SearchFlowOutputSchema,
     },  
+    config: {
+      safetySettings: safetySettings
+    }
   }, 
   DocSearchFlowPromptText
 )

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ai } from './genkitConfig'
+import { ai, safetySettings } from './genkitConfig'
 import { MovieFlowInputSchema, MovieFlowOutputSchema, MovieFlowOutput } from './movieFlowTypes'
 import { MovieFlowPromptText } from './prompts';
 import { GenerationBlockedError } from 'genkit';
@@ -28,6 +28,9 @@ export const MovieFlowPrompt = ai.definePrompt(
     output: {
       format: 'json',
     },  
+    config:{
+      safetySettings: safetySettings
+      }
   }, 
  MovieFlowPromptText
 )

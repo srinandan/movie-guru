@@ -16,7 +16,7 @@
 
 import { UserProfileFlowOutput, UserProfileFlowInputSchema, UserProfileFlowOutputSchema } from './userProfileTypes'
 import { UserProfilePromptText } from './prompts';
-import { ai } from './genkitConfig'
+import { ai, safetySettings } from './genkitConfig'
 import { GenerationBlockedError } from 'genkit';
 
 export const UserProfileFlowPrompt = ai.definePrompt(
@@ -28,6 +28,9 @@ export const UserProfileFlowPrompt = ai.definePrompt(
     output: {
       format: 'json',
     },
+    config: {
+      safetySettings: safetySettings
+    }
   },
   UserProfilePromptText)
 
