@@ -40,8 +40,7 @@ func CreateUserProfileFlowClient(db *db.MovieDB, URL string) (*UserProfileFlowCl
 	}, nil
 }
 
-func (flowClient *UserProfileFlowClient) Run(ctx context.Context, history *types.ChatHistory, user string) (*types.UserProfileOutput, error) {
-	userProfile, err := flowClient.MovieDB.GetCurrentProfile(ctx, user)
+func (flowClient *UserProfileFlowClient) Run(ctx context.Context, history *types.ChatHistory, user string, userProfile *types.UserProfile) (*types.UserProfileOutput, error) {
 	userProfileOutput := &types.UserProfileOutput{
 		UserProfile: userProfile,
 		ModelOutputMetadata: &types.ModelOutputMetadata{
@@ -49,9 +48,7 @@ func (flowClient *UserProfileFlowClient) Run(ctx context.Context, history *types
 			Justification: "",
 		},
 	}
-	if err != nil {
-		return nil, err
-	}
+
 	agentMessage := ""
 	if len(history.History) > 1 {
 		agentMessage = history.History[len(history.History)-2].Content[0].Text
@@ -64,10 +61,11 @@ func (flowClient *UserProfileFlowClient) Run(ctx context.Context, history *types
 	userProfileFlowInput := types.UserProfileFlowInput{Query: lastUserMessage, AgentMessage: agentMessage}
 	resp, err := flowClient.runFlow(&userProfileFlowInput)
 	if err != nil {
-		return userProfileOutput, err
+		return nil, err
 	}
 	userProfileOutput.ModelOutputMetadata.Justification = resp.ModelOutputMetadata.Justification
 	userProfileOutput.ModelOutputMetadata.SafetyIssue = resp.ModelOutputMetadata.SafetyIssue
+	userProfileOutput.ModelOutputMetadata.QuotaIssue = resp.ModelOutputMetadata.QuotaIssue
 
 	if len(resp.ProfileChangeRecommendations) > 0 {
 		updatedProfile, err := utils.ProcessProfileChanges(userProfile, resp.ProfileChangeRecommendations)
@@ -76,6 +74,7 @@ func (flowClient *UserProfileFlowClient) Run(ctx context.Context, history *types
 		}
 		err = flowClient.MovieDB.UpdateProfile(ctx, updatedProfile, user)
 		if err != nil {
+			slog.ErrorContext(ctx, "DB Update error", err.Error(), err)
 			return userProfileOutput, err
 		}
 		userProfileOutput.UserProfile = updatedProfile
@@ -107,14 +106,16 @@ func (flowClient *UserProfileFlowClient) runFlow(input *types.UserProfileFlowInp
 		slog.Log(context.Background(), slog.LevelError, "Error sending request", "error", err)
 		return nil, err
 	}
-
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		slog.Log(context.Background(), slog.LevelError, "Genkit returned an Error", "error", err)
+		return nil, fmt.Errorf("genkit server returned error: %s (%d)", http.StatusText(resp.StatusCode), resp.StatusCode)
+	}
 	var result struct {
 		Result *types.UserProfileFlowOutput `json:"result"`
 	}
 	defer resp.Body.Close()
 
 	b, _ := io.ReadAll(resp.Body)
-	slog.Log(context.Background(), slog.LevelInfo, string(b))
 
 	err = json.Unmarshal(b, &result)
 	if err != nil {

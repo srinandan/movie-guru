@@ -35,7 +35,7 @@ export const UserProfilePromptText = ` You are a user's movie profiling expert f
       Respond with the following:
   
           *   a *justification* about why you created the query this way.
-          *   a *safetyIssue* returned as true if the query is considered dangerous.
+          *   a *safetyIssue* returned as true if the query is considered dangerous. A query is considered dangerous if the user is asking you to tell about something dangerous. However, asking for movies with dangerous themes is not considered dangerous.
           *   a list of *profileChangeRecommendations* that are a list of extracted strong likes or dislikes with the following fields: category, item, reason, sentiment
       `
 export const QueryTransformPromptText = `
@@ -71,7 +71,7 @@ Inputs:
 Respond with:
 
 * a *justification*: Why you created the query this way.
-* a *safetyIssue* returned as true if the query is considered dangerous.
+* a *safetyIssue* returned as true if the query is considered dangerous. A query is considered dangerous if the user is asking you to tell about something dangerous. However, asking for movies with dangerous themes is not considered dangerous.
 * transformedQuery: The refined search query.
 * userIntent: One of: GREET, END_CONVERSATION, REQUEST, RESPONSE, ACKNOWLEDGE, UNCLEAR
 `
@@ -121,7 +121,7 @@ Movie:
   * an *answer* which is your answer to the user's question, written in a friendly and conversational way.
   * a list of *relevantMovies* which is a list of objects extracted from the context documents that are relevant to your response. Each object contains the reason why you think a movie relevant and the title of the movie. If none are relevant, leave this list empty. If any movies you are talking about in your answer are relevant, add them.
   * a *wrongQuery* boolean which is set to "true" if the user asks something outside your movie expertise; otherwise, set to "false."
-  * a *safetyIssue* returned as true if the query is considered dangerous.
+  * a *safetyIssue* returned as true if the query is considered dangerous. A query is considered dangerous if the user is asking you to tell about something dangerous. However, asking for movies with dangerous themes is not considered dangerous.
 
   Important: Always check if a question complies with your mission before answering. If not, politely decline by saying something like, "Sorry, I can't answer that question."
 `
@@ -223,8 +223,9 @@ Respond with the following:
     vectorQuery: A concise representation of the query, empty if needed.
     searchCategory: The determined category: KEYWORD, VECTOR, or BOTH.
     justification: Explanation of the classification, referencing specific fields or transformations where applicable.
-    safetyIssue: Return true if the query is dangerous (e.g., potentially harmful or inappropriate); otherwise, return false.`
+    safetyIssue:  returned as true if the query is considered dangerous. A query is considered dangerous if the user is asking you to tell about something dangerous. However, asking for movies with dangerous themes is not considered dangerous.
 
+`
 
 export const ConversationQualityAnalysisPromptText = 
 		`
@@ -246,7 +247,6 @@ export const ConversationQualityAnalysisPromptText =
 		*   OUTCOMEENGAGED: The user shows interest in the agent's response and wants to delve deeper into the topic. This could be through follow-up questions, requests for more details, or expressing a desire to learn more about the movie or topic mentioned by the agent.
 		*   OUTCOMETOPICCHANGE: The user shifts the conversation to a new topic unrelated to the agent's response.
 		*   OUTCOMEAMBIGUOUS: The user's response is too vague or open-ended to determine the outcome with certainty.
-		*   OUTCOMEOTHER: The user's response doesn't fit into any of the above categories. You can use this if the user's message is the only one in the history.
 
 		Examples:
 
@@ -271,7 +271,6 @@ export const ConversationQualityAnalysisPromptText =
 		* SENTIMENTPOSITIVE: If the user expresses excitement, joy etc. Simply rejecting an agent's suggestion is not negative.
 		* SENTIMENTNEGATIVE: If the user expresses frustration, irritation, anger etc. Simply rejecting an agent's suggestion is not negative.
 		* SENTIMENTNEUTRAL: If the user expresses no specific emotion
-		* SENTIMENTAMBIGUOUS: If the user sentiment is not clear.
 
 		Remember:
 
