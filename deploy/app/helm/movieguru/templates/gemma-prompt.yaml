@@ -41,7 +41,7 @@ spec:
               memory: "2Gi"          
           env:
             - name: VLLM_URL
-              value: "http://llm-service.movieguru.svc.cluster.local:8000/"          
+              value: "http://llm-service.movieguru.svc.cluster.local:8000/generate"          
             - name: CHAT_SERVER
               value: "http://server.movieguru.svc.cluster.local:8080"
 ---

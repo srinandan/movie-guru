@@ -70,15 +70,7 @@ resource "google_service_account_iam_binding" "movieguru" {
   service_account_id = google_service_account.sa.id
   role               = "roles/iam.workloadIdentityUser"
   members = [
-    "serviceAccount:${var.project_id}.svc.id.goog[movieguru/movieguru-sa]"
-  ]
-  depends_on = [google_container_cluster.primary]
-}
-
-resource "google_service_account_iam_binding" "mockuser" {
-  service_account_id = google_service_account.sa.id
-  role               = "roles/iam.workloadIdentityUser"
-  members = [
+    "serviceAccount:${var.project_id}.svc.id.goog[movieguru/movieguru-sa]",
     "serviceAccount:${var.project_id}.svc.id.goog[mockuser/mockuser-sa]"
   ]
   depends_on = [google_container_cluster.primary]

@@ -139,8 +139,6 @@ export FIREBASE_MESSAGING_SENDERID=""
 export FIREBASE_APPID=""
 export GATEWAY_IP="movie-guru.endpoints.${PROJECT_ID}$.cloud.goog"
 export SERVER_URL="https://${GATEWAY_IP}"
-export DB_HOST=""
-export REDIS_HOST=""
 ```
 
 After updating the file, run the script to apply the environment variables:
@@ -177,8 +175,10 @@ gcloud container clusters get-credentials movie-guru-cluster --region ${REGION} 
 
 Deploy the application to GKE using Helm:
 
+Update the [helm](./deploy/app/helm/movieguru/values.yaml) file with values obtained in the previous step. Ensure the (helm)(./deploy/app.sh#L90) file has the right file
+
 ```bash
-./deploy_helm.sh --region $REGION
+./deploy/app.sh --region $REGION
 ```
 
 ## Step 9: Register Workloads and Services with App Hub
@@ -198,7 +198,7 @@ ___
 
 ### Original repo
 
-This repo is a fork of this [repo](https://github.com/MKand/movie-guru)
+This repo is a fork the original [repo](https://github.com/MKand/movie-guru)
 
 ### Indexer
 

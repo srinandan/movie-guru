@@ -91,10 +91,10 @@ helm upgrade --install movieguru \
 ./deploy/app/helm/movieguru \
 --namespace movieguru \
 --create-namespace \
--f ./deploy/app/helm/movieguru/values.simple.yaml \
+-f ./deploy/app/helm/movieguru/values.full.yaml \
 --set projectID=${PROJECT_ID} \
 --set Image.tag=$SHORT_SHA \
---set region=${REGION} \
+--set region=${REGION}
 
 
 echo -e "\e[95m Creating ns and configmap for locust.\e[0m"
@@ -128,7 +128,7 @@ helm upgrade --install mockuser \
 --set projectID=${PROJECT_ID} \
 --set Image.tag=${SHORT_SHA} \
 --set region=${REGION} \
---set modelLocation=us-west1
+--set modelLocation=us-central1
 
 
 echo -e "\e[95m Starting Helm deploy for otel collector ...\e[0m"

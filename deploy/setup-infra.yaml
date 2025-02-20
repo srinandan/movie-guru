@@ -26,7 +26,7 @@ steps:
     - -c
     - |
       terraform init -backend-config="bucket=${_PROJECT_ID}"
-      terraform apply -var="project_id=${_PROJECT_ID}" -var="region=${_REGION}" -var="support_email=${_SUPPORT_EMAIL}" --auto-approve
+      terraform apply -var="project_id=${_PROJECT_ID}" -var="region=${_REGION}" --auto-approve
 
 substitutions:
   _REPO: "movie-guru"
