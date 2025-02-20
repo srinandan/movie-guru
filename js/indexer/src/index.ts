@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
+import { startFlowServer } from '@genkit-ai/express';
 import { processMovies } from './addData';
-import { ai } from './genkitConfig'
 import { IndexerFlow } from './indexerFlow';
 
-ai.startFlowServer({
+startFlowServer({
   flows: [IndexerFlow],
 });
 
