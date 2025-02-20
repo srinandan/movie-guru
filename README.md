@@ -147,6 +147,17 @@ After updating the file, run the script to apply the environment variables:
 source set_env_vars.sh
 ```
 
+Create a private CLoud Build Worker pool
+
+```bash
+gcloud builds worker-pools create movie-guru \
+    --region=${REGION} \
+    --worker-config-machine-type=e2-standard-16 \
+    --worker-config-disk-size=300 \
+    --network=movie-guru-network \
+    --subnetwork=movie-guru-subnet
+```
+
 ## Step 5: Build and Push Containers
 
 Run the following script to build and push the application containers using Cloud Build:
