@@ -85,11 +85,9 @@ gcloud builds submit --config=deploy/ci.yaml --region=${REGION} --async --ignore
   --substitutions=_PROJECT_ID=$PROJECT_ID,_SHORT_SHA=$SHORT_SHA,_REGION=$REGION,_VITE_FIREBASE_API_KEY=$FIREBASE_API_KEY,_VITE_FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN,_VITE_GCP_PROJECT_ID=$PROJECT_ID,_VITE_FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET,_VITE_FIREBASE_MESSAGING_SENDERID=$FIREBASE_MESSAGING_SENDERID,_VITE_FIREBASE_APPID=$FIREBASE_APPID,_VITE_CHAT_SERVER_URL="https://movie-guru.endpoints.${PROJECT_ID}.cloud.goog/server"
 
 # Check if SKIP_GCS is set
-if [ -z "$SKIP_GCS" ]; then
+if [[ -n "$SKIP_GCS" ]]; then
     exit 0
 fi
-
-exit 0
 
 echo -e "\e[92mCloud Build submitted successfully!\e[0m"
 
