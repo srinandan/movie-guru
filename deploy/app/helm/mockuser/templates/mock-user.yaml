@@ -18,7 +18,7 @@ metadata:
   name: mockuser
   namespace: mockuser
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: mockuser
@@ -30,20 +30,20 @@ spec:
       serviceAccountName: mockuser-sa
       containers:
       - name: mock-user-js
-        image: "{{ .Values.REGION }}-docker.pkg.dev/{{ .Values.PROJECT_ID }}/movie-guru/mockuser:{{ .Values.IMAGE.TAG }}"
+        image: "{{ .Values.region }}-docker.pkg.dev/{{ .Values.projectID }}/movie-guru/mockuser:{{ .Values.Image.tag }}"
         imagePullPolicy: Always
         ports:
         - containerPort: 3400
         env:
         - name: PROJECT_ID
-          value: {{ .Values.PROJECT_ID }}
+          value: {{ .Values.projectID }}
         - name: LOCATION
-          value: {{ .Values.REGION }}
+          value: {{ .Values.modelLocation }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mockuser-service
+  name: mockuser
   namespace: mockuser
 spec:
   selector:
@@ -53,28 +53,3 @@ spec:
     port: 80  # The port users will access the frontend on
     targetPort: 3400 # The port your frontend container is listening on
   type: ClusterIP
-
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: server-route
-  namespace: movieguru
-spec:
-  parentRefs:
-    - name: movieguru-gateway
-      namespace: movieguru
-  rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: "/mockuser"
-      filters:
-        - type: URLRewrite
-          urlRewrite:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: "/"
-      backendRefs:
-        - name: mockuser
-          port: 8080

@@ -73,11 +73,12 @@ func SetupOpenTelemetry(ctx context.Context) (shutdown func(context.Context) err
 
 func SetupLogging() {
 	// Use json as our base logging format.
-	jsonHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{ReplaceAttr: replacer})
+	jsonHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{ReplaceAttr: replacer, AddSource: true})
 	// Add span context attributes when Context is passed to logging calls.
 	instrumentedHandler := handlerWithSpanContext(jsonHandler)
 	// Set this handler as the global slog handler.
 	slog.SetDefault(slog.New(instrumentedHandler))
+
 }
 
 func handlerWithSpanContext(handler slog.Handler) *spanContextLogHandler {

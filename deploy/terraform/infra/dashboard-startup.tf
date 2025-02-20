@@ -149,5 +149,5 @@ resource "google_monitoring_dashboard" "startup_dashboard" {
     "labels": {}
   }
   
-  EOF
+   EOF
 }

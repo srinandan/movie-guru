@@ -15,11 +15,18 @@
   - [Step 1: Set Environment Variables](#step-1-set-environment-variables)
   - [Step 2: Deploy Infrastructure](#step-2-deploy-infrastructure)
   - [Step 3: Configure Firebase](#step-3-configure-firebase)
-  - [Step 4: Update Environment Variables](#step-5-update-environment-variables)
-  - [Step 5: Build and Push Containers](#step-6-build-and-push-containers)
-  - [Step 6: Connect to GKE Cluster](#step-7-connect-to-gke-cluster)
-  - [Step 7: Deploy Application Using Helm](#step-8-deploy-application-using-helm)
+  - [Step 4: Update Environment Variables](#step-4-update-environment-variables)
+  - [Step 5: Build and Push Containers](#step-5-build-and-push-containers)
+  - [Step 6: Run the Cloud Run Job](#step-6-run-the-cloud-run-job)
+  - [Step 7: Connect to GKE Cluster](#step-7-connect-to-gke-cluster)
+  - [Step 8: Deploy Application Using Helm](#step-8-deploy-application-using-helm)
+  - [Step 9: Register Workloads and Services with App Hub](#step-9-register-workloads-and-services-with-app-hub)
   - [Final Step: Verify Deployment](#final-step-verify-deployment)
+  - [Appendix](#appendix)
+    - [Original repo](#original-repo)
+    - [Indexer](#indexer)
+    - [Support](#support)
+  - [License](#license)
 
 ## Movie Guru
 
@@ -105,7 +112,7 @@ Run the following script to deploy the infrastructure using Cloud Build:
 
 This will trigger a pipeline that creates the required infrastructure on GCP. The process will take approximately **10-15 minutes** to complete.
 
-## Step 3: Get Firebase Web app Configuration
+## Step 3: Configure Firebase
 
 Once the infrastructure setup is complete,
 
@@ -132,8 +139,6 @@ export FIREBASE_MESSAGING_SENDERID=""
 export FIREBASE_APPID=""
 export GATEWAY_IP="movie-guru.endpoints.${PROJECT_ID}$.cloud.goog"
 export SERVER_URL="https://${GATEWAY_IP}"
-export DB_HOST=""
-export REDIS_HOST=""
 ```
 
 After updating the file, run the script to apply the environment variables:
@@ -170,8 +175,10 @@ gcloud container clusters get-credentials movie-guru-cluster --region ${REGION} 
 
 Deploy the application to GKE using Helm:
 
+Update the [helm](./deploy/app/helm/movieguru/values.yaml) file with values obtained in the previous step. Ensure the (helm)(./deploy/app.sh#L90) file has the right file
+
 ```bash
-./deploy_helm.sh --region $REGION
+./deploy/app.sh --region $REGION
 ```
 
 ## Step 9: Register Workloads and Services with App Hub
@@ -191,7 +198,7 @@ ___
 
 ### Original repo
 
-This repo is a fork of this [repo](https://github.com/MKand/movie-guru)
+This repo is a fork the original [repo](https://github.com/MKand/movie-guru)
 
 ### Indexer
 

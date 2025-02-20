@@ -29,3 +29,5 @@ set_env_vars.sh
 # init_substituted.sql
 
 posters_small/
+
+*set_env_vars.sh

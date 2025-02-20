@@ -18,7 +18,7 @@ services:
     restart: always
     ports:
       - 6379:6379
-    command: redis-server --save 20 1 --loglevel warning --requirepass my_redis_pwd
+    command: redis-server --save 20 1 --loglevel warning
   flows:
     build: ./js/flows
     ports:
@@ -31,10 +31,12 @@ services:
       - POSTGRES_DB_USER=minimal-user
       - TABLE_NAME=movies
       - POSTGRES_DB_NAME=fake-movies-db
-      - APP_VERSION=v1_local
       - GOOGLE_APPLICATION_CREDENTIALS=/key.json
       - LOCATION=us-west1
-      - LOCAL=true
+      - FIREBASE_API_KEY=$FIREBASE_API_KEY
+      - FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET
+      - FIREBASE_MESSAGING_SENDERID=$FIREBASE_MESSAGING_SENDERID
+      - FIREBASE_APPID=$FIREBASE_APPID
     volumes:
       - ./.key.json:/key.json:ro
   server:
@@ -52,7 +54,6 @@ services:
       - TABLE_NAME=movies
       - APP_VERSION=v1_local
       - LOCATION=$REGION
-      - LOCAL=true
       - FLOWS_URL=http://flows:3400
       - REDIS_HOST=cache
       - REDIS_PORT=6379
@@ -74,6 +75,21 @@ services:
     restart: always
     ports:
       - 8085:8080
+  mock:
+    build: ./js/mock-user
+    ports:
+      - "3402:3400"
+      - "4002:4000"
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/key.json
+      - LOCATION=us-west1
+      - PROJECT_ID=$PROJECT_ID
+      - FIREBASE_API_KEY=$FIREBASE_API_KEY
+      - FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET
+      - FIREBASE_MESSAGING_SENDERID=$FIREBASE_MESSAGING_SENDERID
+      - FIREBASE_APPID=$FIREBASE_APPID
+    volumes:
+      - ./.key.json:/key.json
 
   locust-master:
     image: locustio/locust
@@ -82,13 +98,15 @@ services:
     volumes:
       - ./locust:/mnt/locust
     command: -f /mnt/locust/locustfile.py --master -H http://server:8080
-
+    environment:
+      - MOCK_URL=http://mock:3400/mockUserFlow
   locust-worker:
     image: locustio/locust
     volumes:
       - ./locust:/mnt/locust
     command: -f /mnt/locust/locustfile.py --worker --master-host locust-master
-  
+    environment:
+      - MOCK_URL=http://mock:3400/mockUserFlow
   
 
   

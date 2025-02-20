@@ -16,7 +16,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"log/slog"
 	"os"
 	"strconv"
@@ -28,8 +27,6 @@ import (
 )
 
 func main() {
-
-	log.SetFlags(log.LstdFlags | log.Llongfile)
 
 	ctx := context.Background()
 

@@ -19,16 +19,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
-	"strings"
 
 	redis "github.com/redis/go-redis/v9"
 )
 
 var (
-	redisStore *redis.ClusterClient
+	redisStore redis.Cmdable
 )
 
 func TestRedis() {
@@ -50,17 +50,24 @@ func TestRedis() {
 
 func setupSessionStore(ctx context.Context) {
 	REDIS_HOST := os.Getenv("REDIS_HOST")
-	//REDIS_PASSWORD := os.Getenv("REDIS_PASSWORD")
-	//REDIS_PORT := os.Getenv("REDIS_PORT")
+	REDIS_MODE := os.Getenv("REDIS_MODE")
+	if REDIS_MODE == "" {
+		REDIS_MODE = "SINGLE"
+	}
 
-	/*redisStore = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", REDIS_HOST, REDIS_PORT),
-		Password: REDIS_PASSWORD,
-		DB:       0,
-	})*/
-	redisStore = redis.NewClusterClient(&redis.ClusterOptions{
-		Addrs: []string{fmt.Sprintf("%s:%s", REDIS_HOST, "6379")},
-	})
+	//REDIS_PASSWORD := os.Getenv("REDIS_PASSWORD")
+	REDIS_PORT := os.Getenv("REDIS_PORT")
+	if REDIS_MODE == "SINGLE" {
+		redisStore = redis.NewClient(&redis.Options{
+			Addr: fmt.Sprintf("%s:%s", REDIS_HOST, REDIS_PORT),
+			DB:   0,
+		})
+	} else if REDIS_MODE == "CLUSTER" {
+		redisStore = redis.NewClusterClient(&redis.ClusterOptions{
+			Addrs: []string{fmt.Sprintf("%s:%s", REDIS_HOST, "6379")},
+		})
+	}
+
 	if err := redisStore.Ping(ctx).Err(); err != nil {
 		slog.ErrorContext(ctx, "error connecting to redis", slog.Any("error", err))
 		os.Exit(1)
@@ -68,10 +75,20 @@ func setupSessionStore(ctx context.Context) {
 }
 
 func getSessionID(r *http.Request) (string, error) {
-	if r.Header.Get("Cookie") == "" {
-		return "", errors.New("No cookie found")
+	cookie, err := r.Cookie("movie-guru-sid")
+	if err != nil {
+		switch {
+		case errors.Is(err, http.ErrNoCookie):
+			return "", errors.New("No cookie found")
+		default:
+			log.Println(err)
+			return "", err
+		}
 	}
-	sessionID := strings.Split(r.Header.Get("Cookie"), "movie-guru-sid=")[1]
+	sessionID := cookie.Value
+	if sessionID == "" {
+		return "", errors.New("None or malformed cookie found")
+	}
 	return sessionID, nil
 }
 
@@ -94,18 +111,22 @@ func authenticateAndGetSessionInfo(ctx context.Context, sessionInfo *SessionInfo
 	}
 	return sessionInfo, false
 }
+
 func getSessionInfo(ctx context.Context, r *http.Request) (*SessionInfo, error) {
-	session := &SessionInfo{}
 	sessionID, err := getSessionID(r)
 	if err != nil {
-		return session, &AuthorizationError{err.Error()}
+		return nil, &AuthorizationError{err.Error()}
 	}
+	session := &SessionInfo{}
 	s, err := redisStore.Get(ctx, sessionID).Result()
+	if err != nil {
+		return nil, &AuthorizationError{fmt.Sprintf("Unknown session: %s", sessionID)}
+	}
 	err = json.Unmarshal([]byte(s), session)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(fmt.Sprintf("Unable to retrieve session info. %s", err))
 	}
-	return session, err
+	return session, nil
 }
 
 func deleteSessionInfo(ctx context.Context, sessionID string) error {

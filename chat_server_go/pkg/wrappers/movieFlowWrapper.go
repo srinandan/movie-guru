@@ -41,6 +41,7 @@ func CreateMovieFlowClient(db *db.MovieDB, URL string) (*MovieFlowClient, error)
 }
 
 func (flowClient *MovieFlowClient) Run(movieDocs []*types.MovieContext, history []*types.SimpleMessage, userPreferences *types.UserProfile) (*types.AgentResponse, error) {
+
 	input := &types.MovieFlowInput{
 		History:          history,
 		UserPreferences:  userPreferences,

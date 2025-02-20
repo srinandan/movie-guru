@@ -14,11 +14,21 @@
  * limitations under the License.
  */
 
-import { gemini20FlashExp, vertexAI, } from '@genkit-ai/vertexai';
+import { gemini20FlashExp, gemini15Flash, vertexAI, } from '@genkit-ai/vertexai';
 import { enableFirebaseTelemetry } from '@genkit-ai/firebase';
 import { initializeApp } from 'firebase-admin/app';
 
 import { genkit } from 'genkit';
+
+const gemini20:boolean = !! process.env.USEGEMINIFLASH2 || false;
+export let modelRef = gemini15Flash
+if(gemini20 == true){
+  console.log("Using gemini 2.0 flash")
+  modelRef = gemini20FlashExp
+} 
+else{
+  console.log("Using gemini 1.5 flash")
+}
 
 const LOCATION = process.env.LOCATION || 'us-central1';
 const PROJECT_ID = process.env.PROJECT_ID;
@@ -33,5 +43,5 @@ enableFirebaseTelemetry();
 
 export const ai = genkit({
   plugins: [vertexAI({ location: LOCATION, projectId: PROJECT_ID })],
-  model: gemini20FlashExp, // set default model
+  model: modelRef, // set default model
 });

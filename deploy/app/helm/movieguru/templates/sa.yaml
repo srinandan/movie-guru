@@ -18,4 +18,4 @@ metadata:
   name: movieguru-sa
   namespace: movieguru
   annotations:
-    iam.gke.io/gcp-service-account: movie-guru-chat-server-sa@{{ .Values.PROJECT_ID }}.iam.gserviceaccount.com # Replace with your GCP SA email
+    iam.gke.io/gcp-service-account: movie-guru-chat-server-sa@{{ .Values.projectID }}.iam.gserviceaccount.com
