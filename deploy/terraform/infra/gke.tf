@@ -19,6 +19,11 @@ resource "google_container_cluster" "primary" {
   network             = "projects/${var.project_id}/global/networks/${google_compute_network.custom.name}"
   deletion_protection = false
   subnetwork          = "projects/${var.project_id}/regions/${var.region}/subnetworks/${google_compute_subnetwork.custom.name}"
+
+  private_cluster_config {
+    enable_private_nodes = true
+  }
+
   cluster_autoscaling {
     auto_provisioning_defaults {
       service_account = google_service_account.sa.email
