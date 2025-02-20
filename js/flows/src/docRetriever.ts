@@ -56,11 +56,11 @@ export const SearchFlowPrompt = ai.definePrompt(
     output: {
       format: 'json',
       schema: SearchFlowOutputSchema,
-    },  
+    },
     config: {
       safetySettings: safetySettings
     }
-  }, 
+  },
   DocSearchFlowPromptText
 )
 
@@ -71,7 +71,7 @@ export const MovieDocFlow = ai.defineFlow(
     outputSchema: z.array(MovieContextSchema),
   },
   async (input) => {
-    let searchFlowOutput= {
+    let searchFlowOutput = {
       searchCategory: SearchTypeCategory.parse("NONE"), // Initialize with "NONE"
       keywordQuery: "",
       vectorQuery: "",
@@ -82,74 +82,74 @@ export const MovieDocFlow = ai.defineFlow(
     };
     const movieContexts: MovieContext[] = [];
 
-  try{
-    const response = await SearchFlowPrompt( {
-      query: input.query
-    })
-    const jsonResponse = JSON.parse(response.text)
-    const safetyIssueSet = (typeof jsonResponse.safetyIssue === 'string' && jsonResponse.safetyIssue != null) 
+    try {
+      const response = await SearchFlowPrompt({
+        query: input.query
+      })
+      const jsonResponse = JSON.parse(response.text)
+      const safetyIssueSet = (typeof jsonResponse.safetyIssue === 'string' && jsonResponse.safetyIssue != null)
       var safetyIssue = false
-        if (safetyIssueSet) {
-           safetyIssue = jsonResponse.safetyIssue.toLowerCase()==="true"
-        }
-    searchFlowOutput = {
-      vectorQuery: jsonResponse.vectorQuery || "",
-      keywordQuery: jsonResponse.keywordQuery || "",
-      searchCategory: jsonResponse.searchCategory || SearchTypeCategory.parse("NONE"),
-      modelOutputMetadata: {
-        justification: jsonResponse.justification || "",
-        safetyIssue: safetyIssue,
-      },
-    }
-  }
-  catch (error){
-    console.error('MovieDocFlow: Error generating response:', {
-      error,
-      input,
-    });
-  }
-  try{
-    if (searchFlowOutput.searchCategory == "NONE"){
-      return movieContexts;
-    }
-    const docs = await ai.retrieve({
-      retriever: sqlRetriever,
-      query: {
-        content: [{ text: "" }],
-      },
-      options: {
-        k: 10,
-        searchCategory: searchFlowOutput.searchCategory,
-        keywordQuery: searchFlowOutput.keywordQuery,
-        vectorQuery: searchFlowOutput.vectorQuery
-      },
-    });
-
-    for (const doc of docs) {
-      if (doc.metadata) {
-        const movieContext: MovieContext = {
-          title: doc.metadata.title,
-          runtime_minutes: doc.metadata.runtime_mins,
-          genres: doc.metadata.genres.split(","),
-          rating: parseFloat(parseFloat(doc.metadata.rating).toFixed(1)),
-          plot: doc.metadata.plot,
-          released: parseInt(doc.metadata.released,10),
-          director: doc.metadata.director,
-          actors: doc.metadata.actors.split(","),
-          poster: doc.metadata.poster,
-          tconst: doc.metadata.tconst,
-        };
-        movieContexts.push(movieContext);
-      } else {
-        console.warn('Movie metadata is missing for a document.');
+      if (safetyIssueSet) {
+        safetyIssue = jsonResponse.safetyIssue.toLowerCase() === "true"
+      }
+      searchFlowOutput = {
+        vectorQuery: jsonResponse.vectorQuery || "",
+        keywordQuery: jsonResponse.keywordQuery || "",
+        searchCategory: jsonResponse.searchCategory || SearchTypeCategory.parse("NONE"),
+        modelOutputMetadata: {
+          justification: jsonResponse.justification || "",
+          safetyIssue: safetyIssue,
+        },
       }
     }
-    return movieContexts;
-  }
-  catch(e){
-    console.error(`Retriever: Unable to get documents: ${e instanceof Error ? e.message : e}`)
-    return movieContexts;
-  }
+    catch (error) {
+      console.error('MovieDocFlow: Error generating response:', {
+        error,
+        input,
+      });
+    }
+    try {
+      if (searchFlowOutput.searchCategory == "NONE") {
+        return movieContexts;
+      }
+      const docs = await ai.retrieve({
+        retriever: sqlRetriever,
+        query: {
+          content: [{ text: "" }],
+        },
+        options: {
+          k: 10,
+          searchCategory: searchFlowOutput.searchCategory,
+          keywordQuery: searchFlowOutput.keywordQuery,
+          vectorQuery: searchFlowOutput.vectorQuery
+        },
+      });
+
+      for (const doc of docs) {
+        if (doc.metadata) {
+          const movieContext: MovieContext = {
+            title: doc.metadata.title,
+            runtime_minutes: doc.metadata.runtime_mins,
+            genres: doc.metadata.genres.split(","),
+            rating: parseFloat(parseFloat(doc.metadata.rating).toFixed(1)),
+            plot: doc.metadata.plot,
+            released: parseInt(doc.metadata.released, 10),
+            director: doc.metadata.director,
+            actors: doc.metadata.actors.split(","),
+            poster: doc.metadata.poster,
+            tconst: doc.metadata.tconst,
+          };
+          movieContexts.push(movieContext);
+        } else {
+          console.warn('Movie metadata is missing for a document.');
+        }
+      }
+      return movieContexts;
+    }
+    catch (e) {
+      console.error(`Retriever: Unable to get documents: ${e instanceof Error ? e.message : e}`)
+      return movieContexts;
+    }
   }
 );
 
@@ -165,23 +165,25 @@ export const sqlRetriever = ai.defineRetriever(
     }
 
     let results;
-    if(options.searchCategory == "KEYWORD"){
-      results =  await db`SELECT content, title, poster, released, runtime_mins, rating, genres, director, actors, plot, tconst
+    if (options.searchCategory == "KEYWORD") {
+      results = await db`SELECT content, title, poster, released, runtime_mins, rating, genres, director, actors, plot, tconst
       FROM movies
       WHERE ${db.unsafe(options.keywordQuery)} 
       LIMIT ${options.k ?? 10}`
     }
 
-     //Vector Query
-     if(options.searchCategory == "VECTOR"){
+    //Vector Query
+    if (options.searchCategory == "VECTOR") {
+
       const embedding = await ai.embed({
         embedder: textEmbedding004,
         content: options.vectorQuery,
-      });  
-        results = await db`
+      });
+
+      results = await db`
         SELECT content, title, poster, released, runtime_mins, rating, genres, director, actors, plot, tconst
        FROM movies
-          ORDER BY embedding <#> ${toSql(embedding)}
+          ORDER BY embedding <#> ${toSql(embedding[0].embedding)}
           LIMIT ${options.k ?? 10}
         ;`
     }
@@ -193,7 +195,7 @@ export const sqlRetriever = ai.defineRetriever(
         embedder: textEmbedding004,
         content: options.vectorQuery,
       });
-    
+
       // Execute the database query with both keyword and vector search components
       results = await db`
         SELECT 
@@ -220,8 +222,8 @@ export const sqlRetriever = ai.defineRetriever(
     }
 
     if (!results) {
-      throw new Error('No results found.'); 
-    }  
+      throw new Error('No results found.');
+    }
     return {
       documents: results.map((row) => {
         const { content, ...metadata } = row;
