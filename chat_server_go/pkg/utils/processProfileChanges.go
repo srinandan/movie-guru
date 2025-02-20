@@ -23,7 +23,6 @@ import (
 func ProcessProfileChanges(userProfile *types.UserProfile, changes []*types.ProfileChangeRecommendation) (*types.UserProfile, error) {
 	for _, change := range changes {
 		change.Item = strings.ToLower(change.Item)
-
 		switch change.Category {
 		case "ACTOR":
 			handleChange("ACTOR", userProfile, change)

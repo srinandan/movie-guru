@@ -78,7 +78,6 @@ func (flowClient *ResponseQualityFlowClient) runFlow(input *types.ResponseQualit
 	defer resp.Body.Close()
 
 	b, _ := io.ReadAll(resp.Body)
-	slog.Log(context.Background(), slog.LevelInfo, string(b))
 
 	err = json.Unmarshal(b, &result)
 	if err != nil {
