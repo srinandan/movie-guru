@@ -16,7 +16,7 @@
 
 import { UserProfileFlowOutput, UserProfileFlowInputSchema, UserProfileFlowOutputSchema } from './userProfileTypes'
 import { UserProfilePromptText } from './prompts';
-import { ai } from './genkitConfig'
+import { ai, safetySettings } from './genkitConfig'
 import { GenerationBlockedError } from 'genkit';
 
 export const UserProfileFlowPrompt = ai.definePrompt(
@@ -28,6 +28,9 @@ export const UserProfileFlowPrompt = ai.definePrompt(
     output: {
       format: 'json',
     },
+    config: {
+      safetySettings: safetySettings
+    }
   },
   UserProfilePromptText)
 
@@ -41,7 +44,6 @@ export const UserProfileFlowPrompt = ai.definePrompt(
       try {
         const response = await UserProfileFlowPrompt({ query: input.query, agentMessage: input.agentMessage });
         const jsonResponse =  JSON.parse(response.text);
-        console.log("Profile FLow Output ", jsonResponse)
         const output: UserProfileFlowOutput = {
           "profileChangeRecommendations":  jsonResponse.profileChangeRecommendations,
           "modelOutputMetadata": {
@@ -61,15 +63,20 @@ export const UserProfileFlowPrompt = ai.definePrompt(
             }
            }; 
         }
-        else{
-          console.error("UserProfileFlow: Error generating response:", error);
+        else if(error instanceof Error && (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED'))){
+          console.error("UserProfileFlow: There is a quota issue:", error.message);
           return { 
             profileChangeRecommendations: [],
             modelOutputMetadata: {
               "justification": "",
               "safetyIssue": false,
+              "quotaIssue": true
             }
-           }; 
+           };
+          }
+        else{
+          console.error("UserProfileFlow: Error generating response:", error);
+          throw error;
         }
       }
     } 

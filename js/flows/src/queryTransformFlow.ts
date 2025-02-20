@@ -21,7 +21,7 @@ import {
   QueryTransformFlowOutput
 } from './queryTransformTypes';
 import { QueryTransformPromptText } from './prompts';
-import { ai } from './genkitConfig';
+import { ai, safetySettings } from './genkitConfig';
 import { GenerationBlockedError } from 'genkit';
 
 export const QueryTransformPrompt = ai.definePrompt(
@@ -33,7 +33,11 @@ export const QueryTransformPrompt = ai.definePrompt(
     output: {
       format: 'json',
     },
+    config:{
+      safetySettings: safetySettings
+      }
   },
+  
   QueryTransformPromptText
 );
 
@@ -77,16 +81,21 @@ export const QueryTransformFlow = ai.defineFlow(
           },
         };
       }
-      else{
-        console.error("QTFlow: Error generating response:", error);
-        return {
-          transformedQuery: input.userMessage,
+      else if(error instanceof Error && (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED'))){
+        console.error("QTFlow: There is a quota issue:", error.message);
+        return { 
+          transformedQuery: "",
           userIntent: USERINTENT.parse('UNCLEAR'),
           modelOutputMetadata: {
-            justification: '',
-            safetyIssue: false,
-          },
-        };
+            "justification": "",
+            "safetyIssue": false,
+            "quotaIssue": true
+          }
+         };
+        }
+        else {
+        console.error("QTFlow: Error generating response:", error);
+        throw error;
       }
       
     }

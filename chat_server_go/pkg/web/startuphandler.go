@@ -15,8 +15,10 @@
 package web
 
 import (
+	"context"
 	"encoding/json"
 	"log/slog"
+	"math"
 	"math/rand"
 	"net/http"
 
@@ -58,7 +60,7 @@ func createStartupHandler(deps *Dependencies) http.HandlerFunc {
 				return
 			}
 			agentResp := types.NewAgentResponse()
-			agentResp.Context = context[0:5]
+			agentResp.Context = truncateContext(ctx, context)
 			agentResp.Preferences = pref
 			agentResp.Result = types.SUCCESS
 
@@ -67,4 +69,12 @@ func createStartupHandler(deps *Dependencies) http.HandlerFunc {
 
 		}
 	}
+}
+
+func truncateContext(ctx context.Context, context []*types.MovieContext) []*types.MovieContext {
+	if len(context) == 0 {
+		slog.InfoContext(ctx, "0 context documents recieved at startup")
+		return context
+	}
+	return context[:int(math.Min(float64(len(context)), 5))]
 }
