@@ -21,12 +21,13 @@ import { HarmCategory, HarmBlockThreshold } from '@google-cloud/vertexai';
 
 import { genkit } from 'genkit';
 
-const gemini20:boolean = !! process.env.USEGEMINIFLASH2 || false;
+
+const gemini20 = process.env.USEGEMINIFLASH2 === "true" || false;
 const LOCATION = process.env.LOCATION || 'us-central1';
 const PROJECT_ID = process.env.PROJECT_ID;
 
 export var model = gemini15Flash
-if(gemini20 == true){
+if(gemini20){
   console.log("Using gemini 2.0 flash")
   model = gemini20FlashExp
 } 
