@@ -48,7 +48,7 @@
             >
             <img src="../assets/movie-guru.png" class="w-12 h-12 pb-2 object-contain" />
 
-            <div id="error_message" class="text-base font-bold "> Oops! Something went wrong. Try again.</div>
+            <div id="error_message" class="text-base font-bold "> {{this.errorMessage }}</div>
           </div>
       </div>
       <div class="mt-4 mx-2">
@@ -75,6 +75,7 @@
         store: store,
         processingRequest: ChatClientService.processingRequest,
         errorOccured: ChatClientService.errorOccured,
+        errorMessage: ChatClientService.errorMessage,
         newMessage: "",
       }
     },

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ai } from './genkitConfig'
+import { ai, safetySettings } from './genkitConfig'
 import { MovieFlowInputSchema, MovieFlowOutputSchema, MovieFlowOutput } from './movieFlowTypes'
 import { MovieFlowPromptText } from './prompts';
 import { GenerationBlockedError } from 'genkit';
@@ -28,6 +28,9 @@ export const MovieFlowPrompt = ai.definePrompt(
     output: {
       format: 'json',
     },  
+    config:{
+      safetySettings: safetySettings
+      }
   }, 
  MovieFlowPromptText
 )
@@ -67,16 +70,20 @@ export const MovieFlow = ai.defineFlow(
           }
          }; 
       }
-      else{
-        console.error("MovieFlow: Error generating response:", error);
+      else if(error instanceof Error && (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED'))){
+        console.error("MovieFlow: There is a quota issue:", error.message);
         return { 
           relevantMovies: [],
           answer: "",
           modelOutputMetadata: {
             "justification": "",
             "safetyIssue": false,
+            "quotaIssue": true
           }
-         }; 
+         };}
+        else {
+        console.error("MovieFlow: Error generating response:", error);
+        throw error;
       }
     }
   }

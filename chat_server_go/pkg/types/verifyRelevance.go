@@ -38,9 +38,6 @@ const (
 	// OutcomeRejected indicates the user explicitly rejected the agent's response.
 	OutcomeRejected ConversationTurnOutcome = "OUTCOMEREJECTED"
 
-	// OutcomeOther indicates an outcome that doesn't fit the other categories.
-	OutcomeOther ConversationTurnOutcome = "OUTCOMEOTHER"
-
 	// OutcomeUnknown indicates an outcome wasn't able to be processed due to an error.
 	OutcomeUnknown ConversationTurnOutcome = "OUTCOMEUNKNOWN"
 )
@@ -57,9 +54,6 @@ const (
 
 	// SentimentNeutral indicates a neutral sentiment expressed by the user.
 	SentimentNeutral UserSentiment = "SENTIMENTNEUTRAL"
-
-	// SentimentAmbiguous indicates the sentiment in the user's message is ambiguous.
-	SentimentAmbiguous UserSentiment = "SENTIMENTAMBIGUOUS"
 
 	// SentimentUnknown indicates the sentiment in the user's message is unknown due to an error.
 	SentimentUnknown UserSentiment = "SENTIMENTUNKNOWN"
@@ -84,7 +78,7 @@ type ResponseQualityOutput struct {
 // NewResponseQualityFlowOutput creates a new ResponseQualityFlowOutput with default values.
 func NewResponseQualityFlowOutput() *ResponseQualityFlowOutput {
 	return &ResponseQualityFlowOutput{
-		Outcome:       OutcomeOther,       // Default outcome
-		UserSentiment: SentimentAmbiguous, // Default sentiment
+		Outcome:       OutcomeUnknown,   // Default outcome
+		UserSentiment: SentimentUnknown, // Default sentiment
 	}
 }

@@ -18,15 +18,12 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/movie-guru/pkg/db"
 
 	m "github.com/movie-guru/pkg/metrics"
 	"github.com/movie-guru/pkg/types"
-	"go.opentelemetry.io/otel/attribute"
-	metric "go.opentelemetry.io/otel/metric"
 	"golang.org/x/exp/slog"
 )
 
@@ -69,8 +66,8 @@ func createChatHandler(deps *Dependencies, meters *m.ChatMeters, metadata *db.Me
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			agentResp, respQuality := chat(ctx, deps, metadata, ch, user, chatRequest.Content)
-			updateChatMeters(ctx, agentResp, meters, respQuality)
+			agentResp := chat(ctx, deps, metadata, ch, user, chatRequest.Content, meters)
+			updateSuccessChatMeters(ctx, agentResp, meters)
 
 			saveHistory(ctx, ch, user, metadata)
 			w.WriteHeader(http.StatusOK)
@@ -81,33 +78,14 @@ func createChatHandler(deps *Dependencies, meters *m.ChatMeters, metadata *db.Me
 	}
 }
 
-func updateChatMeters(ctx context.Context, agentResp *types.AgentResponse, meters *m.ChatMeters, respQuality *types.ResponseQualityOutput) {
+func updateSuccessChatMeters(ctx context.Context, agentResp *types.AgentResponse, meters *m.ChatMeters) {
 	if agentResp.Result == types.UNSAFE {
 		meters.CSafetyIssueCounter.Add(ctx, 1)
 	}
 	if agentResp.Result == types.SUCCESS {
 		meters.CSuccessCounter.Add(ctx, 1)
 	}
-	switch strings.ToUpper(string(respQuality.UserSentiment)) {
-	case strings.ToUpper(string(types.SentimentPositive)):
-		meters.CSentimentCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("Sentiment", "Positive")))
-	case strings.ToUpper(string(types.SentimentNegative)):
-		meters.CSentimentCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("Sentiment", "Negative")))
-	case strings.ToUpper(string(types.SentimentNeutral)):
-		meters.CSentimentCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("Sentiment", "Neutral")))
-	default:
-		meters.CSentimentCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("Sentiment", "Unclassified")))
-	}
-	switch strings.ToUpper(string(respQuality.Outcome)) {
-	case strings.ToUpper(string(types.OutcomeAcknowledged)):
-		meters.COutcomeCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("Outcome", "Acknowledged")))
-	case strings.ToUpper(string(types.OutcomeEngaged)):
-		meters.COutcomeCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("Outcome", "Engaged")))
-	case strings.ToUpper(string(types.OutcomeIrrelevant)):
-		meters.COutcomeCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("Outcome", "Irrelevant")))
-	case strings.ToUpper(string(types.OutcomeRejected)):
-		meters.COutcomeCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("Outcome", "Rejected")))
-	default:
-		meters.COutcomeCounter.Add(ctx, 1, metric.WithAttributes(attribute.String("Outcome", "Unclassified")))
+	if agentResp.Result == types.QUOTALIMIT {
+		meters.CQuotaLimitCounter.Add(ctx, 1)
 	}
 }
