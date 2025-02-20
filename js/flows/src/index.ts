@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { ai } from './genkitConfig'
+
+import { startFlowServer } from '@genkit-ai/express';
 
 import { UserProfileFlow } from './userProfileFlow'
 export { UserProfileFlowPrompt } from './userProfileFlow'
@@ -28,8 +29,8 @@ import { MovieFlow } from './movieFlow'
 export { MovieFlowPrompt } from './movieFlow'
 
 import { QualityFlow } from './verifyQualityFlow'
-export {QualityFlowPrompt} from './verifyQualityFlow'
+export { QualityFlowPrompt } from './verifyQualityFlow'
 
-ai.startFlowServer({
-    flows: [UserProfileFlow, QueryTransformFlow, MovieFlow, MovieDocFlow, QualityFlow],
-  });
+startFlowServer({
+  flows: [UserProfileFlow, QueryTransformFlow, MovieFlow, MovieDocFlow, QualityFlow],
+});

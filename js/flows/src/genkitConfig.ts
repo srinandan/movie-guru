@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { gemini20FlashExp, gemini15Flash, vertexAI } from '@genkit-ai/vertexai';
+import { gemini20Flash001, gemini15Flash, vertexAI } from '@genkit-ai/vertexai';
+import { ollama } from 'genkitx-ollama';
 import { enableFirebaseTelemetry } from '@genkit-ai/firebase';
 import { initializeApp } from 'firebase-admin/app';
 import { HarmCategory, HarmBlockThreshold } from '@google-cloud/vertexai';
@@ -22,18 +23,52 @@ import { HarmCategory, HarmBlockThreshold } from '@google-cloud/vertexai';
 import { genkit } from 'genkit';
 
 
-const gemini20 = process.env.USEGEMINIFLASH2 === "true" || false;
+// Read environment variable
+const modelType = process.env.MODEL_TYPE || 'gemini15Flash'; // Default to 'gemini20'
+
 const LOCATION = process.env.LOCATION || 'us-central1';
 const PROJECT_ID = process.env.PROJECT_ID;
 
-export var model = gemini15Flash
-if(gemini20){
-  console.log("Using gemini 2.0 flash")
-  model = gemini20FlashExp
-} 
-else{
-  console.log("Using gemini 1.5 flash")
+export var ai = genkit({})
+
+switch (modelType) {
+  case 'gemini15':
+    console.log("Using Gemini 1.5 Flash");
+    ai = genkit({
+      plugins: [vertexAI({ location: LOCATION, projectId: PROJECT_ID })],
+      model: gemini15Flash
+    })
+    break;
+  case 'gemini20':
+    console.log("Using Gemini 2.0 Flash");
+    ai = genkit({
+      plugins: [vertexAI({ location: LOCATION, projectId: PROJECT_ID })],
+      model: gemini20Flash001
+    })
+    break;
+  case 'ollama':
+    console.log("Using Ollama");
+    ai = genkit({
+      plugins: [
+        ollama({
+          models: [
+            {
+              name: 'gemma:9b',
+              type: 'chat', // type: 'chat' | 'generate' | undefined
+            },
+          ],
+          serverAddress: 'http://ollama-service.movieguru.svc.cluster.local:8080', // default local address
+        }),
+      ],
+      model: 'ollama/gemma',
+    });
+
+    ai.retrieve
+    break;
+  default:
+    throw new Error(`Unknown model type: ${modelType}`);
 }
+
 
 enableFirebaseTelemetry();
 
@@ -50,7 +85,3 @@ export const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
 ];
 
-export const ai = genkit({
-  plugins: [vertexAI({ location: LOCATION, projectId: PROJECT_ID })],
-  model: model, // set default model
-});
