@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { gemini20FlashExp, gemini15Flash, vertexAI } from '@genkit-ai/vertexai';
+import { gemini20Flash001, gemini15Flash, vertexAI } from '@genkit-ai/vertexai';
 import { enableFirebaseTelemetry } from '@genkit-ai/firebase';
 import { initializeApp } from 'firebase-admin/app';
 import { HarmCategory, HarmBlockThreshold } from '@google-cloud/vertexai';
@@ -28,7 +28,7 @@ const PROJECT_ID = process.env.PROJECT_ID;
 
 export var model = gemini15Flash
 if(gemini20){
-  model = gemini20FlashExp
+  model = gemini20Flash001
 }
 
 enableFirebaseTelemetry();

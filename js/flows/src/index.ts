@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ai } from './genkitConfig'
+import { startFlowServer } from '@genkit-ai/express';
 
 import { UserProfileFlow } from './userProfileFlow'
 export { UserProfileFlowPrompt } from './userProfileFlow'
@@ -36,6 +36,6 @@ export function parseBooleanfromField(field: string|null|undefined): boolean{
 }
 
 
-ai.startFlowServer({
+startFlowServer({
     flows: [UserProfileFlow, QueryTransformFlow, MovieFlow, MovieDocFlow, QualityFlow],
   });
