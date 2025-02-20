@@ -26,7 +26,7 @@ export SCRIPT_DIR=$(dirname "$(readlink -f "$0" 2>/dev/null)" 2>/dev/null || ech
 # Usage function
 usage() {
    echo ""
-   echo "Usage: $0 [--region <region>]"
+   echo "Usage: $0 [--region <region>] [--skip-gcs=true]"
    echo -e "\tExample: ./deploy.sh --region us-central1"
    exit 1
 }
@@ -37,6 +37,9 @@ while [ "$1" != "" ]; do
         --region | -r ) shift
                         REGION=$1
                         ;;
+        --skip-gcs | -s ) shift
+                        SKIP_GCS="true"
+                        ;;                        
         --help | -h )   usage
                         ;;
         * )             echo -e "\e[91mUnknown parameter: $1\e[0m"
@@ -74,11 +77,19 @@ echo -e "\e[95mGenerated SHORT_SHA: $SHORT_SHA\e[0m"
 echo -e "\e[95mSubstituting env variables in init.sql\e[0m"
 
 envsubst < pgvector/init.sql > pgvector/init_substituted.sql
+envsubst < pgvector/py_init.sql > pgvector/py_init_substituted.sql
 
 # Start Cloud Build
 echo -e "\e[95mStarting Cloud Build...\e[0m"
-gcloud builds submit --config=deploy/ci.yaml --async --ignore-file=.gcloudignore \
+gcloud builds submit --config=deploy/ci.yaml --region=${REGION} --async --ignore-file=.gcloudignore --worker-pool="projects/${PROJECT_ID}/locations/${REGION}/workerPools/movie-guru" --project=${PROJECT_ID} \
   --substitutions=_PROJECT_ID=$PROJECT_ID,_SHORT_SHA=$SHORT_SHA,_REGION=$REGION,_VITE_FIREBASE_API_KEY=$FIREBASE_API_KEY,_VITE_FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN,_VITE_GCP_PROJECT_ID=$PROJECT_ID,_VITE_FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET,_VITE_FIREBASE_MESSAGING_SENDERID=$FIREBASE_MESSAGING_SENDERID,_VITE_FIREBASE_APPID=$FIREBASE_APPID,_VITE_CHAT_SERVER_URL="https://movie-guru.endpoints.${PROJECT_ID}.cloud.goog/server"
+
+# Check if SKIP_GCS is set
+if [ -z "$SKIP_GCS" ]; then
+    exit 0
+fi
+
+exit 0
 
 echo -e "\e[92mCloud Build submitted successfully!\e[0m"
 

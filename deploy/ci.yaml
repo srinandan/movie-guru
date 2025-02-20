@@ -140,7 +140,34 @@ steps:
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:${_SHORT_SHA}' && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest'
 
+- name: 'gcr.io/cloud-builders/docker'
+  id: "build-gemma-prompt-image"
+  dir: './gemma-prompts'
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker build \
+         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:${_SHORT_SHA}" \
+         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:latest" \
+         --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:latest" \
+         -f Dockerfile \
+         .
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: "push-gemma-prompt-image"
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:${_SHORT_SHA}' && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:latest'
+
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+  id: "update-db-init-image"
+  entrypoint: "gcloud"
   args:
   - run
   - jobs 
