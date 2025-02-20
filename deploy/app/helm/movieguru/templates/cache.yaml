@@ -4,7 +4,7 @@ metadata:
   name: cache
   namespace: movieguru
 spec:
-  replicas: 1
+  replicas: {{ .Values.Cache.replicas }}
   selector:
     matchLabels:
       app: cache
