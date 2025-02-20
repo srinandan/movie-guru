@@ -18,21 +18,17 @@ import { gemini20FlashExp, gemini15Flash, vertexAI } from '@genkit-ai/vertexai';
 import { enableFirebaseTelemetry } from '@genkit-ai/firebase';
 import { initializeApp } from 'firebase-admin/app';
 import { HarmCategory, HarmBlockThreshold } from '@google-cloud/vertexai';
-
+import { parseBooleanfromField } from '.';
 import { genkit } from 'genkit';
 
 
-const gemini20 = process.env.USEGEMINIFLASH2 === "true" || false;
+const gemini20: boolean = parseBooleanfromField(process.env.USEGEMINIFLASH2) 
 const LOCATION = process.env.LOCATION || 'us-central1';
 const PROJECT_ID = process.env.PROJECT_ID;
 
 export var model = gemini15Flash
 if(gemini20){
-  console.log("Using gemini 2.0 flash")
   model = gemini20FlashExp
-} 
-else{
-  console.log("Using gemini 1.5 flash")
 }
 
 enableFirebaseTelemetry();
@@ -50,6 +46,8 @@ export const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
 ];
 
+
+console.log("Using model", model.name)
 export const ai = genkit({
   plugins: [vertexAI({ location: LOCATION, projectId: PROJECT_ID })],
   model: model, // set default model

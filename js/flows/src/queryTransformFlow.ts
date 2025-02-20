@@ -23,6 +23,7 @@ import {
 import { QueryTransformPromptText } from './prompts';
 import { ai, safetySettings } from './genkitConfig';
 import { GenerationBlockedError } from 'genkit';
+import { parseBooleanfromField } from '.';
 
 export const QueryTransformPrompt = ai.definePrompt(
   {
@@ -56,19 +57,15 @@ export const QueryTransformFlow = ai.defineFlow(
       });
 
       const jsonResponse = JSON.parse(response.text);
-      const safetyIssueSet = (typeof jsonResponse.safetyIssue === 'string' && jsonResponse.safetyIssue != null) 
-      var safetyIssue = false
-        if (safetyIssueSet) {
-           safetyIssue = jsonResponse.safetyIssue.toLowerCase()==="true"
-        }
       const qtOutput: QueryTransformFlowOutput = {
         transformedQuery: jsonResponse.transformedQuery || "",
         userIntent: USERINTENT.parse(jsonResponse.userIntent) || USERINTENT.parse('UNCLEAR'),
         modelOutputMetadata: {
           justification: jsonResponse.justification || "",
-          safetyIssue: safetyIssue
+          safetyIssue: parseBooleanfromField(jsonResponse.safetyIssue)
         },
       };
+
       return qtOutput;
     } catch (error) {
       console.error('QTFlow: Error generating response:', {
@@ -76,6 +73,7 @@ export const QueryTransformFlow = ai.defineFlow(
         input,
       });
       if (error instanceof GenerationBlockedError){
+        
         console.error("QTFlow: GenerationBlockedError generating response:", error.message);
         return {
           transformedQuery: input.userMessage,

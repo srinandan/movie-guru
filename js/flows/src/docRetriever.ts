@@ -21,9 +21,9 @@ import { openDB } from './db';
 import { ai, safetySettings } from './genkitConfig'
 import { z } from 'genkit';
 import { MovieContextSchema, MovieContext } from './movieFlowTypes';
-import { gemini15Flash } from '@genkit-ai/vertexai';
 import { DocSearchFlowPromptText } from './prompts';
 import { ModelOutputMetadata, ModelOutputMetadataSchema } from './modelOutputMetadataTypes';
+import { parseBooleanfromField } from '.';
 
 const SearchTypeCategory = z.enum(['KEYWORD', 'VECTOR', 'MIXED', 'NONE']);
 
@@ -87,18 +87,14 @@ export const MovieDocFlow = ai.defineFlow(
       query: input.query
     })
     const jsonResponse = JSON.parse(response.text)
-    const safetyIssueSet = (typeof jsonResponse.safetyIssue === 'string' && jsonResponse.safetyIssue != null) 
-      var safetyIssue = false
-        if (safetyIssueSet) {
-           safetyIssue = jsonResponse.safetyIssue.toLowerCase()==="true"
-        }
+
     searchFlowOutput = {
       vectorQuery: jsonResponse.vectorQuery || "",
       keywordQuery: jsonResponse.keywordQuery || "",
       searchCategory: jsonResponse.searchCategory || SearchTypeCategory.parse("NONE"),
       modelOutputMetadata: {
         justification: jsonResponse.justification || "",
-        safetyIssue: safetyIssue,
+        safetyIssue: parseBooleanfromField(jsonResponse.safetyIssue),
       },
     }
   }

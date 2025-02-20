@@ -18,6 +18,7 @@ import { ai, safetySettings } from './genkitConfig'
 import { MovieFlowInputSchema, MovieFlowOutputSchema, MovieFlowOutput } from './movieFlowTypes'
 import { MovieFlowPromptText } from './prompts';
 import { GenerationBlockedError } from 'genkit';
+import { parseBooleanfromField } from '.';
 
 export const MovieFlowPrompt = ai.definePrompt(
   {
@@ -44,24 +45,14 @@ export const MovieFlow = ai.defineFlow(
     try {
       const response = await MovieFlowPrompt({ history: input.history, userPreferences: input.userPreferences, userMessage: input.userMessage, contextDocuments: input.contextDocuments });
       const jsonResponse =  JSON.parse(response.text);
-      const safetyIssueSet = (typeof jsonResponse.safetyIssue === 'string' && jsonResponse.safetyIssue != null) 
-      var safetyIssue = false
-        if (safetyIssueSet) {
-           safetyIssue = jsonResponse.safetyIssue.toLowerCase()==="true"
-        }
-      const wrongQuerySet = (typeof jsonResponse.wrongQuery === 'string' && jsonResponse.wrongQuery != null) 
-      var wrongQuery = false
-        if (wrongQuerySet) {
-          wrongQuery = jsonResponse.wrongQuery.toLowerCase()==="true"
-        }
 
       const output: MovieFlowOutput = {
         answer:  jsonResponse.answer || "",
         relevantMovies : jsonResponse.relevantMovies || [],
-        wrongQuery: wrongQuery,
+        wrongQuery:  parseBooleanfromField(jsonResponse.wrongQuery),
         modelOutputMetadata: {
           justification: jsonResponse.justification || "",
-          safetyIssue: safetyIssue
+          safetyIssue: parseBooleanfromField(jsonResponse.safetyIssue)
         }
       }
 

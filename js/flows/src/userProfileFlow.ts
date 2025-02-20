@@ -18,6 +18,7 @@ import { UserProfileFlowOutput, UserProfileFlowInputSchema, UserProfileFlowOutpu
 import { UserProfilePromptText } from './prompts';
 import { ai, safetySettings } from './genkitConfig'
 import { GenerationBlockedError } from 'genkit';
+import { parseBooleanfromField } from '.';
 
 export const UserProfileFlowPrompt = ai.definePrompt(
   {
@@ -44,16 +45,12 @@ export const UserProfileFlowPrompt = ai.definePrompt(
       try {
         const response = await UserProfileFlowPrompt({ query: input.query, agentMessage: input.agentMessage });
         const jsonResponse =  JSON.parse(response.text);
-        const safetyIssueSet = (typeof jsonResponse.safetyIssue === 'string' && jsonResponse.safetyIssue != null) 
-        var safetyIssue = false
-        if (safetyIssueSet) {
-           safetyIssue = jsonResponse.safetyIssue.toLowerCase()==="true"
-        }
+
         const output: UserProfileFlowOutput = {
           profileChangeRecommendations:  jsonResponse.profileChangeRecommendations,
           modelOutputMetadata: {
             justification: jsonResponse.justification,
-            safetyIssue: safetyIssue
+            safetyIssue: parseBooleanfromField(jsonResponse.safetyIssue)
           }
         }
         return output

@@ -95,7 +95,7 @@ services:
   locust-master:
     image: locustio/locust
     ports:
-     - "8089:8089"
+     - "8090:8089"
     volumes:
       - ./locust:/mnt/locust
     command: -f /mnt/locust/locustfile.py --master -H http://server:8080
