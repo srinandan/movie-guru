@@ -36,7 +36,12 @@ resource "google_container_cluster" "primary" {
   binary_authorization {
     evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
   }
-  enable_autopilot = true
+
+  enable_autopilot = false
+
+  remove_default_node_pool = true
+  initial_node_count       = 1
+
 
   addons_config {
     http_load_balancing {
@@ -107,6 +112,70 @@ resource "google_container_cluster" "primary" {
 
   depends_on = [google_project_service.enable_apis]
 
+}
+
+resource "google_container_node_pool" "cpu_nodes" {
+  name       = "cpu-pool"
+  location   = var.region
+  cluster    = google_container_cluster.primary.name
+  node_count = 2
+
+  autoscaling {
+    total_min_node_count = "1"
+    total_max_node_count = "5"
+  }
+
+  management {
+    auto_repair  = "true"
+    auto_upgrade = "true"
+  }
+
+  node_config {
+    preemptible  = false
+    machine_type = "e4-standard-8"
+    image_type   = "cos_containerd"
+
+    service_account = google_service_account.sa.email
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+  }
+}
+
+resource "google_container_node_pool" "gpu_nodes" {
+  name       = "gpu-pool"
+  location   = var.region
+  cluster    = google_container_cluster.primary.name
+  node_count = 1
+
+  autoscaling {
+    total_min_node_count = "1"
+    total_max_node_count = "5"
+  }
+
+  management {
+    auto_repair  = "true"
+    auto_upgrade = "true"
+  }
+
+  node_config {
+    preemptible  = false
+    machine_type = "e4-standard-8"
+    image_type   = "cos_containerd"
+
+    guest_accelerator {
+      type = "nvidia-tesla-k80"
+      gpu_driver_installation_config {
+        gpu_driver_version = "DEFAULT"
+      }
+      count = 2
+    }
+
+    service_account = google_service_account.sa.email
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+  }
 }
 
 resource "google_gke_backup_backup_plan" "primary" {
