@@ -33,9 +33,9 @@ Server:
 
 Flows:
   replicas: 5
-  modelLocation: us-central-1
+  modelLocation: us-central1
   postgres: ""
-  geminiflash2: false
+  modelType: gemini20
     
 Image:
   tag: latest

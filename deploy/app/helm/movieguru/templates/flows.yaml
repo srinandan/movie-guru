@@ -56,8 +56,8 @@ spec:
               value: "fake-movies-db"
             - name: LOCATION
               value: {{ .Values.Flows.modelLocation }}
-            - name: USEGEMINIFLASH2
-              value: "{{ .Values.Flows.geminiflash2 }}"
+            - name: MODEL_TYPE
+              value: "{{ .Values.Flows.modelType }}"
 
 ---
 apiVersion: v1
