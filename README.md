@@ -170,7 +170,7 @@ This should take around 10 minutes
 ## Step 6: Run the Cloud Run Job
 
 ```bash
-gcloud run job execute movie-guru-db-init --region $REGION --project $PROJECT_ID
+gcloud run job execute db-init --region $REGION --project $PROJECT_ID
 ```
 
 ## Step 7: Connect to GKE Cluster
