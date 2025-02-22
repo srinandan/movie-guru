@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
@@ -32,7 +33,14 @@ import (
 	"golang.org/x/time/rate"
 )
 
-const userPrompt = "Pretend to be a person between the ages 18 and 80 and ask for a type of movie you want to watch. Be creative."
+const userPrompt = `Pretend to be a person of age %d and ask for a type of movie to watch. Please be creative. The responses must be less than 750 characters and in JSON.
+
+Example:
+Input: The flickering firelight plays across my paintedon face casting strange shadows as I pour another steaming mug of tea. Well I should be getting ready for bed but Ive been feeling a bit nostalgic tonight. Like something a bit different. Maybe a film about a legendary clockmaker who creates a time machine but instead of escaping to the future or dotting the days with a second chance he winds up in the heart of the Victorian renaissance. Think a magical dash of The Secret Garden combined with a hint of The Lord of the Rings all filmed in a vintage color palette
+Output: {"answer": "That sounds like a wonderfully whimsical idea! I can totally see that film in my mind's eye. Based on your description, here are a few movie ideas that come to mind:\n\n*Times Toll* has a reclusive clockmaker, a mysterious antique clock, time manipulation, and a past tragedy, that has a ticking that becomes a race against time as he tries to undo the past\n*Lost in Echoes of Time* is about a young woman finds a hidden family secret that leads her to a mysterious antique clock, she's transported to a parallel world where shes a renowned artist, but her past life is a blur, she must unravel the truth behind her fragmented memories and choose between two lives.\n*Fates Intertwined* a struggling artist who discovers a mysterious antique clock that grants wishes, but at a terrible cost. As she uses the clock to achieve her dreams, she unwittingly sets in motion a chain of events that unravels the lives of those around her.\n\nDo any of these movies fit your description? Is there any particular movie you'd prefer?"}`
+
+const ageMin = 18
+const ageMax = 80
 
 var maxChatLen = 750
 var limiter *rate.Limiter
@@ -86,8 +94,11 @@ func main() {
 	go func() {
 		for { // Infinite loop
 
+			randomNumber := rand.Intn(ageMax-ageMin+1) + ageMin
+			fullPrompt := fmt.Sprintf(userPrompt, randomNumber)
+
 			data := map[string]interface{}{
-				"prompt":      fmt.Sprintf("<start_of_turn>user\n%s<end_of_turn>\n", userPrompt),
+				"prompt":      fmt.Sprintf("<start_of_turn>user\n%s<end_of_turn>\n", fullPrompt),
 				"temperature": 0.90,
 				"top_p":       1.0,
 				"max_tokens":  128,
@@ -96,71 +107,68 @@ func main() {
 			jsonData, err := json.Marshal(data)
 			if err != nil {
 				fmt.Println("Error marshaling JSON:", err)
-				break
+				continue
 			}
 
 			err = limiter.Wait(ctx)
 			if err != nil {
 				fmt.Println("Error waiting for rate limit:", err)
-				break
+				continue
 			}
 
 			resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
 			if err != nil {
 				fmt.Println("Error making request:", err)
-				break
+				continue
 			}
 
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				fmt.Println("Error reading response:", err)
-				time.Sleep(1 * time.Second)
-				break
-			}
+			} else {
+				resp.Body.Close()
 
-			resp.Body.Close()
+				r := Response{}
+				err = json.Unmarshal(body, &r)
 
-			r := Response{}
-			err = json.Unmarshal(body, &r)
+				if err != nil {
+					fmt.Println("Error unmarshaling JSON:", err)
+					continue
+				}
 
-			if err != nil {
-				fmt.Println("Error unmarshaling JSON:", err)
-				break
-			}
+				index := strings.Index(r.Predictions[0], "Output:")
 
-			index := strings.Index(r.Predictions[0], "Output:")
+				prompt := r.Predictions[0][index+8:]
+				prompt = strings.ReplaceAll(prompt, "\n", "")
+				prompt = strings.ReplaceAll(prompt, "/\"", "")
+				prompt = strings.ReplaceAll(prompt, "*", "")
+				prompt = removeSpecialCharacters(prompt)
 
-			prompt := r.Predictions[0][index+8:]
-			prompt = strings.ReplaceAll(prompt, "\n", "")
-			prompt = strings.ReplaceAll(prompt, "/\"", "")
-			prompt = strings.ReplaceAll(prompt, "*", "")
-			prompt = removeSpecialCharacters(prompt)
+				if len(prompt) > maxChatLen {
+					prompt = prompt[:maxChatLen]
+				}
 
-			if len(prompt) > maxChatLen {
-				prompt = prompt[:maxChatLen]
-			}
+				slog.Log(context.Background(), slog.LevelInfo, "Prompt", "prompt", prompt)
 
-			slog.Log(context.Background(), slog.LevelInfo, "Prompt", "prompt", prompt)
+				chatRequest := ChatRequest{
+					Content: prompt,
+				}
 
-			chatRequest := ChatRequest{
-				Content: prompt,
-			}
+				inputJSON, err := json.Marshal(chatRequest)
+				if err != nil {
+					fmt.Printf("error marshaling input to JSON: %w", err)
+					continue
+				}
 
-			inputJSON, err := json.Marshal(chatRequest)
-			if err != nil {
-				fmt.Printf("error marshaling input to JSON: %w", err)
-				break
-			}
-
-			err = invokeFlow(inputJSON, cookie)
-			if err != nil {
-				fmt.Printf("error invoking flow: %w", err)
-				break
+				err = invokeFlow(inputJSON, cookie)
+				if err != nil {
+					fmt.Printf("error invoking flow: %w", err)
+					continue
+				}
 			}
 
 			time.Sleep(1 * time.Second) // Add a delay between requests if needed.
 		}
-		os.Exit(1)
 	}()
 
 	c := make(chan os.Signal, 1)
@@ -243,6 +251,6 @@ func getCookie() (cookie string, err error) {
 }
 
 func removeSpecialCharacters(s string) string {
-	re := regexp.MustCompile(`[^a-zA-Z0-9\s]`)
+	re := regexp.MustCompile(`[^a-zA-Z0-9\s.]`)
 	return re.ReplaceAllString(s, "")
 }
