@@ -151,11 +151,10 @@ Create a private CLoud Build Worker pool
 
 ```bash
 gcloud builds worker-pools create movie-guru \
-    --region=${REGION} \
-    --worker-config-machine-type=e2-standard-16 \
-    --worker-config-disk-size=300 \
-    --network=movie-guru-network \
-    --subnetwork=movie-guru-subnet
+--region=${REGION} \
+--worker-machine-type=e2-standard-16 \
+--worker-disk-size=300 \
+--project=${PROJECT_ID}
 ```
 
 ## Step 5: Build and Push Containers
