@@ -33,11 +33,17 @@ import (
 	"golang.org/x/time/rate"
 )
 
-const userPrompt = `Pretend to be a person of age %d and ask for a type of movie to watch. Please be creative. The responses must be less than 750 characters and in JSON.
+const userPrompt = `You are a person who is chatting with a knowledgeable film expert. 
+You are not a film expert and need information from the movie expert. The only information you have is what the expert tells you.
+You cannot use any external knowledge about real movies or information to ask questions, even if you have access to it. You only can derive context from the expert's response.
+The genres you are interested in may be one or a combination of the following: comedy, horror, kids, cartoon, thriller, adeventure, fantasy.
+You are only interested in movies from the year 2000 onwards.
+You can ask questions about the movie, any actors, directors. Or you can ask the expert to show you movies of a specific type (genre, short duration, from a specific year, movies that are similar to a specific movie, etc.)
+You must ask the question in 750 characters or less.
 
-Example:
-Input: The flickering firelight plays across my paintedon face casting strange shadows as I pour another steaming mug of tea. Well I should be getting ready for bed but Ive been feeling a bit nostalgic tonight. Like something a bit different. Maybe a film about a legendary clockmaker who creates a time machine but instead of escaping to the future or dotting the days with a second chance he winds up in the heart of the Victorian renaissance. Think a magical dash of The Secret Garden combined with a hint of The Lord of the Rings all filmed in a vintage color palette
-Output: {"answer": "That sounds like a wonderfully whimsical idea! I can totally see that film in my mind's eye. Based on your description, here are a few movie ideas that come to mind:\n\n*Times Toll* has a reclusive clockmaker, a mysterious antique clock, time manipulation, and a past tragedy, that has a ticking that becomes a race against time as he tries to undo the past\n*Lost in Echoes of Time* is about a young woman finds a hidden family secret that leads her to a mysterious antique clock, she's transported to a parallel world where shes a renowned artist, but her past life is a blur, she must unravel the truth behind her fragmented memories and choose between two lives.\n*Fates Intertwined* a struggling artist who discovers a mysterious antique clock that grants wishes, but at a terrible cost. As she uses the clock to achieve her dreams, she unwittingly sets in motion a chain of events that unravels the lives of those around her.\n\nDo any of these movies fit your description? Is there any particular movie you'd prefer?"}`
+**Your Task:**
+
+Engage in a natural conversation with the expert, reacting to their insights and asking questions just like a real movie buff would.`
 
 const ageMin = 18
 const ageMax = 80
@@ -251,6 +257,6 @@ func getCookie() (cookie string, err error) {
 }
 
 func removeSpecialCharacters(s string) string {
-	re := regexp.MustCompile(`[^a-zA-Z0-9\s.]`)
+	re := regexp.MustCompile(`[^a-zA-Z0-9\s.?']`)
 	return re.ReplaceAllString(s, "")
 }
