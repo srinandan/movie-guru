@@ -19,6 +19,7 @@ resource "google_container_cluster" "primary" {
   network             = "projects/${var.project_id}/global/networks/${google_compute_network.custom.name}"
   deletion_protection = false
   subnetwork          = "projects/${var.project_id}/regions/${var.region}/subnetworks/${google_compute_subnetwork.custom.name}"
+  datapath_provider   = "ADVANCED_DATAPATH"
 
   private_cluster_config {
     enable_private_nodes = true
@@ -41,8 +42,6 @@ resource "google_container_cluster" "primary" {
   binary_authorization {
     evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
   }
-
-  enable_autopilot = false
 
   remove_default_node_pool = true
   initial_node_count       = 1
@@ -123,7 +122,7 @@ resource "google_container_node_pool" "cpu_nodes" {
   name       = "cpu-pool"
   location   = var.region
   cluster    = google_container_cluster.primary.name
-  node_count = 2
+  node_count = 1
 
   autoscaling {
     total_min_node_count = "1"
@@ -139,19 +138,24 @@ resource "google_container_node_pool" "cpu_nodes" {
     preemptible  = false
     machine_type = "n4-standard-4"
     image_type   = "cos_containerd"
+    gcfs_config {
+      enabled = true
+    }
 
     service_account = google_service_account.sa.email
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
   }
+
+  node_locations = ["${var.region}-a", "${var.region}-b"]
 }
 
 resource "google_container_node_pool" "gpu_nodes" {
   name       = "gpu-pool"
   location   = var.region
   cluster    = google_container_cluster.primary.name
-  node_count = 2
+  node_count = 1
 
   autoscaling {
     total_min_node_count = "1"
