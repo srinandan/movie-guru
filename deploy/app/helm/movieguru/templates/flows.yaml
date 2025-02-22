@@ -43,9 +43,9 @@ spec:
               memory: "2Gi"            
           env:
             - name: POSTGRES_HOST
-              value: {{ .Values.Hosts.postgres }}
+              value: "{{ .Values.Hosts.postgres }}"
             - name: PROJECT_ID
-              value: {{ .Values.projectID }}
+              value: "{{ .Values.projectID }}"
             - name: POSTGRES_DB_USER_PASSWORD
               value: "minimal"
             - name: POSTGRES_DB_USER
@@ -55,7 +55,7 @@ spec:
             - name: POSTGRES_DB_NAME
               value: "fake-movies-db"
             - name: LOCATION
-              value: {{ .Values.Flows.modelLocation }}
+              value: "{{ .Values.Flows.modelLocation }}"
             - name: MODEL_TYPE
               value: "{{ .Values.Flows.modelType }}"
 

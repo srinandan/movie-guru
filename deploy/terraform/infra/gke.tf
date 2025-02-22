@@ -137,7 +137,7 @@ resource "google_container_node_pool" "cpu_nodes" {
 
   node_config {
     preemptible  = false
-    machine_type = "e4-standard-8"
+    machine_type = "n4-standard-4"
     image_type   = "cos_containerd"
 
     service_account = google_service_account.sa.email
@@ -151,7 +151,7 @@ resource "google_container_node_pool" "gpu_nodes" {
   name       = "gpu-pool"
   location   = var.region
   cluster    = google_container_cluster.primary.name
-  node_count = 1
+  node_count = 2
 
   autoscaling {
     total_min_node_count = "1"
@@ -165,15 +165,15 @@ resource "google_container_node_pool" "gpu_nodes" {
 
   node_config {
     preemptible  = false
-    machine_type = "e4-standard-8"
+    machine_type = "a2-highgpu-1g"
     image_type   = "cos_containerd"
 
     guest_accelerator {
-      type = "nvidia-tesla-k80"
+      type = "nvidia-tesla-a100"
       gpu_driver_installation_config {
         gpu_driver_version = "DEFAULT"
       }
-      count = 2
+      count = 1
     }
 
     service_account = google_service_account.sa.email

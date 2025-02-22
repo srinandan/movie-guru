@@ -185,6 +185,32 @@ steps:
   - --project=${_PROJECT_ID} 
   - --region=${_REGION}
 
+- name: 'gcr.io/cloud-builders/docker'
+  id: "build-ollama-server-image"
+  dir: './ollama-server'
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker build \
+         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/ollama-gemma:${_SHORT_SHA}" \
+         -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/ollama-gemma:latest" \
+         --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/ollama-gemma:latest" \
+         -f Dockerfile \
+         .
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: "push-ollama-server-image"
+  entrypoint: "sh"
+  args:
+    - -xe 
+    - -c
+    - |
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/ollama-gemma:${_SHORT_SHA}' && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/ollama-gemma:latest'
+
+
 options:
   logging: CLOUD_LOGGING_ONLY
   substitution_option: ALLOW_LOOSE

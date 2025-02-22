@@ -14,6 +14,7 @@
 
 region: us-west2
 projectID: ""
+deployOllama: false
 
 Cache:
   replicas: 1
@@ -35,7 +36,7 @@ Flows:
   replicas: 5
   modelLocation: us-central1
   postgres: db.movieguru.svc.cluster.local
-  geminiflash2: false
+  modelType: gemini15
     
 Image:
   tag: latest

@@ -14,12 +14,13 @@
 
 region: us-west2
 projectID: ""
+deployOllama: true
 
 Cache:
-  replicas: 1
+  replicas: 0
 
 Db:
-  replicas: 1
+  replicas: 0
 
 Hosts:
   postgres: ""
