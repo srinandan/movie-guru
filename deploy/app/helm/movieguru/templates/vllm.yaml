@@ -48,7 +48,6 @@ spec:
         args:
         - --model=$(MODEL_ID)
         - --tensor-parallel-size=1
-        - --quantization=awq
         env:
         - name: MODEL_ID
           value: google/gemma-2-2b-it
@@ -65,8 +64,7 @@ spec:
         emptyDir:
             medium: Memory
       nodeSelector:
-        cloud.google.com/gke-accelerator: nvidia-l4
-        cloud.google.com/gke-gpu-driver-version: latest
+       cloud.google.com/gke-nodepool: gpu-pool
 ---
 apiVersion: v1
 kind: Service
