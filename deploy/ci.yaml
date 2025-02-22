@@ -180,7 +180,7 @@ steps:
   - run
   - jobs 
   - deploy 
-  - movie-guru-db-init 
+  - db-init
   - --image=${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest 
   - --project=${_PROJECT_ID} 
   - --region=${_REGION}
