@@ -34,7 +34,7 @@ resource "google_compute_subnetwork" "custom" {
 
   secondary_ip_range {
     range_name    = "pod-ranges"
-    ip_cidr_range = "192.168.64.0/22"
+    ip_cidr_range = "192.168.64.0/21"
   }
   depends_on = [google_project_service.enable_apis]
 
