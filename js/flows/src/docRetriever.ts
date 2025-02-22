@@ -18,12 +18,14 @@ import { Document } from '@genkit-ai/ai/retriever';
 import { textEmbedding004 } from '@genkit-ai/vertexai';
 import { toSql } from 'pgvector';
 import { openDB } from './db';
-import { ai, safetySettings } from './genkitConfig'
+import { ai, safetySettings, embedder } from './genkitConfig'
 import { z } from 'genkit';
 import { MovieContextSchema, MovieContext } from './movieFlowTypes';
-import { gemini15Flash } from '@genkit-ai/vertexai';
 import { DocSearchFlowPromptText } from './prompts';
 import { ModelOutputMetadata, ModelOutputMetadataSchema } from './modelOutputMetadataTypes';
+import { parseBooleanfromField } from '.';
+import { parseJsonResponse } from './responseHandler';
+
 
 const SearchTypeCategory = z.enum(['KEYWORD', 'VECTOR', 'MIXED', 'NONE']);
 
@@ -86,19 +88,16 @@ export const MovieDocFlow = ai.defineFlow(
       const response = await SearchFlowPrompt({
         query: input.query
       })
-      const jsonResponse = JSON.parse(response.text)
-      const safetyIssueSet = (typeof jsonResponse.safetyIssue === 'string' && jsonResponse.safetyIssue != null)
-      var safetyIssue = false
-      if (safetyIssueSet) {
-        safetyIssue = jsonResponse.safetyIssue.toLowerCase() === "true"
-      }
+      console.log("movieDocFlow");
+      const jsonResponse = parseJsonResponse(response.text);
+
       searchFlowOutput = {
         vectorQuery: jsonResponse.vectorQuery || "",
         keywordQuery: jsonResponse.keywordQuery || "",
         searchCategory: jsonResponse.searchCategory || SearchTypeCategory.parse("NONE"),
         modelOutputMetadata: {
           justification: jsonResponse.justification || "",
-          safetyIssue: safetyIssue,
+          safetyIssue: parseBooleanfromField(jsonResponse.safetyIssue),
         },
       }
     }
@@ -168,18 +167,16 @@ export const sqlRetriever = ai.defineRetriever(
     if (options.searchCategory == "KEYWORD") {
       results = await db`SELECT content, title, poster, released, runtime_mins, rating, genres, director, actors, plot, tconst
       FROM movies
-      WHERE ${db.unsafe(options.keywordQuery)} 
+      WHERE ${db.unsafe(options.keywordQuery)}
       LIMIT ${options.k ?? 10}`
     }
 
     //Vector Query
     if (options.searchCategory == "VECTOR") {
-
       const embedding = await ai.embed({
-        embedder: textEmbedding004,
+        embedder: embedder,
         content: options.vectorQuery,
       });
-
       results = await db`
         SELECT content, title, poster, released, runtime_mins, rating, genres, director, actors, plot, tconst
        FROM movies
@@ -192,31 +189,31 @@ export const sqlRetriever = ai.defineRetriever(
     if (options.searchCategory === "MIXED") {
       // Generate the vector embedding for the vector query
       const embedding = await ai.embed({
-        embedder: textEmbedding004,
+        embedder: embedder,
         content: options.vectorQuery,
       });
 
       // Execute the database query with both keyword and vector search components
       results = await db`
-        SELECT 
-          content, 
-          title, 
-          poster, 
-          released, 
-          runtime_mins, 
-          rating, 
-          genres, 
-          director, 
-          actors, 
-          plot, 
+        SELECT
+          content,
+          title,
+          poster,
+          released,
+          runtime_mins,
+          rating,
+          genres,
+          director,
+          actors,
+          plot,
           tconst
-        FROM 
+        FROM
           movies
-        WHERE 
-        ${db.unsafe(options.keywordQuery)} 
-        ORDER BY 
+        WHERE
+        ${db.unsafe(options.keywordQuery)}
+        ORDER BY
           embedding <#> ${toSql(embedding)}
-        LIMIT 
+        LIMIT
           ${options.k ?? 10}
       ;`;
     }

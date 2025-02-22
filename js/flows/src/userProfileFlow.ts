@@ -18,6 +18,8 @@ import { UserProfileFlowOutput, UserProfileFlowInputSchema, UserProfileFlowOutpu
 import { UserProfilePromptText } from './prompts';
 import { ai, safetySettings } from './genkitConfig'
 import { GenerationBlockedError } from 'genkit';
+import { parseBooleanfromField } from '.';
+import { parseJsonResponse } from './responseHandler';
 
 export const UserProfileFlowPrompt = ai.definePrompt(
   {
@@ -34,56 +36,53 @@ export const UserProfileFlowPrompt = ai.definePrompt(
   },
   UserProfilePromptText)
 
-  export const UserProfileFlow = ai.defineFlow(
-    {
-      name: 'userProfileFlow',
-      inputSchema: UserProfileFlowInputSchema,
-      outputSchema: UserProfileFlowOutputSchema
-    },
-    async (input) => {
-      try {
-        const response = await UserProfileFlowPrompt({ query: input.query, agentMessage: input.agentMessage });
-        const jsonResponse =  JSON.parse(response.text);
-        const safetyIssueSet = (typeof jsonResponse.safetyIssue === 'string' && jsonResponse.safetyIssue != null) 
-        var safetyIssue = false
-        if (safetyIssueSet) {
-           safetyIssue = jsonResponse.safetyIssue.toLowerCase()==="true"
-        }
-        const output: UserProfileFlowOutput = {
-          profileChangeRecommendations:  jsonResponse.profileChangeRecommendations,
-          modelOutputMetadata: {
-            justification: jsonResponse.justification,
-            safetyIssue: safetyIssue
-          }
-        }
-        return output
-      } catch (error) {
-        if(error instanceof GenerationBlockedError){
-          console.error("UserProfileFlow: GenerationBlockedError generating response:", error.message);
-          return { 
-            profileChangeRecommendations: [],
-            modelOutputMetadata: {
-              justification: "",
-              safetyIssue: true,
-            }
-           }; 
-        }
-        else if(error instanceof Error && (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED'))){
-          console.error("UserProfileFlow: There is a quota issue:", error.message);
-          return { 
-            profileChangeRecommendations: [],
-            modelOutputMetadata: {
-              justification: "",
-              safetyIssue: false,
-              quotaIssue: true
-            }
-           };
-          }
-        else{
-          console.error("UserProfileFlow: Error generating response:", error);
-          throw error;
+export const UserProfileFlow = ai.defineFlow(
+  {
+    name: 'userProfileFlow',
+    inputSchema: UserProfileFlowInputSchema,
+    outputSchema: UserProfileFlowOutputSchema
+  },
+  async (input) => {
+    try {
+      const response = await UserProfileFlowPrompt({ query: input.query, agentMessage: input.agentMessage });
+      console.log("userProfileFlow");
+      const jsonResponse = parseJsonResponse(response.text) //JSON.parse(response.text);
+
+      const output: UserProfileFlowOutput = {
+        profileChangeRecommendations: jsonResponse.profileChangeRecommendations,
+        modelOutputMetadata: {
+          justification: jsonResponse.justification,
+          safetyIssue: parseBooleanfromField(jsonResponse.safetyIssue)
         }
       }
-    } 
+      return output
+    } catch (error) {
+      if (error instanceof GenerationBlockedError) {
+        console.error("UserProfileFlow: GenerationBlockedError generating response:", error.message);
+        return {
+          profileChangeRecommendations: [],
+          modelOutputMetadata: {
+            justification: "",
+            safetyIssue: true,
+          }
+        };
+      }
+      else if (error instanceof Error && (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED'))) {
+        console.error("UserProfileFlow: There is a quota issue:", error.message);
+        return {
+          profileChangeRecommendations: [],
+          modelOutputMetadata: {
+            justification: "",
+            safetyIssue: false,
+            quotaIssue: true
+          }
+        };
+      }
+      else {
+        console.error("UserProfileFlow: Error generating response:", error);
+        throw error;
+      }
+    }
+  }
 );
 

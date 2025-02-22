@@ -17,14 +17,16 @@
 import { gemini20Flash001, gemini15Flash, vertexAI } from '@genkit-ai/vertexai';
 import { ollama } from 'genkitx-ollama';
 import { enableFirebaseTelemetry } from '@genkit-ai/firebase';
+import { googleAI } from '@genkit-ai/googleai';
 import { initializeApp } from 'firebase-admin/app';
 import { HarmCategory, HarmBlockThreshold } from '@google-cloud/vertexai';
-
+import { parseBooleanfromField } from '.';
 import { genkit } from 'genkit';
+import { textEmbedding004 } from '@genkit-ai/vertexai';
 
 
 // Read environment variable
-const modelType = process.env.MODEL_TYPE || 'gemini15Flash'; // Default to 'gemini20'
+const modelType = process.env.MODEL_TYPE || 'gemini15Flash'; // Default to 'gemini15Flash'
 
 const LOCATION = process.env.LOCATION || 'us-central1';
 const PROJECT_ID = process.env.PROJECT_ID;
@@ -52,18 +54,15 @@ switch (modelType) {
       plugins: [
         ollama({
           models: [
-            {
-              name: 'gemma:9b',
-              type: 'chat', // type: 'chat' | 'generate' | undefined
-            },
+            { name: 'gemma2:9b', },
           ],
-          serverAddress: 'http://ollama-service.movieguru.svc.cluster.local:8080', // default local address
+          serverAddress: 'http://ollama-service.movieguru.svc.cluster.local:8080',
+          embedders: [{ name: 'nomic-embed-text', dimensions: 768 }]
         }),
       ],
-      model: 'ollama/gemma',
+      model: 'ollama/gemma2:9b'
     });
 
-    ai.retrieve
     break;
   default:
     throw new Error(`Unknown model type: ${modelType}`);
@@ -77,6 +76,8 @@ initializeApp({
   projectId: PROJECT_ID,
 });
 
+
+export const embedder = (process.env.MODEL_TYPE === 'ollama') ? 'ollama/nomic-embed-text' : textEmbedding004;
 
 export const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },

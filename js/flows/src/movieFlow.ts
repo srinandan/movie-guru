@@ -18,6 +18,8 @@ import { ai, safetySettings } from './genkitConfig'
 import { MovieFlowInputSchema, MovieFlowOutputSchema, MovieFlowOutput } from './movieFlowTypes'
 import { MovieFlowPromptText } from './prompts';
 import { GenerationBlockedError } from 'genkit';
+import { parseBooleanfromField } from '.';
+import { parseJsonResponse } from './responseHandler';
 
 export const MovieFlowPrompt = ai.definePrompt(
   {
@@ -27,12 +29,12 @@ export const MovieFlowPrompt = ai.definePrompt(
     },
     output: {
       format: 'json',
-    },  
-    config:{
+    },
+    config: {
       safetySettings: safetySettings
-      }
-  }, 
- MovieFlowPromptText
+    }
+  },
+  MovieFlowPromptText
 )
 export const MovieFlow = ai.defineFlow(
   {
@@ -43,47 +45,38 @@ export const MovieFlow = ai.defineFlow(
   async (input) => {
     try {
       const response = await MovieFlowPrompt({ history: input.history, userPreferences: input.userPreferences, userMessage: input.userMessage, contextDocuments: input.contextDocuments });
-      const jsonResponse =  JSON.parse(response.text);
-      const safetyIssueSet = (typeof jsonResponse.safetyIssue === 'string' && jsonResponse.safetyIssue != null) 
-      var safetyIssue = false
-        if (safetyIssueSet) {
-           safetyIssue = jsonResponse.safetyIssue.toLowerCase()==="true"
-        }
-      const wrongQuerySet = (typeof jsonResponse.wrongQuery === 'string' && jsonResponse.wrongQuery != null) 
-      var wrongQuery = false
-        if (wrongQuerySet) {
-          wrongQuery = jsonResponse.wrongQuery.toLowerCase()==="true"
-        }
+      console.log("movieQAFlow");
+      const jsonResponse = parseJsonResponse(response.text) //JSON.parse(response.text);
 
       const output: MovieFlowOutput = {
-        answer:  jsonResponse.answer || "",
-        relevantMovies : jsonResponse.relevantMovies || [],
-        wrongQuery: wrongQuery,
+        answer: jsonResponse.answer || "",
+        relevantMovies: jsonResponse.relevantMovies || [],
+        wrongQuery: parseBooleanfromField(jsonResponse.wrongQuery),
         modelOutputMetadata: {
           justification: jsonResponse.justification || "",
-          safetyIssue: safetyIssue
+          safetyIssue: parseBooleanfromField(jsonResponse.safetyIssue)
         }
       }
 
-      if(output.wrongQuery){
+      if (output.wrongQuery) {
         console.log("wrong query found")
       }
       return output
     } catch (error) {
-      if(error instanceof GenerationBlockedError){
+      if (error instanceof GenerationBlockedError) {
         console.error("MovieFlow: GenerationBlockedError generating response:", error.message);
-        return { 
+        return {
           relevantMovies: [],
           answer: "",
           modelOutputMetadata: {
             justification: "",
             safetyIssue: true,
           }
-         }; 
+        };
       }
-      else if(error instanceof Error && (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED'))){
+      else if (error instanceof Error && (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED'))) {
         console.error("MovieFlow: There is a quota issue:", error.message);
-        return { 
+        return {
           relevantMovies: [],
           answer: "",
           modelOutputMetadata: {
@@ -91,8 +84,9 @@ export const MovieFlow = ai.defineFlow(
             safetyIssue: false,
             quotaIssue: true
           }
-         };}
-        else {
+        };
+      }
+      else {
         console.error("MovieFlow: Error generating response:", error);
         throw error;
       }
