@@ -1,8 +1,8 @@
 resource "google_compute_router" "router" {
   project = var.project_id
   name    = "nat-router"
-  network = google_compute_subnetwork.custom.name
-  region  = "us-east4"
+  network = google_compute_network.custom.name
+  region  = var.region
 }
 
 module "cloud-nat" {
