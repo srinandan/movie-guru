@@ -93,7 +93,6 @@ func (flowClient *MovieFlowClient) runFlow(input *types.MovieFlowInput) (*types.
 		return nil, err
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		slog.Log(context.Background(), slog.LevelError, "Genkit returned an Error", "error", err)
 		return nil, fmt.Errorf("genkit server returned error: %s (%d)", http.StatusText(resp.StatusCode), resp.StatusCode)
 	}
 	var result struct {
@@ -108,15 +107,6 @@ func (flowClient *MovieFlowClient) runFlow(input *types.MovieFlowInput) (*types.
 		slog.Log(context.Background(), slog.LevelError, "Error unmarshaling JSON response", "error", err)
 		return nil, err
 	}
-
-	/*b = bytes.TrimSpace(b)
-	resp.Body = ioutil.NopCloser(bytes.NewReader(b))
-
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		slog.Log(context.Background(), slog.LevelError, "Error decoding JSON response", "error", err)
-		return nil, err
-	}*/
 
 	return result.Result, nil
 }

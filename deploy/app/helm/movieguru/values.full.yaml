@@ -17,10 +17,10 @@ projectID: ""
 deployOllama: true
 
 Cache:
-  replicas: 0
+  minReplicas: 0
 
 Db:
-  replicas: 0
+  minReplicas: 0
 
 Hosts:
   postgres: ""
@@ -28,15 +28,18 @@ Hosts:
   redisMode: CLUSTER
 
 Server:
-  replicas: 3
+  minReplicas: 3
   version: v1
   enableMetrics: true
 
 Flows:
-  replicas: 5
+  minReplicas: 5
   modelLocation: us-central1
   postgres: ""
   modelType: gemini20
-    
+
+Frontend:
+  minReplicas: 5
+
 Image:
   tag: latest

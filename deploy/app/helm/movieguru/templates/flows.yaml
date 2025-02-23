@@ -60,7 +60,26 @@ spec:
               value: "{{ .Values.Flows.modelLocation }}"
             - name: MODEL_TYPE
               value: "{{ .Values.Flows.modelType }}"
-
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: flows
+  namespace: movieguru
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: flows
+  minReplicas: {{ .Values.Flows.minReplicas }}
+  maxReplicas: 25
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
 ---
 apiVersion: v1
 kind: Service

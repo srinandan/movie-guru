@@ -70,4 +70,24 @@ spec:
   minAvailable: 0
   selector:
     matchLabels:
-      app: gemma-prompt   
+      app: gemma-prompt
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ollama-service-pdb
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: ollama-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: llm-service-pdb
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: llm-service
