@@ -37,6 +37,12 @@ func GetSignedURL(poster string) (string, error) {
 		return "", fmt.Errorf("PROJECT_ID environment variable not set")
 	}
 
+	bucketName = bucketName + "_posters"
+
+	if poster == "" {
+		poster = "notfound.png"
+	}
+
 	opts := &storage.SignedURLOptions{
 		Method:  "GET",
 		Expires: time.Now().Add(48 * time.Hour),

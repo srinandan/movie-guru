@@ -52,12 +52,13 @@ func (flowClient *MovieRetrieverFlowClient) RetriveDocuments(ctx context.Context
 	}
 
 	for _, c := range rResp {
-		c.Poster = fmt.Sprintf("https://storage.googleapis.com/%s_posters/%s", projectId, c.Poster)
-		if os.Getenv("USE_SIGNED_URL") != "" {
+		if os.Getenv("USE_SIGNED_URL") == "true" {
 			c.Poster, err = utils.GetSignedURL(c.Poster)
 			if err != nil {
 				return nil, err
 			}
+		} else {
+			c.Poster = fmt.Sprintf("https://storage.googleapis.com/%s_posters/%s", projectId, c.Poster)
 		}
 	}
 
