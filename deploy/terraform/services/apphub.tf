@@ -16,11 +16,17 @@ locals {
   services = ["//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/services/server",
     "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/services/frontend",
     "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/services/flows",
+    "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/services/ollama-service",
+    "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/services/llm-service",
+    "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/services/gemma-prompt",
     "//redis.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/${var.app_name}",
     "//gkebackup.googleapis.com/projects/${var.project_id}/locations/${var.region}/backupPlans/${var.app_name}-cluster-plan",
   "//compute.googleapis.com/projects/${var.project_id}/regions/${var.region}/addresses/cloudsql-address"]
   workloads = ["//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/apps/deployments/server",
     "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/apps/deployments/frontend",
+    "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/apps/deployments/gemma-prompt",
+    "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/apps/deployments/ollama-gemma-deployment",
+    "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/apps/deployments/vllm-gemma-deployment",
   "//container.googleapis.com/projects/${var.project_id}/locations/${var.region}/clusters/movie-guru-cluster/k8s/namespaces/movieguru/apps/deployments/flows"]
   database = "//sqladmin.googleapis.com/projects/${var.project_id}/instances/${var.app_name}"
 }
