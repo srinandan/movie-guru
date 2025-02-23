@@ -22,7 +22,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"os"
 
 	utils "github.com/movie-guru/pkg/utils"
 
@@ -43,22 +42,15 @@ func CreateMovieRetrieverFlowClient(retrieverLength int, url string) *MovieRetri
 }
 
 func (flowClient *MovieRetrieverFlowClient) RetriveDocuments(ctx context.Context, query string) ([]*types.MovieContext, error) {
-	// make this defensive
-	projectId := os.Getenv("PROJECT_ID")
 	rResp, err := flowClient.runFlow(query)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for _, c := range rResp {
-		if os.Getenv("USE_SIGNED_URL") == "true" {
-			c.Poster, err = utils.GetSignedURL(c.Poster)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			c.Poster = fmt.Sprintf("https://storage.googleapis.com/%s_posters/%s", projectId, c.Poster)
+		c.Poster, err = utils.GetSignedURL(c.Poster)
+		if err != nil {
+			return nil, err
 		}
 	}
 
