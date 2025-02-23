@@ -109,9 +109,3 @@ gcloud storage cp ./dataset/posters_small/* "gs://${PROJECT_ID}_posters/"
 
 rm -rf dataset/posters_small
 
-echo -e "\e[ Making posters publicly readable\e[0m"
-
-gcloud storage buckets add-iam-policy-binding "gs://${PROJECT_ID}_posters/" \
-  --member="allUsers" \
-  --role="roles/storage.objectViewer"
-
