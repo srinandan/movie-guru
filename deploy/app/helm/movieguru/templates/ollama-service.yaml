@@ -19,7 +19,6 @@ metadata:
   name: ollama-gemma-deployment
   namespace: movieguru
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: ollama-server
@@ -69,4 +68,26 @@ spec:
     - protocol: TCP
       port: 8080
       targetPort: 8080
+{{-  end }}
+---
+{{- if .Values.deployOllama }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: server
+  namespace: movieguru
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: server
+  minReplicas: {{ .Values.OllamaService.minReplicas }}
+  maxReplicas: 25
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
 {{-  end }}

@@ -18,7 +18,6 @@ metadata:
   name: server
   namespace: movieguru
 spec:
-  replicas: {{ .Values.Server.replicas }}
   selector:
     matchLabels:
       app: server

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-region: us-west2
+region: us-central1
 projectID: ""
 deployOllama: true
 
@@ -23,8 +23,8 @@ Db:
   minReplicas: 0
 
 Hosts:
-  postgres: ""
-  redis: ""
+  postgres: "10.2.0.2"
+  redis: "10.3.0.3"
   redisMode: CLUSTER
 
 Server:
@@ -33,13 +33,22 @@ Server:
   enableMetrics: true
 
 Flows:
-  minReplicas: 5
+  minReplicas: 3
   modelLocation: us-central1
-  postgres: ""
+  postgres: "10.2.0.2"
   modelType: gemini20
 
 Frontend:
-  minReplicas: 5
+  minReplicas: 3
+
+GemmaPrompt:
+  minReplicas: 1
+
+OllamaService:
+  minReplicas: 1
+
+VllmService:
+  minReplicas: 1
 
 Image:
   tag: latest

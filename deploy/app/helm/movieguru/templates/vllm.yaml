@@ -18,14 +18,13 @@ metadata:
   name: vllm-gemma-deployment
   namespace: movieguru
 spec:
-  replicas: 1
   selector:
     matchLabels:
-      app: gemma-server
+      app: vllm-gemma
   template:
     metadata:
       labels:
-        app: gemma-server
+        app: vllm-gemma
         ai.gke.io/model: gemma-2-2b-it
         ai.gke.io/inference-server: vllm
         examples.ai.gke.io/source: user-guide
@@ -73,9 +72,29 @@ metadata:
   namespace: movieguru
 spec:
   selector:
-    app: gemma-server
+    app: vllm-gemma
   type: ClusterIP
   ports:
     - protocol: TCP
       port: 8000
       targetPort: 8000
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: vllm-gemma
+  namespace: movieguru
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: vllm-gemma-deployment
+  minReplicas: {{ .Values.VllmService.minReplicas }}
+  maxReplicas: 25
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50

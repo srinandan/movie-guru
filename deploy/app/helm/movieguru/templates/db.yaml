@@ -4,7 +4,6 @@ metadata:
   name: db
   namespace: movieguru
 spec:
-  replicas: {{ .Values.Db.replicas }}
   selector:
     matchLabels:
       app: db
@@ -60,7 +59,6 @@ metadata:
   name: adminer
   namespace: movieguru
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: adminer
@@ -89,5 +87,43 @@ spec:
       port: 8080
       targetPort: 8080
   type: ClusterIP
-
-
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: adminer
+  namespace: movieguru
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: adminer
+  minReplicas: {{ .Values.Db.minReplicas }}
+  maxReplicas: 25
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: db
+  namespace: movieguru
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: db
+  minReplicas: {{ .Values.Db.minReplicas }}
+  maxReplicas: 25
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
