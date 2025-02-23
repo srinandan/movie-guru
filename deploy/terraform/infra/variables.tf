@@ -36,14 +36,18 @@ variable "db_name" {
   default     = "fake-movies-db"
 }
 
-variable "disable_init" {
-  description = "enable or disable db init"
+variable "disable_indexer" {
+  description = "enable or disable index gen"
   type        = bool
   default     = true
 }
 
-variable "disable_identity_platform" {
-  description = "enable or disable identitiy platform"
+variable "disable_gpu" {
+  description = "enable or disable gpu nodepool; not required for vertex models"
   type        = bool
-  default     = true
+}
+
+variable "gpu_type" {
+  description = "set the gpu type for the gpu node pool"
+  default     = "nvidia-tesla-a100"
 }

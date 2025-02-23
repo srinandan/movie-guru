@@ -152,10 +152,12 @@ resource "google_container_node_pool" "cpu_nodes" {
 }
 
 resource "google_container_node_pool" "gpu_nodes" {
-  name       = "gpu-pool"
-  location   = var.region
-  cluster    = google_container_cluster.primary.name
-  node_count = 1
+  count          = var.disable_gpu ? 0 : 1
+  name           = "gpu-pool"
+  location       = var.region
+  cluster        = google_container_cluster.primary.name
+  node_count     = 1
+  node_locations = ["${var.region}-a", "${var.region}-b"]
 
   autoscaling {
     total_min_node_count = "1"
@@ -173,7 +175,7 @@ resource "google_container_node_pool" "gpu_nodes" {
     image_type   = "cos_containerd"
 
     guest_accelerator {
-      type = "nvidia-tesla-a100"
+      type = var.gpu_type
       gpu_driver_installation_config {
         gpu_driver_version = "DEFAULT"
       }

@@ -1,5 +1,6 @@
 .* 
 !.gitignore
+!.gcloudignore
 !.dockerignore
 !.github
 /var

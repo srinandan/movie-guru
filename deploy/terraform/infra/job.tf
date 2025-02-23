@@ -70,7 +70,7 @@ resource "google_cloud_run_v2_job" "db-init" {
 }
 
 resource "google_cloud_run_v2_job" "indexer" {
-  count               = var.disable_init ? 0 : 1
+  count               = var.disable_indexer ? 0 : 1
   name                = "indexer"
   location            = var.region
   project             = var.project_id
