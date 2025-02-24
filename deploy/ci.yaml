@@ -131,9 +131,11 @@ steps:
     - -xe 
     - -c
     - |
+      envsubst < pgvector/py_init.sql > pgvector/py_init_substituted.sql
       docker build \
          -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:${_SHORT_SHA}" \
          -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest" \
+         --build-arg PROJECT_ID="$_PROJECT_ID" \
          --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest" \
          -f Dockerfile.init \
          .
