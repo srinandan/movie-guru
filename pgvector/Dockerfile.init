@@ -13,9 +13,11 @@
 # limitations under the License.
 
 FROM python:3.12-slim
+ARG PROJECT
 WORKDIR /code
 COPY requirements.txt /code/requirements.txt
-COPY py_init_substituted.sql /code/py_init_substituted.sql
+COPY py_init.sql /code/py_init.sql
+RUN envsubst < /code/py_init.sql > /code/py_init_substituted.sql
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 COPY main.py /code/main.py
 CMD ["python", "main.py"]
