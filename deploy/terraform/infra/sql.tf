@@ -83,7 +83,6 @@ module "pg" {
     retention_unit                 = "COUNT"
   }
   // Read replica configurations
-  read_replica_name_suffix = "-test-psc"
   read_replicas = [
     {
       name              = "0"

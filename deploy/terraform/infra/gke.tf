@@ -19,6 +19,12 @@ resource "google_container_cluster" "primary" {
   network             = "projects/${var.project_id}/global/networks/${google_compute_network.custom.name}"
   deletion_protection = false
   subnetwork          = "projects/${var.project_id}/regions/${var.region}/subnetworks/${google_compute_subnetwork.custom.name}"
+  datapath_provider   = "ADVANCED_DATAPATH"
+
+  private_cluster_config {
+    enable_private_nodes = true
+  }
+
   cluster_autoscaling {
     auto_provisioning_defaults {
       service_account = google_service_account.sa.email
@@ -36,7 +42,10 @@ resource "google_container_cluster" "primary" {
   binary_authorization {
     evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
   }
-  enable_autopilot = true
+
+  remove_default_node_pool = true
+  initial_node_count       = 1
+
 
   addons_config {
     http_load_balancing {
@@ -107,6 +116,77 @@ resource "google_container_cluster" "primary" {
 
   depends_on = [google_project_service.enable_apis]
 
+}
+
+resource "google_container_node_pool" "cpu_nodes" {
+  name       = "cpu-pool"
+  location   = var.region
+  cluster    = google_container_cluster.primary.name
+  node_count = 1
+
+  autoscaling {
+    total_min_node_count = "1"
+    total_max_node_count = "5"
+  }
+
+  management {
+    auto_repair  = "true"
+    auto_upgrade = "true"
+  }
+
+  node_config {
+    preemptible  = false
+    machine_type = "n4-standard-4"
+    image_type   = "cos_containerd"
+    gcfs_config {
+      enabled = true
+    }
+
+    service_account = google_service_account.sa.email
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+  }
+
+  node_locations = ["${var.region}-a", "${var.region}-b"]
+}
+
+resource "google_container_node_pool" "gpu_nodes" {
+  count          = var.disable_gpu ? 0 : 1
+  name           = "gpu-pool"
+  location       = var.region
+  cluster        = google_container_cluster.primary.name
+  node_count     = 1
+  node_locations = ["${var.region}-a", "${var.region}-b"]
+
+  autoscaling {
+    total_min_node_count = "1"
+    total_max_node_count = "5"
+  }
+
+  management {
+    auto_repair  = "true"
+    auto_upgrade = "true"
+  }
+
+  node_config {
+    preemptible  = false
+    machine_type = "a2-highgpu-1g"
+    image_type   = "cos_containerd"
+
+    guest_accelerator {
+      type = var.gpu_type
+      gpu_driver_installation_config {
+        gpu_driver_version = "DEFAULT"
+      }
+      count = 1
+    }
+
+    service_account = google_service_account.sa.email
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+  }
 }
 
 resource "google_gke_backup_backup_plan" "primary" {

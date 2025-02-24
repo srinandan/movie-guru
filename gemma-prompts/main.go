@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
@@ -32,7 +33,20 @@ import (
 	"golang.org/x/time/rate"
 )
 
-const userPrompt = "Pretend to be a person between the ages 18 and 80 and ask for a type of movie you want to watch. Be creative."
+const userPrompt = `You are a person who is chatting with a knowledgeable film expert. 
+You are not a film expert and need information from the movie expert. The only information you have is what the expert tells you.
+You cannot use any external knowledge about real movies or information to ask questions, even if you have access to it. You only can derive context from the expert's response.
+The genres you are interested in may be one or a combination of the following: comedy, horror, kids, cartoon, thriller, adeventure, fantasy.
+You are only interested in movies from the year 2000 onwards.
+You can ask questions about the movie, any actors, directors. Or you can ask the expert to show you movies of a specific type (genre, short duration, from a specific year, movies that are similar to a specific movie, etc.)
+You must ask the question in 750 characters or less.
+
+**Your Task:**
+
+Engage in a natural conversation with the expert, reacting to their insights and asking questions just like a real movie buff would.`
+
+const ageMin = 18
+const ageMax = 80
 
 var maxChatLen = 750
 var limiter *rate.Limiter
@@ -86,8 +100,11 @@ func main() {
 	go func() {
 		for { // Infinite loop
 
+			randomNumber := rand.Intn(ageMax-ageMin+1) + ageMin
+			fullPrompt := fmt.Sprintf(userPrompt, randomNumber)
+
 			data := map[string]interface{}{
-				"prompt":      fmt.Sprintf("<start_of_turn>user\n%s<end_of_turn>\n", userPrompt),
+				"prompt":      fmt.Sprintf("<start_of_turn>user\n%s<end_of_turn>\n", fullPrompt),
 				"temperature": 0.90,
 				"top_p":       1.0,
 				"max_tokens":  128,
@@ -96,71 +113,68 @@ func main() {
 			jsonData, err := json.Marshal(data)
 			if err != nil {
 				fmt.Println("Error marshaling JSON:", err)
-				break
+				continue
 			}
 
 			err = limiter.Wait(ctx)
 			if err != nil {
 				fmt.Println("Error waiting for rate limit:", err)
-				break
+				continue
 			}
 
 			resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
 			if err != nil {
 				fmt.Println("Error making request:", err)
-				break
+				continue
 			}
 
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				fmt.Println("Error reading response:", err)
-				time.Sleep(1 * time.Second)
-				break
-			}
+			} else {
+				resp.Body.Close()
 
-			resp.Body.Close()
+				r := Response{}
+				err = json.Unmarshal(body, &r)
 
-			r := Response{}
-			err = json.Unmarshal(body, &r)
+				if err != nil {
+					fmt.Println("Error unmarshaling JSON:", err)
+					continue
+				}
 
-			if err != nil {
-				fmt.Println("Error unmarshaling JSON:", err)
-				break
-			}
+				index := strings.Index(r.Predictions[0], "Output:")
 
-			index := strings.Index(r.Predictions[0], "Output:")
+				prompt := r.Predictions[0][index+8:]
+				prompt = strings.ReplaceAll(prompt, "\n", "")
+				prompt = strings.ReplaceAll(prompt, "/\"", "")
+				prompt = strings.ReplaceAll(prompt, "*", "")
+				prompt = removeSpecialCharacters(prompt)
 
-			prompt := r.Predictions[0][index+8:]
-			prompt = strings.ReplaceAll(prompt, "\n", "")
-			prompt = strings.ReplaceAll(prompt, "/\"", "")
-			prompt = strings.ReplaceAll(prompt, "*", "")
-			prompt = removeSpecialCharacters(prompt)
+				if len(prompt) > maxChatLen {
+					prompt = prompt[:maxChatLen]
+				}
 
-			if len(prompt) > maxChatLen {
-				prompt = prompt[:maxChatLen]
-			}
+				slog.Log(context.Background(), slog.LevelInfo, "Prompt", "prompt", prompt)
 
-			slog.Log(context.Background(), slog.LevelInfo, "Prompt", "prompt", prompt)
+				chatRequest := ChatRequest{
+					Content: prompt,
+				}
 
-			chatRequest := ChatRequest{
-				Content: prompt,
-			}
+				inputJSON, err := json.Marshal(chatRequest)
+				if err != nil {
+					fmt.Printf("error marshaling input to JSON: %w", err)
+					continue
+				}
 
-			inputJSON, err := json.Marshal(chatRequest)
-			if err != nil {
-				fmt.Printf("error marshaling input to JSON: %w", err)
-				break
-			}
-
-			err = invokeFlow(inputJSON, cookie)
-			if err != nil {
-				fmt.Printf("error invoking flow: %w", err)
-				break
+				err = invokeFlow(inputJSON, cookie)
+				if err != nil {
+					fmt.Printf("error invoking flow: %w", err)
+					continue
+				}
 			}
 
 			time.Sleep(1 * time.Second) // Add a delay between requests if needed.
 		}
-		os.Exit(1)
 	}()
 
 	c := make(chan os.Signal, 1)
@@ -243,6 +257,6 @@ func getCookie() (cookie string, err error) {
 }
 
 func removeSpecialCharacters(s string) string {
-	re := regexp.MustCompile(`[^a-zA-Z0-9\s]`)
+	re := regexp.MustCompile(`[^a-zA-Z0-9\s.?']`)
 	return re.ReplaceAllString(s, "")
 }

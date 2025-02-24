@@ -23,6 +23,8 @@ import {
 import { QueryTransformPromptText } from './prompts';
 import { ai, safetySettings } from './genkitConfig';
 import { GenerationBlockedError } from 'genkit';
+import { parseBooleanfromField } from '.';
+import { parseJsonResponse } from './responseHandler';
 
 export const QueryTransformPrompt = ai.definePrompt(
   {
@@ -33,11 +35,11 @@ export const QueryTransformPrompt = ai.definePrompt(
     output: {
       format: 'json',
     },
-    config:{
+    config: {
       safetySettings: safetySettings
-      }
+    }
   },
-  
+
   QueryTransformPromptText
 );
 
@@ -54,28 +56,25 @@ export const QueryTransformFlow = ai.defineFlow(
         userMessage: input.userMessage,
         userProfile: input.userProfile,
       });
-
-      const jsonResponse = JSON.parse(response.text);
-      const safetyIssueSet = (typeof jsonResponse.safetyIssue === 'string' && jsonResponse.safetyIssue != null) 
-      var safetyIssue = false
-        if (safetyIssueSet) {
-           safetyIssue = jsonResponse.safetyIssue.toLowerCase()==="true"
-        }
+      console.log("queryTransformFlow");
+      const jsonResponse = parseJsonResponse(response.text) //JSON.parse(response.text);
       const qtOutput: QueryTransformFlowOutput = {
         transformedQuery: jsonResponse.transformedQuery || "",
         userIntent: USERINTENT.parse(jsonResponse.userIntent) || USERINTENT.parse('UNCLEAR'),
         modelOutputMetadata: {
           justification: jsonResponse.justification || "",
-          safetyIssue: safetyIssue
+          safetyIssue: parseBooleanfromField(jsonResponse.safetyIssue)
         },
       };
+
       return qtOutput;
     } catch (error) {
       console.error('QTFlow: Error generating response:', {
         error,
         input,
       });
-      if (error instanceof GenerationBlockedError){
+      if (error instanceof GenerationBlockedError) {
+
         console.error("QTFlow: GenerationBlockedError generating response:", error.message);
         return {
           transformedQuery: input.userMessage,
@@ -86,9 +85,9 @@ export const QueryTransformFlow = ai.defineFlow(
           },
         };
       }
-      else if(error instanceof Error && (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED'))){
+      else if (error instanceof Error && (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED'))) {
         console.error("QTFlow: There is a quota issue:", error.message);
-        return { 
+        return {
           transformedQuery: "",
           userIntent: USERINTENT.parse('UNCLEAR'),
           modelOutputMetadata: {
@@ -96,13 +95,13 @@ export const QueryTransformFlow = ai.defineFlow(
             safetyIssue: false,
             quotaIssue: true
           }
-         };
-        }
-        else {
+        };
+      }
+      else {
         console.error("QTFlow: Error generating response:", error);
         throw error;
       }
-      
+
     }
   }
 );

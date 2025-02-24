@@ -27,7 +27,7 @@ import (
 
 func randomisedFeaturedFilmsQuery() string {
 	queries := []string{
-		"great films", "cool films", "best films", "new films", "high rated films", "classic films",
+		"great films", "best films", "new films", "high rated films",
 	}
 	return queries[rand.Intn(len(queries))]
 

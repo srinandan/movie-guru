@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import { textEmbedding004 } from '@genkit-ai/vertexai';
 import { toSql } from 'pgvector';
 import { z } from 'genkit';
 import { MovieContextSchema, MovieContext } from './types';
 import { openDB } from './db';
-import { ai } from './genkitConfig'
+import { ai, embedder } from './genkitConfig'
 
 export const IndexerFlow = ai.defineFlow(
   {
@@ -37,7 +36,7 @@ export const IndexerFlow = ai.defineFlow(
       await new Promise((resolve) => setTimeout(resolve, 300));
       const contentString = createText(doc);
       const eres = await ai.embed({
-        embedder: textEmbedding004,
+        embedder: embedder,
         content: contentString,
       });
       try {

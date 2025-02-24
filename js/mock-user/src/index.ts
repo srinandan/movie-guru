@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { ai } from './genkitConfig'
+import { startFlowServer } from '@genkit-ai/express';
 import { MockUserFlow } from './mockUserFlow'
 export { MockUserPrompt } from './mockUserFlow'
 
-ai.startFlowServer({
+startFlowServer({
   flows: [MockUserFlow],
 });

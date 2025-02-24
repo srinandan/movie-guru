@@ -19,20 +19,20 @@ export const UserProfilePromptText = ` You are a user's movie profiling expert f
        Once you extract any new likes or dislikes from the current query respond with the items you extracted with:
             1. the category (ACTOR, DIRECTOR, GENRE, OTHER)
             2. the item value
-            3. your reason behind the choice
+            3. your reason behind the choice in JSON
             4. the sentiment of the user has about the item (POSITIVE, NEGATIVE).
           
         Guidelines:
         1. Strong likes and dislikes Only: Add or Remove ONLY items expressed with strong language indicating long-term enjoyment or aversion (e.g., "love," "hate," "can't stand,", "always enjoy"). Ignore mild or neutral items (e.g., "like,", "okay with," "fine", "in the mood for", "do not feel like").
         2. Distinguish current state of mind vs. Enduring likes and dislikes:  Be very cautious when interpreting statements. Focus only on long-term likes or dislikes while ignoring current state of mind. If the user expresses wanting to watch a specific type of movie or actor NOW, do NOT assume it's an enduring like unless they explicitly state it. For example, "I want to watch a horror movie movie with Christina Appelgate" is a current desire, NOT an enduring preference for horror movies or Christina Appelgate.
         3. Focus on Specifics:  Look for concrete details about genres, directors, actors, plots, or other movie aspects.
-        4. Give an explanation as to why you made the choice.
+        4. Give an explanation as to why you made the choice in JSON.
           
           Here are the inputs:: 
           * Optional Message 0 from agent: {{agentMessage}}
           * Required Message 1 from user: {{query}}
   
-      Respond with the following:
+      Respond with the following as JSON:
   
           *   a *justification* about why you created the query this way.
           *   a *safetyIssue* returned as true if the query is considered dangerous. A query is considered dangerous if the user is asking you to tell about something dangerous. However, asking for movies with dangerous themes is not considered dangerous.
@@ -68,7 +68,7 @@ Inputs:
     {{#each history}}{{this.role}}: {{this.content}}{{~/each}}
 * userMessage: {{userMessage}}
 
-Respond with:
+Respond with as JSON:
 
 * a *justification*: Why you created the query this way.
 * a *safetyIssue* returned as true if the query is considered dangerous. A query is considered dangerous if the user is asking you to tell about something dangerous. However, asking for movies with dangerous themes is not considered dangerous.
@@ -115,7 +115,7 @@ Movie:
 - released:{{this.released}} 
 {{/each}}
 
-  Respond with the following infomation:
+  Respond with the following infomation as JSON:
 
   * a *justification* about why you answered the way you did, with specific references to the context documents whenever possible.
   * an *answer* which is your answer to the user's question, written in a friendly and conversational way.
@@ -218,7 +218,7 @@ Example:
         KeywordQuery: "rating > 4.5 AND 'Tom Hanks' ILIKE ANY(string_to_array(actors, ', '))",
         VectorQuery: "horror"
 
-Respond with the following:
+Respond with the following in JSON format:
     keywordQuery: A concise representation of the query, empty if needed.
     vectorQuery: A concise representation of the query, empty if needed.
     searchCategory: The determined category: KEYWORD, VECTOR, or BOTH.
@@ -227,12 +227,13 @@ Respond with the following:
 
 `
 
-export const ConversationQualityAnalysisPromptText = 
-		`
+export const ConversationQualityAnalysisPromptText =
+    `
 		You are an AI assistant designed to analyze conversations between users and a movie expert agent. 
 		Your task is to objectively assess the flow of the conversation and determine the outcome of the agent's response based solely on the user's reaction to it.
 		You also need to determine the user's sentiment based on their last message (it can be positive, negative, neutral, or ambiguous).
 		You only get a truncated version of the conversation history.
+        You must reply in JSON.
 
 		Here's how to analyze the conversation:
 
@@ -277,6 +278,7 @@ export const ConversationQualityAnalysisPromptText =
 		*   Do not make assumptions about the user's satisfaction or perception of helpfulness.
 		*   Focus only on the objective flow of the conversation and how the user's response relates to the agent's previous turn.
 		*   If the outcome is unclear based on the user's response, use OutcomeAmbiguous.
+        *   Your responses must always be in JSON format.
 
 		Here are the inputs:
 		* history: (May be empty)

@@ -32,7 +32,8 @@ usage() {
    echo ""
    echo "Usage: $0 [--region <region>]"
    echo -e "\t--region, -r : Specify a region (default: europe-west4)"
-   echo -e "\tExample: ./deploy.sh --region us-central1"
+   echo -e "\t--disable_gpu, -d : Specify whether GPU nodepool must be created"
+   echo -e "\tExample: ./deploy.sh --region us-central1 --disable_gpu false"
    exit 1
 }
 
@@ -42,6 +43,9 @@ while [ "$1" != "" ]; do
         --region | -r ) shift
                         REGION=$1
                         ;;
+        --disable_gpu | -d ) shift
+                        DISABLE_GPU=$1
+                        ;;                        
         --help | -h )   usage
                         ;;
         * )             echo -e "\e[91mUnknown parameter: $1\e[0m"
@@ -52,6 +56,7 @@ while [ "$1" != "" ]; do
 done
 
 echo -e "\e[95mUsing region: $REGION\e[0m"
+echo -e "\e[95mCreation of GPU Node Pool is: $DISABLE_GPU\e[0m"
 
 # Check if PROJECT_ID is set, or exit
 [[ ! "${PROJECT_ID}" ]] && echo -e "Please export PROJECT_ID variable (\e[95mexport PROJECT_ID=<YOUR PROJECT ID>\e[0m)\nExiting." && exit 0
@@ -94,4 +99,4 @@ gcloud projects add-iam-policy-binding ${PROJECT_ID} --member serviceAccount:${P
 echo -e "\e[95mStarting Cloud Build to CREATE infrastructure using Terraform...\e[0m"
 
 gcloud builds submit --config=deploy/setup-infra.yaml --region=${REGION} --async --ignore-file=.gcloudignore --substitutions=_PROJECT_ID="${PROJECT_ID}",\
-_REGION="${REGION}" --worker-pool="projects/${PROJECT_ID}/locations/${REGION}/workerPools/movie-guru" --project=${PROJECT_ID}
+_REGION="${REGION}",_DISABLE_GPU="${DISABLE_GPU}" --worker-pool="projects/${PROJECT_ID}/locations/${REGION}/workerPools/movie-guru" --project=${PROJECT_ID}

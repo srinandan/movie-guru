@@ -46,6 +46,9 @@ func (flowClient *ResponseQualityFlowClient) Run(ctx context.Context, history []
 }
 
 func (flowClient *ResponseQualityFlowClient) runFlow(input *types.ResponseQualityFlowInput) (*types.ResponseQualityOutput, error) {
+
+	ctx := context.Background()
+
 	// Marshal the input struct to JSON
 	dataInput := DataInput{
 		Data: input,
@@ -63,13 +66,16 @@ func (flowClient *ResponseQualityFlowClient) runFlow(input *types.ResponseQualit
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		slog.Log(context.Background(), slog.LevelError, "Error sending request", "error", err)
+		slog.ErrorContext(ctx, "QualityFlow: Error sending request to Flows", err.Error(), err)
 		return nil, err
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		slog.Log(context.Background(), slog.LevelError, "Genkit returned an Error", "error", err)
-		return nil, fmt.Errorf("genkit server returned error: %s (%d)", http.StatusText(resp.StatusCode), resp.StatusCode)
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+
+		slog.ErrorContext(ctx, "QualityFlow: Genkit returned an Error", "errorCode", resp.StatusCode, "body", bodyString)
+		return nil, fmt.Errorf("genkit returned error: %s (%d)", http.StatusText(resp.StatusCode), resp.StatusCode)
 	}
 
 	var result struct {
@@ -84,15 +90,6 @@ func (flowClient *ResponseQualityFlowClient) runFlow(input *types.ResponseQualit
 		slog.Log(context.Background(), slog.LevelError, "Error unmarshaling JSON response", "error", err)
 		return nil, err
 	}
-
-	/*b = bytes.TrimSpace(b)
-	resp.Body = ioutil.NopCloser(bytes.NewReader(b))
-
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	if err != nil {
-		slog.Log(context.Background(), slog.LevelError, "Error decoding JSON response", "error", err)
-		return nil, err
-	}*/
 
 	return result.Result, nil
 }

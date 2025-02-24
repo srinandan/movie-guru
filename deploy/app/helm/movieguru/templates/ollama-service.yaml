@@ -12,49 +12,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+{{- if .Values.deployOllama }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vllm-gemma-deployment
+  name: ollama-gemma-deployment
   namespace: movieguru
 spec:
   selector:
     matchLabels:
-      app: vllm-gemma
+      app: ollama-server
   template:
     metadata:
       labels:
-        app: vllm-gemma
-        ai.gke.io/model: gemma-2-2b-it
-        ai.gke.io/inference-server: vllm
-        examples.ai.gke.io/source: user-guide
+        app: ollama-server
+        ai.gke.io/model: gemma-2-9b
+        ai.gke.io/inference-server: ollama
     spec:
       containers:
       - name: inference-server
-        image: us-docker.pkg.dev/vertex-ai/vertex-vision-model-garden-dockers/pytorch-vllm-serve:20240930_0945_RC00
+        image: "{{ .Values.region }}-docker.pkg.dev/{{ .Values.projectID }}/movie-guru/ollama-gemma:{{ .Values.Image.tag }}"
         resources:
           requests:
             cpu: "2"
-            memory: "10Gi"
+            memory: "40Gi"
             ephemeral-storage: "10Gi"
             nvidia.com/gpu: "1"
           limits:
-            cpu: "2"
-            memory: "10Gi"
+            cpu: "3"
+            memory: "80Gi"
             ephemeral-storage: "10Gi"
             nvidia.com/gpu: "1"
-        command: ["python3", "-m", "vllm.entrypoints.api_server"]
-        args:
-        - --model=$(MODEL_ID)
-        - --tensor-parallel-size=1
-        env:
-        - name: MODEL_ID
-          value: google/gemma-2-2b-it
-        - name: HUGGING_FACE_HUB_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: hf-secret
-              key: hf_api_token
         volumeMounts:
         - mountPath: /dev/shm
           name: dshm
@@ -63,33 +51,37 @@ spec:
         emptyDir:
             medium: Memory
       nodeSelector:
-       cloud.google.com/gke-nodepool: gpu-pool
+        cloud.google.com/gke-nodepool: gpu-pool
+{{-  end }}
 ---
+{{- if .Values.deployOllama }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: llm-service
+  name: ollama-service
   namespace: movieguru
 spec:
   selector:
-    app: vllm-gemma
+    app: ollama-server
   type: ClusterIP
   ports:
     - protocol: TCP
-      port: 8000
-      targetPort: 8000
+      port: 8080
+      targetPort: 8080
+{{-  end }}
 ---
+{{- if .Values.deployOllama }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: vllm-gemma
+  name: server
   namespace: movieguru
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: vllm-gemma-deployment
-  minReplicas: {{ .Values.VllmService.minReplicas }}
+    name: server
+  minReplicas: {{ .Values.OllamaService.minReplicas }}
   maxReplicas: 25
   metrics:
   - type: Resource
@@ -98,3 +90,4 @@ spec:
       target:
         type: Utilization
         averageUtilization: 50
+{{-  end }}
