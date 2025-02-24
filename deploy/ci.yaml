@@ -210,6 +210,10 @@ steps:
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/ollama-gemma:${_SHORT_SHA}' && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/ollama-gemma:latest'
 
+substitutions:
+  _REGION: $LOCATION
+  _PROJECT_ID: $PROJECT_ID
+  _SHORT_SHA: $SHORT_SHA
 
 options:
   logging: CLOUD_LOGGING_ONLY
