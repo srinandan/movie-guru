@@ -35,3 +35,4 @@ options:
   logging: CLOUD_LOGGING_ONLY
   substitution_option: ALLOW_LOOSE
   dynamic_substitutions: true
+  requestedVerifyOption: VERIFIED
