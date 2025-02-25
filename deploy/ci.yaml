@@ -238,6 +238,8 @@ substitutions:
   _TAG_NAME: $TAG_NAME
 
 options:
+  pool:
+    name: 'projects/${_PROJECT_ID}/locations/${_REGION}/workerPools/movie-guru'
   logging: CLOUD_LOGGING_ONLY
   substitution_option: ALLOW_LOOSE
   dynamic_substitutions: true
