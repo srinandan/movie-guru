@@ -46,7 +46,10 @@ steps:
     - -xe 
     - -c
     - |
+      docker tag ${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:${_SHORT_SHA} \
+        ${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:${_TAG_NAME}    
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:${_SHORT_SHA}' && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:${_TAG_NAME}' && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/frontend:latest'
 
 - name: 'gcr.io/cloud-builders/docker'
@@ -63,6 +66,7 @@ steps:
          -t "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/chatserver:latest" \
          --cache-from "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/chatserver:latest" \
          .
+
 - name: 'gcr.io/cloud-builders/docker'
   id: "push-server-image"
   waitFor: [build-server-image]
@@ -71,7 +75,10 @@ steps:
     - -xe 
     - -c
     - |
+      docker tag "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/chatserver:${_SHORT_SHA}" \
+        "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/chatserver:${_TAG_NAME}"
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/chatserver:${_SHORT_SHA}' && \
+      docker push "${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/chatserver:${_TAG_NAME}" && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/chatserver:latest'
 
 - name: 'gcr.io/cloud-builders/docker'
@@ -96,8 +103,12 @@ steps:
     - -xe 
     - -c
     - |
+      docker tag '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:${_SHORT_SHA}' \
+        '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:${_TAG_NAME}'
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:${_SHORT_SHA}'  && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:${_TAG_NAME}'  && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/flows:latest'
+
 - name: 'gcr.io/cloud-builders/docker'
   id: "build-mock-image"
   waitFor: ['-']
@@ -146,7 +157,10 @@ steps:
     - -xe 
     - -c
     - |
+      docker tag '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:${_SHORT_SHA}' \
+        '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:${_TAG_NAME}'
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:${_SHORT_SHA}' && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:${_TAG_NAME}' && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest'
 
 - name: 'gcr.io/cloud-builders/docker'
@@ -171,7 +185,10 @@ steps:
     - -xe 
     - -c
     - |
+      docker tag '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:${_SHORT_SHA}'
+        '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:${_TAG_NME}'
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:${_SHORT_SHA}' && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:${_TAG_NAME}' && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:latest'
 
 - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
@@ -182,7 +199,7 @@ steps:
   - jobs 
   - deploy 
   - db-init-job
-  - --image=${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:latest 
+  - --image=${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/db-init:${_TAG_NAME} 
   - --project=${_PROJECT_ID} 
   - --region=${_REGION}
 
@@ -208,13 +225,17 @@ steps:
     - -xe 
     - -c
     - |
+      docker tag '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/ollama-gemma:${_SHORT_SHA}' \
+        '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/ollama-gemma:${_TAG_NAME}'
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/ollama-gemma:${_SHORT_SHA}' && \
+      docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/ollama-gemma:${_TAG_NAME}' && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/ollama-gemma:latest'
 
 substitutions:
   _REGION: $LOCATION
   _PROJECT_ID: $PROJECT_ID
   _SHORT_SHA: $SHORT_SHA
+  _TAG_NAME: $TAG_NAME
 
 options:
   logging: CLOUD_LOGGING_ONLY
