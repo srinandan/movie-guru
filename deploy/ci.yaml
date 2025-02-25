@@ -239,7 +239,7 @@ substitutions:
 
 options:
   pool:
-    name: 'projects/${_PROJECT_ID}/locations/${_REGION}/workerPools/movie-guru'
+    name: 'projects/${_PROJECT_ID}/locations/${LOCATION}/workerPools/movie-guru'
   logging: CLOUD_LOGGING_ONLY
   substitution_option: ALLOW_LOOSE
   dynamic_substitutions: true
