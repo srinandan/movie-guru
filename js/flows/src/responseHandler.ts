@@ -40,9 +40,9 @@ function cleanStringForJson(input: string): string {
     // Replace problematic characters and fix semi-colons
     let cleanedString = input
         .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
-        .replace(/\\"/g, '"') // unescape double quotes
-        .replace(/&quot;/g, '"') // replace &quot; with "
-        .replace(/;/g, '.'); // Replace semi-colons with full stops
+        .replace(/\\"/g, '') // remove double quotes
+        .replace(/&quot;/g, '.') // remove &quot; with "
+        .replace(/'/g, ''); // remove single quotes
 
     return cleanedString;
 }
