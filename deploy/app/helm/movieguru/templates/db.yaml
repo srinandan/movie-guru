@@ -4,6 +4,9 @@ metadata:
   name: db
   namespace: movieguru
 spec:
+{{- if .Values.deployFull }}
+  replicas: 0
+{{-  end }}
   selector:
     matchLabels:
       app: db
@@ -59,6 +62,9 @@ metadata:
   name: adminer
   namespace: movieguru
 spec:
+{{- if .Values.deployFull }}
+  replicas: 0
+{{-  end }}
   selector:
     matchLabels:
       app: adminer
@@ -127,3 +133,13 @@ spec:
       target:
         type: Utilization
         averageUtilization: 50
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: db-pdb
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: db

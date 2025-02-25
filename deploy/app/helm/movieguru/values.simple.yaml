@@ -15,6 +15,7 @@
 region: us-west2
 projectID: ""
 deployOllama: false
+deployFull: false
 
 Cache:
   minReplicas: 1

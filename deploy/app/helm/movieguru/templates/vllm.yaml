@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+{{- if .Values.deployOllama }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -64,7 +65,9 @@ spec:
             medium: Memory
       nodeSelector:
        cloud.google.com/gke-nodepool: gpu-pool
+{{- end }}       
 ---
+{{- if .Values.deployOllama }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -78,7 +81,9 @@ spec:
     - protocol: TCP
       port: 8000
       targetPort: 8000
+{{- end }}      
 ---
+{{- if .Values.deployOllama }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -98,3 +103,16 @@ spec:
       target:
         type: Utilization
         averageUtilization: 50
+{{- end }}        
+---
+{{- if .Values.deployOllama }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: llm-service-pdb
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: llm-service-pdb
+{{- end }}      

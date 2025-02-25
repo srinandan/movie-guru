@@ -91,3 +91,15 @@ spec:
         type: Utilization
         averageUtilization: 50
 {{-  end }}
+---
+{{- if .Values.deployOllama }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ollama-service-pdb
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: ollama-service
+{{-  end }}      
