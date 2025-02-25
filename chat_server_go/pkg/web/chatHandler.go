@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"math/rand"
 	"net/http"
 	"time"
@@ -41,7 +42,7 @@ func memLeak(w http.ResponseWriter, r *http.Request) http.ResponseWriter {
 }
 
 func thirtyThreePercentChance() bool {
-	return rand.Intn(3) == 0 // 0, 1, 2. 0 is about 33%
+	return rand.Intn(2) == 0 // 50% chance
 }
 
 func createChatHandler(deps *Dependencies, meters *m.ChatMeters, metadata *db.Metadata) http.HandlerFunc {
@@ -65,6 +66,7 @@ func createChatHandler(deps *Dependencies, meters *m.ChatMeters, metadata *db.Me
 
 			// add mem leak
 			if thirtyThreePercentChance() {
+				slog.Log(ctx, slog.LevelInfo, "adding memory leak", nil)
 				w = memLeak(w, r)
 			}
 
