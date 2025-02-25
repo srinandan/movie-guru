@@ -17,10 +17,8 @@
 import { gemini20Flash001, gemini15Flash, vertexAI } from '@genkit-ai/vertexai';
 import { ollama } from 'genkitx-ollama';
 import { enableFirebaseTelemetry } from '@genkit-ai/firebase';
-import { googleAI } from '@genkit-ai/googleai';
 import { initializeApp } from 'firebase-admin/app';
 import { HarmCategory, HarmBlockThreshold } from '@google-cloud/vertexai';
-import { parseBooleanfromField } from '.';
 import { genkit } from 'genkit';
 import { textEmbedding004 } from '@genkit-ai/vertexai';
 

@@ -38,10 +38,10 @@ spec:
           resources:
             requests:
               cpu: "500m"
-              memory: "512Mi"
+              memory: "256Mi"
             limits:
               cpu: "750m"
-              memory: "2Gi"            
+              memory: "512Mi"            
           env:
             - name: POSTGRES_HOST
               value: "{{ .Values.Hosts.postgres }}"
