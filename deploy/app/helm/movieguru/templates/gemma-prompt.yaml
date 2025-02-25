@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+{{- if .Values.deployOllama }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -45,7 +46,9 @@ spec:
               value: "http://llm-service.movieguru.svc.cluster.local:8000/generate"          
             - name: CHAT_SERVER
               value: "http://server.movieguru.svc.cluster.local:8080"
+{{- end }}              
 ---
+{{- if .Values.deployOllama }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -75,3 +78,16 @@ spec:
       target:
         type: Utilization
         averageUtilization: 50
+{{- end }}        
+---
+{{- if .Values.deployOllama }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gemma-prompt-pdb
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: gemma-prompt
+{{- end }}      

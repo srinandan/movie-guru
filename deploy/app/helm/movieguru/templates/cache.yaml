@@ -4,6 +4,9 @@ metadata:
   name: cache
   namespace: movieguru
 spec:
+{{- if .Values.deployFull }}
+  replicas: 0
+{{-  end }}
   selector:
     matchLabels:
       app: cache
@@ -52,3 +55,13 @@ spec:
       target:
         type: Utilization
         averageUtilization: 50
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cache-pdb
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: cache

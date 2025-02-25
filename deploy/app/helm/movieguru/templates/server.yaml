@@ -132,3 +132,13 @@ spec:
       backendRefs:
         - name: server
           port: 8080
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: server-pdb
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: server
