@@ -27,7 +27,6 @@ import (
 
 	m "github.com/movie-guru/pkg/metrics"
 	"github.com/movie-guru/pkg/types"
-	"golang.org/x/exp/slog"
 )
 
 // This memory leak is intentionally created to demonstrate support and troubleshooting
