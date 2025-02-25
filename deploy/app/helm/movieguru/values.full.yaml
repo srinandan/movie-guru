@@ -13,14 +13,15 @@
 # limitations under the License.
 
 region: us-central1
-projectID: ""
+projectID: "apphub-srinandans-test"
 deployOllama: true
+deployFull: true
 
 Cache:
-  minReplicas: 0
+  minReplicas: 1
 
 Db:
-  minReplicas: 0
+  minReplicas: 1
 
 Hosts:
   postgres: "10.2.0.2"

@@ -92,3 +92,13 @@ spec:
       port: 3400
       targetPort: 3400
   type: ClusterIP
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: flows-pdb
+spec:
+  minAvailable: 0
+  selector:
+    matchLabels:
+      app: flows
