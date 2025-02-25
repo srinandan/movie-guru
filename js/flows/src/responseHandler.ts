@@ -17,7 +17,7 @@ export function parseJsonResponse(text: string, modelType?: string): any {
         }
         else {
             try {
-                return JSON.parse(text);
+                return JSON.parse(cleanStringForJson(text));
             } catch (error) {
                 //console.error("Error parsing JSON from ollama response (no transform):", error, "response text:", text);
                 customResponse.answer = text;
@@ -26,7 +26,7 @@ export function parseJsonResponse(text: string, modelType?: string): any {
         }
     } else {
         try {
-            jsonResponse = JSON.parse(text);
+            jsonResponse = JSON.parse(cleanStringForJson(text));
         } catch (error) {
             console.error("Error parsing JSON from standard response:", error, "response text:", text);
             return null;
@@ -34,4 +34,15 @@ export function parseJsonResponse(text: string, modelType?: string): any {
     }
 
     return jsonResponse;
+}
+
+function cleanStringForJson(input: string): string {
+    // Replace problematic characters and fix semi-colons
+    let cleanedString = input
+        .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
+        .replace(/\\"/g, '"') // unescape double quotes
+        .replace(/&quot;/g, '"') // replace &quot; with "
+        .replace(/;/g, '.'); // Replace semi-colons with full stops
+
+    return cleanedString;
 }
