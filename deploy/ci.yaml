@@ -185,7 +185,7 @@ steps:
     - -xe 
     - -c
     - |
-      docker tag '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:${_SHORT_SHA}'
+      docker tag '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:${_SHORT_SHA}' \
         '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:${_TAG_NAME}'
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:${_SHORT_SHA}' && \
       docker push '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/movie-guru/gemma-prompt:${_TAG_NAME}' && \
