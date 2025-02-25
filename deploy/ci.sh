@@ -39,6 +39,9 @@ while [ "$1" != "" ]; do
                         ;;
         --skip-gcs | -s ) shift
                         SKIP_GCS="true"
+                        ;;
+        --tag-name | -t ) shift
+                        TAG_NAME=$1
                         ;;                        
         --help | -h )   usage
                         ;;
@@ -64,6 +67,11 @@ if [[ -z "$REGION" ]]; then
     exit 1
 fi
 
+if [[ -z "$TAG_NAME" ]]; then
+    echo -e "\e[91mERROR: TAG_NAME environment variable is required.\e[0m"
+    exit 1
+fi
+
 echo -e "\e[95mUsing PROJECT_ID: $PROJECT_ID\e[0m"
 echo -e "\e[95mUsing REGION: $REGION\e[0m"
 
@@ -81,7 +89,7 @@ envsubst < pgvector/init.sql > pgvector/init_substituted.sql
 # Start Cloud Build
 echo -e "\e[95mStarting Cloud Build...\e[0m"
 gcloud builds submit --config=deploy/ci.yaml --region=${REGION} --async --ignore-file=.gcloudignore --worker-pool="projects/${PROJECT_ID}/locations/${REGION}/workerPools/movie-guru" --project=${PROJECT_ID} \
-  --substitutions=_PROJECT_ID=$PROJECT_ID,_SHORT_SHA=$SHORT_SHA,_REGION=$REGION,_VITE_FIREBASE_API_KEY=$FIREBASE_API_KEY,_VITE_FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN,_VITE_GCP_PROJECT_ID=$PROJECT_ID,_VITE_FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET,_VITE_FIREBASE_MESSAGING_SENDERID=$FIREBASE_MESSAGING_SENDERID,_VITE_FIREBASE_APPID=$FIREBASE_APPID,_VITE_CHAT_SERVER_URL="https://movie-guru.endpoints.${PROJECT_ID}.cloud.goog/server"
+  --substitutions=_PROJECT_ID=$PROJECT_ID,_TAG_NAME=$TAG_NAME_SHORT_SHA=$SHORT_SHA,_REGION=$REGION,_VITE_FIREBASE_API_KEY=$FIREBASE_API_KEY,_VITE_FIREBASE_AUTH_DOMAIN=$FIREBASE_AUTH_DOMAIN,_VITE_GCP_PROJECT_ID=$PROJECT_ID,_VITE_FIREBASE_STORAGE_BUCKET=$FIREBASE_STORAGE_BUCKET,_VITE_FIREBASE_MESSAGING_SENDERID=$FIREBASE_MESSAGING_SENDERID,_VITE_FIREBASE_APPID=$FIREBASE_APPID,_VITE_CHAT_SERVER_URL="https://movie-guru.endpoints.${PROJECT_ID}.cloud.goog/server"
 
 # Check if SKIP_GCS is set
 if [[ -n "$SKIP_GCS" ]]; then
