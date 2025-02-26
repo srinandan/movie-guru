@@ -60,7 +60,7 @@ export const QueryTransformFlow = ai.defineFlow(
       const jsonResponse = parseJsonResponse(response.text) //JSON.parse(response.text);
       const qtOutput: QueryTransformFlowOutput = {
         transformedQuery: jsonResponse.transformedQuery || "",
-        userIntent: USERINTENT.parse(jsonResponse.userIntent) || USERINTENT.parse('UNCLEAR'),
+        userIntent: getUserIntent(jsonResponse.userIntent),
         modelOutputMetadata: {
           justification: jsonResponse.justification || "",
           safetyIssue: parseBooleanfromField(jsonResponse.safetyIssue)
@@ -105,3 +105,20 @@ export const QueryTransformFlow = ai.defineFlow(
     }
   }
 );
+
+function getUserIntent(u: any): any {
+  const possibleIntents: string[] = [
+    'UNCLEAR',
+    'GREET',
+    'END_CONVERSATION',
+    'REQUEST',
+    'RESPONSE',
+    'ACKNOWLEDGE',
+  ];
+
+  if (possibleIntents.includes(String(u))) {
+    return u
+  } else {
+    return USERINTENT.parse('UNCLEAR')
+  }
+}
