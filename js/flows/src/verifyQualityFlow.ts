@@ -46,7 +46,7 @@ export const QualityFlow = ai.defineFlow(
       console.log("quality response:", jsonResponse)
       const output: ResponseQualityFlowOutput = {
         "outcome": jsonResponse.outcome || OUTCOME.parse('OUTCOMEUNKNOWN'),
-        "userSentiment": jsonResponse.sentiment || USERSENTIMENT.parse('SENTIMENTUNKNOWN'),
+        "userSentiment": getSentiment(jsonResponse.sentiment),
       }
       return output;
     } catch (error) {
@@ -58,3 +58,11 @@ export const QualityFlow = ai.defineFlow(
     }
   }
 );
+
+function getSentiment(s: any): any {
+  if (String(s).startsWith("SENTIMENT")) {
+    return s
+  } else {
+    return USERSENTIMENT.parse('SENTIMENTUNKNOWN')
+  }
+}

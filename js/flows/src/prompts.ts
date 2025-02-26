@@ -20,7 +20,7 @@ export const UserProfilePromptText = ` You are a user's movie profiling expert f
             1. the category (ACTOR, DIRECTOR, GENRE, OTHER)
             2. the item value
             3. your reason behind the choice in JSON
-            4. the sentiment of the user has about the item (POSITIVE, NEGATIVE).
+            4. the sentiment of the user has about the item (POSITIVE, NEGATIVE, NEUTRAL).
           
         Guidelines:
         1. Strong likes and dislikes Only: Add or Remove ONLY items expressed with strong language indicating long-term enjoyment or aversion (e.g., "love," "hate," "can't stand,", "always enjoy"). Ignore mild or neutral items (e.g., "like,", "okay with," "fine", "in the mood for", "do not feel like").

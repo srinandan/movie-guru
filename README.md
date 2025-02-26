@@ -9,7 +9,7 @@
     - [Containers](#containers)
   - [Flows](#flows)
     - [Data](#data)
-    - [Postgres](#postgres)
+    - [Cloud SQL](#postgres)
 - [Movie Guru App Deployment Guide](#movie-guru-app-deployment-guide)
   - [Prerequisites](#prerequisites)
   - [Step 1: Set Environment Variables](#step-1-set-environment-variables)
@@ -24,13 +24,10 @@
   - [Final Step: Verify Deployment](#final-step-verify-deployment)
   - [Appendix](#appendix)
     - [Original repo](#original-repo)
-    - [Indexer](#indexer)
     - [Support](#support)
   - [License](#license)
 
 ## Movie Guru
-
-**Genkit version**: 0.9.12 for Node.js
 
 [![Movie Guru](https://img.youtube.com/vi/l_KhN3RJ8qA/0.jpg)](https://youtu.be/l_KhN3RJ8qA)
 
@@ -43,11 +40,13 @@ The goal of this repo is to explore the best practices when building AI powered 
 
 ### Components
 
+![Infra Deployment](./infra_full.png)
+
 - **Frontend (Vue.js):** User interface for interacting with the chatbot.
 - **Web Backend (Go):** Handles API requests and communicates with the Flows Backend.
 - **Flows Backend (Genkit for Node):** Orchestrates AI tasks, connects to GenAI models, and interacts with a vector database.
-- **Database:** Stores movie data, embeddings, and user profiles in a Postgres databse with `pgvector`.
-- **Cache (Redis):** Caches conversation history and session data.
+- **Database (Cloud SQL postgres):** Stores movie data, embeddings, and user profiles in a Postgres databse with `pgvector`.
+- **Cache (Cloud Memorystore for Redis Cluster):** Caches conversation history and session data.
 
 ## Deployment
 
@@ -56,8 +55,8 @@ The goal of this repo is to explore the best practices when building AI powered 
 - **Frontend:** Vue.js application.
 - **Web Backend:** Go-based API server.
 - **Flows Backend:** Node.js-based AI task orchestrator.
-- **Cache:** Cloud Memorystore for Redis for caching chat history and sessions.
-- **Database:** Cloud SQL with `pgvector` extension.
+- **Ollama Gemma 2 9b:** Use local inference instead of Vertex AI
+- **vLLM Deployment Gemm 2 2b:** Generate load using fake testers; uses Gemma 2 2b to generate prompts.
 
 ## Flows
 
@@ -73,7 +72,7 @@ The goal of this repo is to explore the best practices when building AI powered 
 - The user's profile data (their likes and dislikes) are stored in the CloudSQL database.
 - The user's conversation history is stored in a local redis cache. Only the most recent 10 messages are stored. This number is configurable. The session info for the webserver is also stored in memory store.
 
-### Postgres
+### Cloud SQL
 
 There are multiple tables:
 
@@ -103,6 +102,16 @@ export REGION=<your-desired-gcp-region>
 ```
 
 ## Step 2: Deploy Infrastructure
+
+Create a private CLoud Build Worker pool
+
+```bash
+gcloud builds worker-pools create movie-guru \
+--region=${REGION} \
+--worker-machine-type=e2-standard-16 \
+--worker-disk-size=300 \
+--project=${PROJECT_ID}
+```
 
 Run the following script to deploy the infrastructure using Cloud Build:
 
@@ -145,16 +154,6 @@ After updating the file, run the script to apply the environment variables:
 
 ```bash
 source set_env_vars.sh
-```
-
-Create a private CLoud Build Worker pool
-
-```bash
-gcloud builds worker-pools create movie-guru \
---region=${REGION} \
---worker-machine-type=e2-standard-16 \
---worker-disk-size=300 \
---project=${PROJECT_ID}
 ```
 
 ## Step 5: Build and Push Containers
@@ -209,18 +208,6 @@ ___
 ### Original repo
 
 This repo is a fork the original [repo](https://github.com/MKand/movie-guru)
-
-### Indexer
-
-The index loads data in the database through a cloud run job. The dataset CSV must be modified and embedded. To embed the file, run the following steps:
-
-1. Update the CSV file as needed
-2. Run the command `cd indexer && go-bindata  -o pkg/dataset/dataset.go ../dataset`
-3. Fix the package name in  `pkg/dataset/dataset.go`
-4. Re-run `./deploy/ci.sh --region $REGION`
-5. Re-run `./deploy/deploy.sh --region $REGION` to deploy the cloud run job (if not already done)
-
-**NOTE**: Get `go-bindata` by running the command `go install -a -v github.com/go-bindata/go-bindata/...@latest`
 
 ### Support
 
