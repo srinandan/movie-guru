@@ -19,14 +19,14 @@ import { ModelOutputMetadata, ModelOutputMetadataSchema } from './modelOutputMet
 
 // Enums as Zod Enums
 const MovieFeatureCategory = z.enum(['OTHER', 'ACTOR', 'DIRECTOR', 'GENRE']);
-const Sentiment = z.enum(['POSITIVE', 'NEGATIVE']);
+const Sentiment = z.enum(['POSITIVE', 'NEGATIVE', 'NEUTRAL']);
 
 // ProfileChangeRecommendation schema
 export const ProfileChangeRecommendationSchema = z.object({
   item: z.string(),
   reason: z.string(),
-  category: MovieFeatureCategory,
-  sentiment: Sentiment,
+  category: MovieFeatureCategory || 'OTHER',
+  sentiment: Sentiment || 'NEGATIVE',
 });
 
 export type ProfileChangeRecommendation = z.infer<typeof ProfileChangeRecommendationSchema>

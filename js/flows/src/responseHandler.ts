@@ -2,7 +2,7 @@ export function parseJsonResponse(text: string, modelType?: string): any {
     let jsonResponse: any;
     let customResponse: { answer: string, safetyIssue: boolean } = { answer: "", safetyIssue: false };
 
-    console.log("PRINTING: " + text)
+    console.log(getFormattedTimestamp() + text)
     if (modelType === 'ollama' || process.env.MODEL_TYPE === 'ollama') {
         const indexJson = text.indexOf("```json");
         if (indexJson !== -1) {
@@ -45,4 +45,17 @@ function cleanStringForJson(input: string): string {
         .replace(/'/g, ''); // remove single quotes
 
     return cleanedString;
+}
+
+function getFormattedTimestamp(): string {
+    const now = new Date();
+    const year = now.getUTCFullYear();
+    const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(now.getUTCDate()).padStart(2, '0');
+    const hours = String(now.getUTCHours()).padStart(2, '0');
+    const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(now.getUTCSeconds()).padStart(2, '0');
+    const milliseconds = String(now.getUTCMilliseconds()).padStart(3, '0');
+
+    return `time=${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
 }
