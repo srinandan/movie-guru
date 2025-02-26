@@ -74,6 +74,9 @@ func chat(ctx context.Context, deps *Dependencies, metadata *db.Metadata, h *typ
 
 	// This is in the main thread, not async
 	qResp, err := deps.QueryTransformFlowClient.Run(simpleHistory, userProfile)
+	if err != nil {
+		return types.NewErrorAgentResponse(err.Error())
+	}
 	if agentResp, shouldReturn := processFlowOutput(qResp.ModelOutputMetadata, err, h, "QTFlow"); shouldReturn {
 		return agentResp
 	}
