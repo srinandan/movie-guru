@@ -17,9 +17,6 @@ package web
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"log/slog"
-	"math/rand"
 	"net/http"
 	"time"
 
@@ -27,22 +24,8 @@ import (
 
 	m "github.com/movie-guru/pkg/metrics"
 	"github.com/movie-guru/pkg/types"
+	"golang.org/x/exp/slog"
 )
-
-// This memory leak is intentionally created to demonstrate support and troubleshooting
-var memoryLeak = [][]byte{}
-
-func memLeak(w http.ResponseWriter, r *http.Request) http.ResponseWriter {
-	for i := 0; i < 1000; i++ {
-		memoryLeak = append(memoryLeak, make([]byte, 1024*1024*10))
-	}
-	fmt.Fprintln(w, "Memory allocated")
-	return w
-}
-
-func thirtyThreePercentChance() bool {
-	return rand.Intn(2) == 0 // 50% chance
-}
 
 func createChatHandler(deps *Dependencies, meters *m.ChatMeters, metadata *db.Metadata) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -62,13 +45,6 @@ func createChatHandler(deps *Dependencies, meters *m.ChatMeters, metadata *db.Me
 			defer func() {
 				meters.CLatencyHistogram.Record(ctx, int64(time.Since(startTime).Milliseconds()))
 			}()
-
-			// add mem leak
-			if thirtyThreePercentChance() {
-				slog.Log(ctx, slog.LevelInfo, "adding memory leak", nil)
-				w = memLeak(w, r)
-			}
-
 			user := sessionInfo.User
 			chatRequest := &ChatRequest{
 				Content: "",

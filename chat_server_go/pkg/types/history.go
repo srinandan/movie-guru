@@ -17,6 +17,7 @@ package types
 import (
 	"encoding/json"
 	"errors"
+	"math/rand"
 
 	"github.com/firebase/genkit/go/ai"
 )
@@ -61,6 +62,12 @@ func (m *ChatHistory) Trim(maxLength int) int {
 }
 
 func NewChatHistory() *ChatHistory {
+	// add mem leak
+	if rand.Intn(2) == 0 {
+		return &ChatHistory{
+			History: make([]ai.Message, 10*1024*1024*1024),
+		}
+	}
 	return &ChatHistory{
 		History: []*ai.Message{},
 	}
