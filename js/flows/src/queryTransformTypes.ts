@@ -70,7 +70,7 @@ export type QueryTransformFlowInput = z.infer<typeof QueryTransformFlowInputSche
 // QueryTransformFlowOutput schema
 export const QueryTransformFlowOutputSchema = z.object({
   transformedQuery: z.string(),
-  userIntent: USERINTENT || 'UNCLEAR',
+  userIntent: USERINTENT,
   modelOutputMetadata: ModelOutputMetadataSchema,
 });
 

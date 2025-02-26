@@ -25,8 +25,8 @@ const Sentiment = z.enum(['POSITIVE', 'NEGATIVE', 'NEUTRAL']);
 export const ProfileChangeRecommendationSchema = z.object({
   item: z.string(),
   reason: z.string(),
-  category: MovieFeatureCategory || 'OTHER',
-  sentiment: Sentiment || 'NEGATIVE',
+  category: MovieFeatureCategory,
+  sentiment: Sentiment,
 });
 
 export type ProfileChangeRecommendation = z.infer<typeof ProfileChangeRecommendationSchema>
